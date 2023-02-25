@@ -4,6 +4,7 @@ mod texture;
 mod components;
 mod window;
 mod sdl_engine;
+mod tex_man;
 
 /*
 Start with one DSL, it could be empty, declare it old_dsl
@@ -19,12 +20,8 @@ Loop {
 }
  */
 
-
-fn main() -> Result<(), String> {
-    println!("Hello, world!");
+fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let rui_dsl = String::from("");
-
     SDLEngine::main_loop(rui_dsl)?;
-    println!("Bye, world!");
     return Ok(());
 }

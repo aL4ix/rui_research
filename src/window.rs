@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 use std::path::Path;
-use std::rc::Rc;
 
 use sdl2::render::WindowCanvas;
 
 use crate::components::*;
+use crate::tex_man::TextureManager;
 
 pub struct WindowBuilder {
-    compos: HashMap<u32, Box<dyn BuilderCompo>>
+    compos: HashMap<u32, Box<dyn BuilderCompo>>,
+    tex_man: TextureManager,
 }
 
 impl WindowBuilder {
@@ -24,17 +25,18 @@ impl WindowBuilder {
         compos.insert(0, Box::new(Image::from_bmp(Box::from(Path::new("image.bmp")))));
 
         Ok(WindowBuilder {
-            compos
+            compos,
+            tex_man: TextureManager::new(),
         })
     }
-    pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), String> {
-        let tex_creator = Rc::new(canvas.texture_creator());
-        let context = RenderContext::new(Rc::downgrade(&tex_creator));
-        for (id, compo) in &mut self.compos {
-            let tex = compo.render(context.clone()).map_err(|e| e.to_string())?;
+    pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn std::error::Error)>> {
+        let tex_creator = canvas.texture_creator();
+        for (_id, compo) in &mut self.compos {
+            let tex = compo.render(&tex_creator, &mut self.tex_man)?;
             let guard = tex.lock().unwrap();
             canvas.copy(&guard, None, None)?;
         }
+        self.tex_man.garbage_collect(tex_creator);
         Ok(())
     }
 }

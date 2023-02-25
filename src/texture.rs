@@ -1,31 +1,30 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
-use std::rc::Weak;
 use std::sync::{Arc, Mutex};
 
-use sdl2::render::TextureCreator;
+use sdl2::render::{Texture, TextureCreator};
 use sdl2::surface::Surface;
 use sdl2::video::WindowContext;
 
+use crate::tex_man::TextureManager;
+
 /// All Textures are lazy, because they can only be created or updated during render time.
 /// https://documentation.help/SDL/thread.html
-/// Note tex_creator is not an Arc or Mutex, which means it disallows multi-threaded usages.
-/// All Texture are soft which means they can be cloned without allocating more GPU memory.
+/// Note tex_creator and tex_man are references, which means it disallows multi-threaded usages.
+/// All Textures are soft which means they can be cloned without allocating more GPU memory.
 pub trait SoftTexture {
     fn id(&self) -> u32;
-    fn render(&mut self, tex_creator: Weak<TextureCreator<WindowContext>>)
-              -> Result<Arc<Mutex<sdl2::render::Texture>>, Box<dyn Error>>;
-    // fn destroy(self, tex_creator: Weak<TextureCreator<WindowContext>>);
+    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
+              -> Result<Arc<Mutex<Texture>>, Box<dyn Error>>;
 }
 
 /// According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
-/// tex when it's parent doesn't exist, so before destroying it we are checking if parent exists.
-/// Note tex_creator is not an Arc or Mutex, which means it disallows multi-threaded usages.
+/// tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
+/// Note _tex_creator is a reference, which means it disallows multi-threaded usages.
 /// Also we simply exit if this is not the last Arc or Mutex for this tex, otherwise the next caller
 /// to lock the mutex would see undefined memory.
-fn soft_texture_default_destroy(tex: Option<Arc<Mutex<sdl2::render::Texture>>>,
-                                tex_creator: Weak<TextureCreator<WindowContext>>) {
+pub fn soft_texture_default_destroy(tex: Option<Arc<Mutex<Texture>>>,
+                                    _tex_creator: &TextureCreator<WindowContext>) {
     let arc = tex.unwrap();
     let mutex = match Arc::try_unwrap(arc) {
         Ok(x) => x,
@@ -35,42 +34,20 @@ fn soft_texture_default_destroy(tex: Option<Arc<Mutex<sdl2::render::Texture>>>,
         Ok(x) => x,
         Err(_) => return,
     };
-    if tex_creator.upgrade().is_none() {
-        return;
-    }
+    // if _tex_creator.upgrade().is_none() {
+    //     return;
+    // }
     unsafe {
         internal_tex.destroy()
     }
-    println!("Really destroyed!")
+    println!("Tex destroyed!")
 }
-
-pub struct TextureManager {
-    texs: HashMap<u32, Arc<Mutex<dyn SoftTexture>>>,
-    last_id: u32,
-}
-
-impl TextureManager {
-    pub fn new() -> TextureManager {
-        TextureManager {
-            texs: Default::default(),
-            last_id: 0,
-        }
-    }
-    pub fn reserve_from_bmp(&mut self, path: Box<Path>) -> Arc<Mutex<dyn SoftTexture>> {
-        let tex = Arc::new(Mutex::new(BMPSoftTexture::new(path)));
-        self.last_id += 1;
-        self.texs.insert(self.last_id, tex.clone());
-        tex
-    }
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Clone)]
 pub struct BMPSoftTexture {
     id: u32,
     needs_update: bool,
-    tex: Option<Arc<Mutex<sdl2::render::Texture>>>,
-    source: Option<Weak<TextureCreator<WindowContext>>>,
+    tex: Option<Arc<Mutex<Texture>>>,
     path: Box<Path>,
 }
 
@@ -80,7 +57,6 @@ impl BMPSoftTexture {
             id: 0,
             needs_update: true,
             tex: None,
-            source: None,
             path,
         }
     }
@@ -90,22 +66,22 @@ impl SoftTexture for BMPSoftTexture {
     fn id(&self) -> u32 {
         self.id
     }
-    fn render(&mut self, weak_tex_creator: Weak<TextureCreator<WindowContext>>)
-              -> Result<Arc<Mutex<sdl2::render::Texture>>, Box<dyn Error>> {
+
+    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
+              -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
         if self.needs_update {
+            println!("Tex {}: needs_update", self.id);
             let surface = Surface::load_bmp(&self.path)?;
-            let tex_creator = weak_tex_creator.upgrade()
-                .ok_or("No TextureCreator was found!")?;
-            self.tex = Some(Arc::new(Mutex::new(tex_creator.create_texture_from_surface(surface)?)));
+            let (arc_tex, id) = tex_man.reserve_from_surface(tex_creator, surface)?;
+            self.id = id;
+            self.tex = Some(arc_tex);
+            self.needs_update = false;
         }
-        match self.tex.clone() {
-            None => Err(Box::from("No texture was found!")),
-            Some(tex) => Ok(tex)
+        match &self.tex {
+            None => Err(Box::from("No texture was rendered/created!")),
+            Some(tex) => Ok(tex.clone())
         }
     }
-    // fn destroy(self, tex_creator: Weak<TextureCreator<WindowContext>>) {
-    //     soft_texture_default_destroy(self.tex, tex_creator)
-    // }
 }
 
 /// SDL_Texture has no Send implemented, and shouldn't because SDL2 doesn't allow to render in a
@@ -113,48 +89,47 @@ impl SoftTexture for BMPSoftTexture {
 /// a TextureCreator is sent, so it becomes safe.
 unsafe impl Send for BMPSoftTexture {}
 
-impl Drop for BMPSoftTexture {
-    fn drop(&mut self) {
-        if let Some(x) = &self.source {
-            // soft_texture_default_destroy(self.tex, *x);
-        }
-        println!("dropped");
-    }
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Clone)]
-pub struct RAMSoftTexture {
-    id: u32,
-    needs_update: bool,
-    tex: Option<Arc<Mutex<sdl2::render::Texture>>>,
-    raw_data: Vec<u8>,
-}
+// #[derive(Clone)]
+// pub struct RAMSoftTexture {
+//     id: u32,
+//     needs_update: bool,
+//     tex: Option<Arc<Mutex<sdl2::render::Texture>>>,
+//     raw_data: Vec<u8>,
+// }
+//
+// impl RAMSoftTexture {
+//     pub fn from(raw_data: Vec<u8>) -> RAMSoftTexture {
+//         RAMSoftTexture {
+//             id: 0,
+//             needs_update: true,
+//             tex: None,
+//             raw_data,
+//         }
+//     }
+//     pub fn new() -> RAMSoftTexture {
+//         Self::from(vec![])
+//     }
+// }
+//
+// impl SoftTexture for RAMSoftTexture {
+//     fn id(&self) -> u32 {
+//         self.id
+//     }
+//     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
+//               -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
+//         todo!()
+//     }
+// }
 
-impl RAMSoftTexture {
-    pub fn from(raw_data: Vec<u8>) -> RAMSoftTexture {
-        RAMSoftTexture {
-            id: 0,
-            needs_update: true,
-            tex: None,
-            raw_data,
-        }
-    }
-    pub fn new() -> RAMSoftTexture {
-        Self::from(vec![])
-    }
-}
-
-impl SoftTexture for RAMSoftTexture {
-    fn id(&self) -> u32 {
-        self.id
-    }
-    fn render(&mut self, tex_creator: Weak<TextureCreator<WindowContext>>)
-              -> Result<Arc<Mutex<sdl2::render::Texture>>, Box<dyn Error>> {
-        todo!()
-    }
-    // fn destroy(self, tex_creator: Weak<TextureCreator<WindowContext>>) {
-    //     soft_texture_default_destroy(self.tex, tex_creator);
-    // }
-}
+// pub struct EmptySoftTexture {}
+//
+// impl SoftTexture for EmptySoftTexture {
+//     fn id(&self) -> u32 {
+//         0
+//     }
+//     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager) -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
+//         todo!()
+//     }
+// }

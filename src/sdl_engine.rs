@@ -1,21 +1,21 @@
 use std::thread::sleep;
 use std::time::Duration;
-use sdl2::{init};
+
+use sdl2::init;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use crate::window::WindowBuilder;
 
+use crate::window::WindowBuilder;
 
 pub struct SDLEngine {}
 
 impl SDLEngine {
-    pub fn main_loop(windows_dsl: String) -> Result<(), String> {
+    pub fn main_loop(_windows_dsl: String) -> Result<(), Box<(dyn std::error::Error)>> {
         let sdl_context = init()?;
         let sdl_video = sdl_context.video()?;
-        let window = sdl_video.window("Title", 800, 600).build()
-            .map_err(|e| e.to_string())?;
-        let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+        let window = sdl_video.window("Title", 800, 600).build()?;
+        let mut canvas = window.into_canvas().build()?;
 
         let mut window_builder = WindowBuilder::new()?;
 
