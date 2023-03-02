@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::mpsc;
+use std::{fs, thread};
+use glyph_brush::ab_glyph::FontArc;
 
 use sdl2::render::WindowCanvas;
 
 use crate::components::*;
+use crate::general::Color;
 use crate::tex_man::TextureManager;
 
 pub struct WindowBuilder {
@@ -12,17 +16,23 @@ pub struct WindowBuilder {
 }
 
 impl WindowBuilder {
-    pub fn new() -> Result<WindowBuilder, String> {
-        // let (tx, rx) = mpsc::channel();
-        // thread::spawn(move || {
-        //     let path = Box::from(Path::new("image.bmp"));
-        //     let fbt = BMPSoftTexture::new(path);
-        //     tx.send(fbt).unwrap();
-        // });
-        // let fbt = rx.iter().next().unwrap();
+    pub fn new() -> Result<WindowBuilder, Box<(dyn std::error::Error)>> {
+        let (tx, rx) = mpsc::channel();
+        thread::spawn(move || {
+            let compo = Box::new(Image::from_bmp(Box::from(Path::new("image.bmp"))));
+            tx.send(compo).unwrap();
+        });
+        let image = rx.iter().next().unwrap();
 
         let mut compos: HashMap<u32, Box<dyn BuilderCompo>> = HashMap::new();
-        compos.insert(0, Box::new(Image::from_bmp(Box::from(Path::new("image.bmp")))));
+        compos.insert(0, image);
+
+        let font_name = "Nouveau_IBM.ttf".to_string();
+        let file = fs::read(font_name.clone())?;
+        let font = FontArc::try_from_vec(file)?;
+        let text = Text::new("RUI", 300.0, font,
+                             Color { r: 50, g: 50, b: 255, a: 128 });
+        compos.insert(1, Box::new(text));
 
         Ok(WindowBuilder {
             compos,
@@ -36,6 +46,7 @@ impl WindowBuilder {
             let guard = tex.lock().unwrap();
             canvas.copy(&guard, None, None)?;
         }
+
         self.tex_man.garbage_collect(tex_creator);
         Ok(())
     }

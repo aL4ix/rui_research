@@ -5,6 +5,7 @@ mod components;
 mod window;
 mod sdl_engine;
 mod tex_man;
+mod general;
 
 /*
 Start with one DSL, it could be empty, declare it old_dsl
