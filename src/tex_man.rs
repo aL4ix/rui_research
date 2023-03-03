@@ -50,7 +50,7 @@ impl TextureManager {
         for id in garbage {
             println!("Killing tex: {}", id);
             let tex = self.texs.remove(&id).unwrap();
-            soft_texture_default_destroy(Some(tex), &tex_creator);
+            soft_texture_default_destroy(tex, &tex_creator);
         }
     }
 }

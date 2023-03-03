@@ -42,16 +42,15 @@ impl Debug for dyn SoftTexture {
 /// Note _tex_creator is a reference, which means it disallows multi-threaded usages.
 /// Also we simply exit if this is not the last Arc or Mutex for this tex, otherwise the next caller
 /// to lock the mutex would see undefined memory.
-pub fn soft_texture_default_destroy(tex: Option<Arc<Mutex<Texture>>>,
+pub fn soft_texture_default_destroy(tex: Arc<Mutex<Texture>>,
                                     _tex_creator: &TextureCreator<WindowContext>) {
-    let arc = tex.unwrap();
-    let mutex = match Arc::try_unwrap(arc) {
+    let mutex = match Arc::try_unwrap(tex) {
         Ok(x) => x,
-        Err(_) => return,
+        Err(_) => return, // Maybe panic here
     };
     let internal_tex = match mutex.into_inner() {
         Ok(x) => x,
-        Err(_) => return,
+        Err(_) => return, // Maybe panic here
     };
     // if _tex_creator.upgrade().is_none() {
     //     return;
@@ -157,7 +156,7 @@ impl AlphaSoftTexture {
         raw_data: &Vec<u8>,
         color: &Color,
     ) {
-        println!("update_texture_from_lazy_alpha()");
+        println!("{}()", stringify!(update_texture_from_lazy_alpha));
         let format_enum = texture.query().format;
         let bytes_per_pixel = format_enum.byte_size_per_pixel();
         let pitch = bytes_per_pixel * rect.width() as usize;

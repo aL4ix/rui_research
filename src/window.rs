@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::{fs, thread};
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::sync::mpsc;
-use std::{fs, thread};
-use glyph_brush::ab_glyph::FontArc;
 
+use glyph_brush::ab_glyph::FontArc;
 use sdl2::render::WindowCanvas;
 
 use crate::components::*;
@@ -11,7 +11,7 @@ use crate::general::Color;
 use crate::tex_man::TextureManager;
 
 pub struct WindowBuilder {
-    compos: HashMap<u32, Box<dyn BuilderCompo>>,
+    compos: BTreeMap<u32, Box<dyn BuilderCompo>>,
     tex_man: TextureManager,
 }
 
@@ -24,7 +24,7 @@ impl WindowBuilder {
         });
         let image = rx.iter().next().unwrap();
 
-        let mut compos: HashMap<u32, Box<dyn BuilderCompo>> = HashMap::new();
+        let mut compos: BTreeMap<u32, Box<dyn BuilderCompo>> = BTreeMap::new();
         compos.insert(0, image);
 
         let font_name = "Nouveau_IBM.ttf".to_string();
