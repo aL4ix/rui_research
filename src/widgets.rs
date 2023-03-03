@@ -1,19 +1,17 @@
 use std::error::Error;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
 
 use glyph_brush::ab_glyph::{Font, FontArc, ScaleFont};
-use sdl2::render::{Texture, TextureCreator};
+use sdl2::render::TextureCreator;
 use sdl2::video::WindowContext;
 
-use crate::general::{Color, Size2D};
+use crate::general::{Body, Color, Size2D, TexturedPolygon};
 use crate::tex_man::TextureManager;
 use crate::texture::{AlphaSoftTexture, BMPSoftTexture, SoftTexture};
 
-pub trait BuilderCompo {
-    // TODO change it to return an SDLBody
-    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Arc<Mutex<Texture>>, Box<(dyn Error)>>;
+pub trait Widget {
+    fn polygonize(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
+                  -> Result<Body, Box<(dyn Error)>>;
 }
 
 pub struct Image {
@@ -28,10 +26,17 @@ impl Image {
     }
 }
 
-impl BuilderCompo for Image {
-    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Arc<Mutex<Texture>>, Box<(dyn Error)>> {
-        self.tex.render(tex_creator, tex_man)
+impl Widget for Image {
+    fn polygonize(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
+                  -> Result<Body, Box<(dyn Error)>> {
+        let rendered_tex = self.tex.render(tex_creator, tex_man)?;
+        Ok(Body {
+            class: "Image".to_string(),
+            polygons: vec![TexturedPolygon {
+                poly: self.tex.poly(),
+                tex: Some(rendered_tex),
+            }],
+        })
     }
 }
 
@@ -85,9 +90,7 @@ impl Text {
             accumulated_x += glyph_bounds.max.x;
         }
         (raw_data, width, height)
-        // self.poly = SDLPolygon::new_for_rect_texture(Rect::new(0, 0, self.width as u32, self.height as u32));
     }
-
     fn get_texture_bounds(text: &str, size: f32, font: FontArc) -> Size2D {
         let scaled_font = font.as_scaled(size);
         let height = scaled_font.height();
@@ -103,8 +106,16 @@ impl Text {
     }
 }
 
-impl BuilderCompo for Text {
-    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager) -> Result<Arc<Mutex<Texture>>, Box<(dyn Error)>> {
-        self.tex.render(tex_creator, tex_man)
+impl Widget for Text {
+    fn polygonize(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
+                  -> Result<Body, Box<(dyn Error)>> {
+        let rendered_tex = self.tex.render(tex_creator, tex_man)?;
+        Ok(Body {
+            class: "Text".to_string(),
+            polygons: vec![TexturedPolygon {
+                poly: self.tex.poly(),
+                tex: Some(rendered_tex),
+            }],
+        })
     }
 }

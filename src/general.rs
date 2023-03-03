@@ -1,8 +1,12 @@
 use std::fmt::{Debug, Formatter};
+use std::ops::Deref;
 use std::sync::{Arc, Mutex};
+
 use sdl2::rect::Rect;
+use sdl2::render::{Texture, WindowCanvas};
 use sdl2::sys;
-use crate::texture::SoftTexture;
+
+use crate::sdl_engine::render_geometry;
 
 #[derive(Clone, Debug)]
 pub struct Color {
@@ -13,12 +17,12 @@ pub struct Color {
 }
 
 #[derive(Clone)]
-pub struct SDLPolygon {
-    pub vers: Vec<sys::SDL_Vertex>,
-    pub inds: Vec<i32>,
+pub struct Polygon {
+    pub(crate) vers: Vec<sys::SDL_Vertex>,
+    pub(crate) inds: Vec<i32>,
 }
 
-impl Debug for SDLPolygon {
+impl Debug for Polygon {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let vers = self
             .vers
@@ -41,16 +45,15 @@ impl Debug for SDLPolygon {
     }
 }
 
-impl SDLPolygon {
-    pub fn new_empty() -> SDLPolygon {
-        SDLPolygon {
+impl Polygon {
+    pub fn new() -> Polygon {
+        Polygon {
             vers: vec![],
-            inds: vec![]
+            inds: vec![],
         }
     }
-
-    pub fn new_for_rect_texture(r: Rect) -> SDLPolygon {
-        let alpha_for_all_vertices = 255;
+    pub fn new_for_rect_texture(r: Rect, alpha: u8) -> Polygon {
+        let alpha_for_all_vertices = alpha;
         let top_left = sys::SDL_Vertex {
             position: sys::SDL_FPoint {
                 x: r.x as f32,
@@ -115,9 +118,9 @@ impl SDLPolygon {
                 y: 0.0,
             },
         };
-        // OpenGLs ordering standard for sending vertexes is counter-clockwise, SDL2 is not
+        // OpenGLs ordering standard for sending vertices is counter-clockwise, SDL2 is not
         // OpenGL-only but I guess D3D and Vulkan would be OK with this too.
-        SDLPolygon {
+        Polygon {
             vers: vec![top_left, bottom_left, bottom_right, top_right],
             inds: vec![0, 1, 2, 2, 3, 0],
         }
@@ -126,36 +129,41 @@ impl SDLPolygon {
 
 
 /// A representation of SDL's geometry as defined in SDL_RenderGeometry
-///
-/// # Examples
-///
-/// ```
-///
 #[derive(Clone)]
-pub struct SDLTexturedPolygon {
-    pub poly: SDLPolygon,
-    pub tex: Option<Arc<Mutex<dyn SoftTexture>>>,
-    // TODO change to sdl2::render::Texture
-    // What if i create an SDLTexture trait, then it could be a normal texture or a lazy,
-    // and just call sdl_texture.get() and the normal texture returns a sdl2::texture, while a lazy
-    // one process the lazy_tex and then returns it. but who is gonna own the lazy tex?
-    // SDL_Tex?
+pub struct TexturedPolygon {
+    pub(crate) poly: Polygon,
+    pub(crate) tex: Option<Arc<Mutex<Texture>>>,
 }
 
-impl Debug for SDLTexturedPolygon {
+impl Debug for TexturedPolygon {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let poly = format!("{:?}", self.poly);
         write!(f, "SDLPolygon {{ {} }}", poly)
     }
 }
 
-/// It's a group of separate polygons
+/// It's a group of multiple polygons
 #[derive(Debug, Clone)]
-pub struct SDLBody {
-    // TODO remove pub
-    pub _name: String,
-    // TODO remove pub
-    pub polygons: Vec<SDLTexturedPolygon>,
+pub struct Body {
+    #[allow(dead_code)]
+    pub(crate) class: String,
+    pub(crate) polygons: Vec<TexturedPolygon>,
+}
+
+impl Body {
+    pub fn render(&self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn std::error::Error)>> {
+        for tex_poly in &self.polygons {
+            if let Some(t) = &tex_poly.tex {
+                let guard = t.lock().unwrap();
+                let tex = Some(guard.deref());
+                render_geometry(canvas, tex, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
+            } else {
+                // Is there a way to avoid duplicating render_geometry? the tex mutex guard is blocking it
+                render_geometry(canvas, None, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug)]

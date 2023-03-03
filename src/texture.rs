@@ -4,19 +4,20 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use sdl2::pixels::PixelFormat;
+use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Texture, TextureCreator};
 use sdl2::surface::Surface;
 use sdl2::video::WindowContext;
 
-use crate::general::Color;
+use crate::general::{Color, Polygon};
 use crate::tex_man::TextureManager;
 
 /// All Textures are lazy, because they can only be created or updated during render time.
 /// https://documentation.help/SDL/thread.html
 /// Note tex_creator and tex_man are references, which means it disallows multi-threaded usages.
 /// All Textures are soft which means they can be cloned without allocating more GPU memory.
-/// All Textures are static, once its created it won't change. Basically at the first time it gets
-/// rendered it created the actual texture and then after than it will never change.
+/// All Textures are static, once one is created it won't change. Basically at the first time it
+/// gets rendered it creates the actual texture and then after than it will never change.
 pub trait SoftTexture: Send {
     fn id(&self) -> usize;
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
@@ -24,6 +25,7 @@ pub trait SoftTexture: Send {
     fn class(&self) -> &str;
     fn width(&self) -> u32;
     fn height(&self) -> u32;
+    fn poly(&self) -> Polygon;
 }
 
 impl Debug for dyn SoftTexture {
@@ -68,6 +70,7 @@ pub struct BMPSoftTexture {
     path: Box<Path>,
     width: u32,
     height: u32,
+    poly: Polygon,
 }
 
 impl BMPSoftTexture {
@@ -78,6 +81,7 @@ impl BMPSoftTexture {
             path,
             width: 0,
             height: 0,
+            poly: Polygon::new(),
         }
     }
 }
@@ -86,7 +90,6 @@ impl SoftTexture for BMPSoftTexture {
     fn id(&self) -> usize {
         self.id
     }
-
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
         if let None = self.tex {
@@ -96,6 +99,8 @@ impl SoftTexture for BMPSoftTexture {
             self.height = surface.height();
             let (arc_tex, id) = tex_man.reserve_from_surface(tex_creator, surface)?;
             self.id = id;
+            self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
+                                                      255);
             self.tex = Some(arc_tex);
         }
         match &self.tex {
@@ -103,17 +108,17 @@ impl SoftTexture for BMPSoftTexture {
             Some(tex) => Ok(tex.clone())
         }
     }
-
     fn class(&self) -> &str {
         stringify!(BMPSoftTexture)
     }
-
     fn width(&self) -> u32 {
         self.width
     }
-
     fn height(&self) -> u32 {
         self.height
+    }
+    fn poly(&self) -> Polygon {
+        self.poly.clone()
     }
 }
 
@@ -132,6 +137,7 @@ pub struct AlphaSoftTexture {
     width: u32,
     height: u32,
     color: Color,
+    poly: Polygon,
 }
 
 impl AlphaSoftTexture {
@@ -147,22 +153,20 @@ impl AlphaSoftTexture {
             width,
             height,
             color,
+            poly: Polygon::new(),
         }
     }
-
     fn update_texture_from_lazy_alpha(
-        rect: &sdl2::rect::Rect,
+        rect: &Rect,
         texture: &mut Texture,
         raw_data: &Vec<u8>,
         color: &Color,
-    ) {
+    ) -> Result<(), Box<dyn Error>> {
         println!("{}()", stringify!(update_texture_from_lazy_alpha));
         let format_enum = texture.query().format;
         let bytes_per_pixel = format_enum.byte_size_per_pixel();
         let pitch = bytes_per_pixel * rect.width() as usize;
-        let pixel_format = PixelFormat::try_from(format_enum).expect(
-            "Failed to get a PixelFormat from PixelFormatEnum at update_texture_from_lazy_alpha()",
-        );
+        let pixel_format = PixelFormat::try_from(format_enum)?;
         let mut sdl_color = sdl2::pixels::Color {
             r: color.r,
             g: color.g,
@@ -175,10 +179,8 @@ impl AlphaSoftTexture {
             let native = sdl_color.to_u32(&pixel_format).to_ne_bytes();
             new_data.extend_from_slice(&native);
         }
-        texture.update(*rect, &new_data, pitch).expect(&format!(
-            "Failed to update_texture_from_lazy_alpha() {}",
-            sdl2::get_error()
-        ));
+        texture.update(*rect, &new_data, pitch)?;
+        Ok(())
     }
 }
 
@@ -194,33 +196,33 @@ impl SoftTexture for AlphaSoftTexture {
             {
                 let mut tex = arc_tex.lock().unwrap();
                 tex.set_blend_mode(BlendMode::Blend);
-                Self::update_texture_from_lazy_alpha(
-                    &sdl2::rect::Rect::new(0, 0, self.width, self.height),
-                    &mut tex,
-                    &self.raw_data,
-                    &self.color,
-                );
+                Self::update_texture_from_lazy_alpha(&Rect::new(0, 0, self.width, self.height),
+                                                     &mut tex,
+                                                     &self.raw_data,
+                                                     &self.color)?;
             }
             self.id = id;
+            self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
+                                                      self.color.a);
             self.tex = Some(arc_tex.clone());
-            self.raw_data = vec![]; // remove raw_data since it could be large
+            self.raw_data = vec![]; // freeing raw_data from RAM since it could be large
         }
         match &self.tex {
             None => Err(Box::from("No texture was rendered/created!")),
             Some(tex) => Ok(tex.clone())
         }
     }
-
     fn class(&self) -> &str {
         stringify!(TextSoftTexture)
     }
-
     fn width(&self) -> u32 {
         self.width
     }
-
     fn height(&self) -> u32 {
         self.height
+    }
+    fn poly(&self) -> Polygon {
+        self.poly.clone()
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::sdl_engine::SDLEngine;
 
 mod texture;
-mod components;
+mod widgets;
 mod window;
 mod sdl_engine;
 mod tex_man;
