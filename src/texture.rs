@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use sdl2::pixels::PixelFormat;
+use sdl2::pixels::{PixelFormat, PixelFormatEnum};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Texture, TextureCreator};
 use sdl2::surface::Surface;
@@ -25,19 +25,31 @@ pub trait SoftTexture: Send {
     fn class(&self) -> &str;
     fn width(&self) -> u32;
     fn height(&self) -> u32;
-    fn poly(&self) -> Polygon;
-}
-
-impl Debug for dyn SoftTexture {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn poly(&self) -> &Polygon;
+    // fn clone_dyn(&self) -> Box<dyn SoftTexture>;
+    fn fmt_dyn(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let id = format!("{:?}", self.id());
         let class = format!("{:?}", self.class());
         let width = format!("{:?}", self.width());
         let height = format!("{:?}", self.height());
-        write!(f, "SoftTexture {{ id: {}, class: {}, width: {}, height: {} }}",
-               id, class, width, height)
+        let poly = format!("{:?}", self.poly());
+        write!(f, "SoftTexture {{ id: {}, class: {}, width: {}, height: {}, poly: {} }}",
+               id, class, width, height, poly)
     }
 }
+
+impl Debug for dyn SoftTexture {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.fmt_dyn(f)
+    }
+}
+
+// TODO maybe we don't need this
+// impl Clone for Box<dyn SoftTexture> {
+//     fn clone(&self) -> Self {
+//         self.clone_dyn()
+//     }
+// }
 
 /// According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
 /// tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
@@ -63,30 +75,40 @@ pub fn soft_texture_default_destroy(tex: Arc<Mutex<Texture>>,
     println!("Tex destroyed!")
 }
 
-#[derive(Clone)]
-pub struct BMPSoftTexture {
+// #[derive(Clone)]
+pub struct RAMSoftTexture {
     id: usize,
     tex: Option<Arc<Mutex<Texture>>>,
-    path: Box<Path>,
     width: u32,
     height: u32,
     poly: Polygon,
+    raw_data: Vec<u8>,
+    pitch: u32,
+    pixel_format: PixelFormatEnum,
 }
 
-impl BMPSoftTexture {
-    pub fn new(path: Box<Path>) -> BMPSoftTexture {
-        BMPSoftTexture {
+impl RAMSoftTexture {
+    pub fn from_bmp(path: Box<Path>) -> Result<RAMSoftTexture, String> {
+        let surface = Surface::load_bmp(path)?;
+        let raw_data = Vec::from(surface.with_lock(|x: &[u8]| Vec::from(x)));
+        let width = surface.width();
+        let height = surface.height();
+        let pitch = surface.pitch();
+        let pixel_format = surface.pixel_format_enum();
+        Ok(RAMSoftTexture {
             id: 0,
             tex: None,
-            path,
-            width: 0,
-            height: 0,
-            poly: Polygon::new(),
-        }
+            width,
+            height,
+            poly: Polygon::new_for_rect_texture(Rect::new(0, 0, width, height), 255),
+            raw_data,
+            pitch,
+            pixel_format,
+        })
     }
 }
 
-impl SoftTexture for BMPSoftTexture {
+impl SoftTexture for RAMSoftTexture {
     fn id(&self) -> usize {
         self.id
     }
@@ -94,14 +116,17 @@ impl SoftTexture for BMPSoftTexture {
               -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
         if let None = self.tex {
             println!("{}", self.class());
-            let surface = Surface::load_bmp(&self.path)?;
-            self.width = surface.width();
-            self.height = surface.height();
-            let (arc_tex, id) = tex_man.reserve_from_surface(tex_creator, surface)?;
+            let (arc_tex, id) = tex_man.reserve(tex_creator, self.width,
+                                                self.height, self.pixel_format)?;
+            {
+                let mut guard = arc_tex.lock().unwrap();
+                guard.update(None, &self.raw_data, self.pitch as usize)?;
+            }
             self.id = id;
             self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
                                                       255);
             self.tex = Some(arc_tex);
+            self.raw_data = vec![]; // Removing raw_data since it could be large
         }
         match &self.tex {
             None => Err(Box::from("No texture was rendered/created!")),
@@ -117,19 +142,23 @@ impl SoftTexture for BMPSoftTexture {
     fn height(&self) -> u32 {
         self.height
     }
-    fn poly(&self) -> Polygon {
-        self.poly.clone()
+    fn poly(&self) -> &Polygon {
+        &self.poly
     }
+
+    // fn clone_dyn(&self) -> Box<dyn SoftTexture> {
+    //     Box::new(self.clone())
+    // }
 }
 
 /// SDL_Texture has no Send implemented, and shouldn't because SDL2 doesn't allow to render in a
 /// different thread. that's why render() will only be called during render time, and at that moment
 /// a TextureCreator and a TextureManager are sent, so it becomes safe.
-unsafe impl Send for BMPSoftTexture {}
+unsafe impl Send for RAMSoftTexture {}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Clone)]
+// #[derive(Clone)]
 pub struct AlphaSoftTexture {
     id: usize,
     tex: Option<Arc<Mutex<Texture>>>,
@@ -146,6 +175,7 @@ impl AlphaSoftTexture {
             panic!("Texture dimensions cannot be zero")
         }
 
+        let alpha = color.a;
         AlphaSoftTexture {
             id: 0,
             tex: None,
@@ -153,16 +183,16 @@ impl AlphaSoftTexture {
             width,
             height,
             color,
-            poly: Polygon::new(),
+            poly: Polygon::new_for_rect_texture(Rect::new(0, 0, width, height), alpha),
         }
     }
-    fn update_texture_from_lazy_alpha(
+    fn update_texture_from_alpha(
         rect: &Rect,
         texture: &mut Texture,
         raw_data: &Vec<u8>,
         color: &Color,
     ) -> Result<(), Box<dyn Error>> {
-        println!("{}()", stringify!(update_texture_from_lazy_alpha));
+        println!("update_texture_from_alpha()");
         let format_enum = texture.query().format;
         let bytes_per_pixel = format_enum.byte_size_per_pixel();
         let pitch = bytes_per_pixel * rect.width() as usize;
@@ -192,14 +222,15 @@ impl SoftTexture for AlphaSoftTexture {
               -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
         if let None = self.tex {
             println!("{}", self.class());
-            let (arc_tex, id) = tex_man.reserve(tex_creator, self.width, self.height)?;
+            let (arc_tex, id) = tex_man.reserve(tex_creator, self.width,
+                                                self.height, PixelFormatEnum::RGBA32)?;
             {
                 let mut tex = arc_tex.lock().unwrap();
                 tex.set_blend_mode(BlendMode::Blend);
-                Self::update_texture_from_lazy_alpha(&Rect::new(0, 0, self.width, self.height),
-                                                     &mut tex,
-                                                     &self.raw_data,
-                                                     &self.color)?;
+                Self::update_texture_from_alpha(&Rect::new(0, 0, self.width, self.height),
+                                                &mut tex,
+                                                &self.raw_data,
+                                                &self.color)?;
             }
             self.id = id;
             self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
@@ -221,8 +252,18 @@ impl SoftTexture for AlphaSoftTexture {
     fn height(&self) -> u32 {
         self.height
     }
-    fn poly(&self) -> Polygon {
-        self.poly.clone()
+    fn poly(&self) -> &Polygon {
+        &self.poly
+    }
+
+    // fn clone_dyn(&self) -> Box<dyn SoftTexture> {
+    //     Box::new(self.clone())
+    // }
+}
+
+impl Debug for AlphaSoftTexture {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.fmt_dyn(f)
     }
 }
 

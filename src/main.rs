@@ -10,7 +10,8 @@ mod general;
 /*
 Start with one DSL, it could be empty, declare it old_dsl
 Loop {
-    Take the input
+    Take the input, widgets should exist and match DSL, so input is just changing values in widgets,
+    in a lazy way, later at build() changes will be applied.
     Clone old_dsl to DSL and update new one according to the input (could this be multithreaded too?)
         including lib-user's actions, i mean the events' programming, take the mouse and send it to
         the parent, then the parent check if the mouse is within its boundaries, if so send it to

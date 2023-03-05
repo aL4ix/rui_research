@@ -30,6 +30,7 @@ impl SDLEngine {
                         keycode: Some(Keycode::Escape),
                         ..
                     } => break 'running,
+                    Event::KeyDown {keycode: Some(key), ..} => window_builder.key_down(key),
                     _ => {}
                 }
             }
@@ -63,16 +64,13 @@ pub fn render_geometry<C: sdl2::render::RenderTarget>(
         let ind_num = indices.len() as i32;
         let inds_ptr = match ind_num {
             0 => ptr::null(),
-            _ => (&indices[0]),
+            _ => &indices[0],
         };
         let ret = unsafe {
             sys::SDL_RenderGeometry(sdl_renderer, tex_ptr, vers_ptr, vers_num, inds_ptr, ind_num)
         };
         if ret == -1 {
-            return Err(format!(
-                "Failed at SDL_RenderGeometry {}",
-                sdl2::get_error()
-            ));
+            return Err(format!("Failed at SDL_RenderGeometry {}", sdl2::get_error()));
         }
     }
 

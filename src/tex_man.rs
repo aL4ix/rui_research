@@ -4,7 +4,6 @@ use std::sync::{Arc, Mutex};
 
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::TextureCreator;
-use sdl2::surface::Surface;
 use sdl2::video::WindowContext;
 
 use crate::texture::soft_texture_default_destroy;
@@ -27,15 +26,16 @@ impl TextureManager {
         println!("Created tex: {}", self.last_id);
         self.last_id
     }
-    pub fn reserve_from_surface(&mut self, tex_creator: &TextureCreator<WindowContext>, surface: Surface)
-                                -> Result<(Arc<Mutex<sdl2::render::Texture>>, usize), Box<dyn Error>> {
-        let arc = Arc::new(Mutex::new(tex_creator.create_texture_from_surface(surface)?));
-        let id = self.push(&arc);
-        Ok((arc, id))
-    }
-    pub fn reserve(&mut self, tex_creator: &TextureCreator<WindowContext>, width: u32, height: u32)
+    // pub fn reserve_from_surface(&mut self, tex_creator: &TextureCreator<WindowContext>, surface: Surface)
+    //                             -> Result<(Arc<Mutex<sdl2::render::Texture>>, usize), Box<dyn Error>> {
+    //     let arc = Arc::new(Mutex::new(tex_creator.create_texture_from_surface(surface)?));
+    //     let id = self.push(&arc);
+    //     Ok((arc, id))
+    // }
+    pub fn reserve(&mut self, tex_creator: &TextureCreator<WindowContext>, width: u32, height: u32,
+                   format: PixelFormatEnum)
                    -> Result<(Arc<Mutex<sdl2::render::Texture>>, usize), Box<dyn Error>> {
-        let tex = tex_creator.create_texture_static(PixelFormatEnum::RGBA32, width, height)?;
+        let tex = tex_creator.create_texture_static(format, width, height)?;
         let arc = Arc::new(Mutex::new(tex));
         let id = self.push(&arc);
         Ok((arc, id))

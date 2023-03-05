@@ -3,10 +3,13 @@ use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
 use sdl2::rect::Rect;
-use sdl2::render::{Texture, WindowCanvas};
+use sdl2::render::{TextureCreator, WindowCanvas};
 use sdl2::sys;
+use sdl2::video::WindowContext;
 
 use crate::sdl_engine::render_geometry;
+use crate::tex_man::TextureManager;
+use crate::texture::SoftTexture;
 
 #[derive(Clone, Debug)]
 pub struct Color {
@@ -41,17 +44,11 @@ impl Debug for Polygon {
             .map(|i| format!("{}", i))
             .collect::<Vec<String>>()
             .join(" ,");
-        write!(f, "SDLPolygon {{ vers: [{}], inds: [{}] }}", vers, inds)
+        write!(f, "Polygon {{ vers: [{}], inds: [{}] }}", vers, inds)
     }
 }
 
 impl Polygon {
-    pub fn new() -> Polygon {
-        Polygon {
-            vers: vec![],
-            inds: vec![],
-        }
-    }
     pub fn new_for_rect_texture(r: Rect, alpha: u8) -> Polygon {
         let alpha_for_all_vertices = alpha;
         let top_left = sys::SDL_Vertex {
@@ -129,17 +126,10 @@ impl Polygon {
 
 
 /// A representation of SDL's geometry as defined in SDL_RenderGeometry
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TexturedPolygon {
     pub(crate) poly: Polygon,
-    pub(crate) tex: Option<Arc<Mutex<Texture>>>,
-}
-
-impl Debug for TexturedPolygon {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let poly = format!("{:?}", self.poly);
-        write!(f, "SDLPolygon {{ {} }}", poly)
-    }
+    pub(crate) tex: Option<Arc<Mutex<dyn SoftTexture>>>,
 }
 
 /// It's a group of multiple polygons
@@ -151,10 +141,15 @@ pub struct Body {
 }
 
 impl Body {
-    pub fn render(&self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn std::error::Error)>> {
-        for tex_poly in &self.polygons {
-            if let Some(t) = &tex_poly.tex {
-                let guard = t.lock().unwrap();
+    pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
+                  tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
+        for tex_poly in &mut self.polygons {
+            // println!("{:?}", tex_poly);
+            if let Some(arc_tex) = &mut tex_poly.tex {
+                let mut guard = arc_tex.lock().unwrap();
+                // println!("{:?}", guard);
+                let rendered_tex = guard.render(tex_creator, tex_man)?;
+                let guard = rendered_tex.lock().unwrap();
                 let tex = Some(guard.deref());
                 render_geometry(canvas, tex, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
             } else {
@@ -163,6 +158,12 @@ impl Body {
             }
         }
         Ok(())
+    }
+    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Body {
+        Body {
+            class: class.to_string(),
+            polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
+        }
     }
 }
 
