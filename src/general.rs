@@ -149,7 +149,7 @@ impl Body {
                 let mut guard = arc_tex.lock().unwrap();
                 // println!("{:?}", guard);
                 let rendered_tex = guard.render(tex_creator, tex_man)?;
-                let guard = rendered_tex.lock().unwrap();
+                let guard = rendered_tex.borrow();
                 let tex = Some(guard.deref());
                 render_geometry(canvas, tex, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
             } else {

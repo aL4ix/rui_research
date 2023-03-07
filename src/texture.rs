@@ -1,7 +1,8 @@
+use std::cell::RefCell;
 use std::error::Error;
 use std::fmt::{Debug, Formatter};
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 use sdl2::pixels::{PixelFormat, PixelFormatEnum};
 use sdl2::rect::Rect;
@@ -21,7 +22,7 @@ use crate::tex_man::TextureManager;
 pub trait SoftTexture: Send {
     fn id(&self) -> usize;
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Arc<Mutex<Texture>>, Box<dyn Error>>;
+              -> Result<Rc<RefCell<Texture>>, Box<dyn Error>>;
     fn class(&self) -> &str;
     fn width(&self) -> u32;
     fn height(&self) -> u32;
@@ -56,16 +57,13 @@ impl Debug for dyn SoftTexture {
 /// Note _tex_creator is a reference, which means it disallows multi-threaded usages.
 /// Also we simply exit if this is not the last Arc or Mutex for this tex, otherwise the next caller
 /// to lock the mutex would see undefined memory.
-pub fn soft_texture_default_destroy(tex: Arc<Mutex<Texture>>,
+pub fn soft_texture_default_destroy(tex: Rc<RefCell<Texture>>,
                                     _tex_creator: &TextureCreator<WindowContext>) {
-    let mutex = match Arc::try_unwrap(tex) {
+    let refcell = match Rc::try_unwrap(tex) {
         Ok(x) => x,
         Err(_) => return, // Maybe panic here
     };
-    let internal_tex = match mutex.into_inner() {
-        Ok(x) => x,
-        Err(_) => return, // Maybe panic here
-    };
+    let internal_tex = refcell.into_inner();
     // if _tex_creator.upgrade().is_none() {
     //     return;
     // }
@@ -78,7 +76,7 @@ pub fn soft_texture_default_destroy(tex: Arc<Mutex<Texture>>,
 // #[derive(Clone)]
 pub struct RAMSoftTexture {
     id: usize,
-    tex: Option<Arc<Mutex<Texture>>>,
+    tex: Option<Rc<RefCell<Texture>>>,
     width: u32,
     height: u32,
     poly: Polygon,
@@ -113,19 +111,19 @@ impl SoftTexture for RAMSoftTexture {
         self.id
     }
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
+              -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if let None = self.tex {
             println!("{}", self.class());
-            let (arc_tex, id) = tex_man.reserve(tex_creator, self.width,
-                                                self.height, self.pixel_format)?;
+            let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
+                                                   self.height, self.pixel_format)?;
             {
-                let mut guard = arc_tex.lock().unwrap();
+                let mut guard = rc_tex.borrow_mut();
                 guard.update(None, &self.raw_data, self.pitch as usize)?;
             }
             self.id = id;
             self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
                                                       255);
-            self.tex = Some(arc_tex);
+            self.tex = Some(rc_tex);
             self.raw_data = vec![]; // Removing raw_data since it could be large
         }
         match &self.tex {
@@ -161,7 +159,7 @@ unsafe impl Send for RAMSoftTexture {}
 // #[derive(Clone)]
 pub struct AlphaSoftTexture {
     id: usize,
-    tex: Option<Arc<Mutex<Texture>>>,
+    tex: Option<Rc<RefCell<Texture>>>,
     raw_data: Vec<u8>,
     width: u32,
     height: u32,
@@ -219,13 +217,13 @@ impl SoftTexture for AlphaSoftTexture {
         self.id
     }
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Arc<Mutex<Texture>>, Box<dyn Error>> {
+              -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if let None = self.tex {
             println!("{}", self.class());
-            let (arc_tex, id) = tex_man.reserve(tex_creator, self.width,
-                                                self.height, PixelFormatEnum::RGBA32)?;
+            let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
+                                                   self.height, PixelFormatEnum::RGBA32)?;
             {
-                let mut tex = arc_tex.lock().unwrap();
+                let mut tex = rc_tex.borrow_mut();
                 tex.set_blend_mode(BlendMode::Blend);
                 Self::update_texture_from_alpha(&Rect::new(0, 0, self.width, self.height),
                                                 &mut tex,
@@ -235,7 +233,7 @@ impl SoftTexture for AlphaSoftTexture {
             self.id = id;
             self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
                                                       self.color.a);
-            self.tex = Some(arc_tex.clone());
+            self.tex = Some(rc_tex.clone());
             self.raw_data = vec![]; // freeing raw_data from RAM since it could be large
         }
         match &self.tex {

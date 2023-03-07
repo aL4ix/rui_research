@@ -1,6 +1,7 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::TextureCreator;
@@ -9,8 +10,7 @@ use sdl2::video::WindowContext;
 use crate::texture::soft_texture_default_destroy;
 
 pub struct TextureManager {
-    // TODO Maybe change to Rc
-    texs: HashMap<usize, Arc<Mutex<sdl2::render::Texture>>>,
+    texs: HashMap<usize, Rc<RefCell<sdl2::render::Texture>>>,
     last_id: usize,
 }
 
@@ -21,7 +21,7 @@ impl TextureManager {
             last_id: 0,
         }
     }
-    fn push(&mut self, tex: &Arc<Mutex<sdl2::render::Texture>>) -> usize {
+    fn push(&mut self, tex: &Rc<RefCell<sdl2::render::Texture>>) -> usize {
         self.last_id += 1;
         self.texs.insert(self.last_id, tex.clone());
         println!("Created tex: {}", self.last_id);
@@ -35,16 +35,16 @@ impl TextureManager {
     // }
     pub fn reserve(&mut self, tex_creator: &TextureCreator<WindowContext>, width: u32, height: u32,
                    format: PixelFormatEnum)
-                   -> Result<(Arc<Mutex<sdl2::render::Texture>>, usize), Box<dyn Error>> {
+                   -> Result<(Rc<RefCell<sdl2::render::Texture>>, usize), Box<dyn Error>> {
         let tex = tex_creator.create_texture_static(format, width, height)?;
-        let arc = Arc::new(Mutex::new(tex));
-        let id = self.push(&arc);
-        Ok((arc, id))
+        let rc = Rc::new(RefCell::new(tex));
+        let id = self.push(&rc);
+        Ok((rc, id))
     }
     pub fn garbage_collect(&mut self, tex_creator: TextureCreator<WindowContext>) {
         let mut garbage = vec![];
         for (id, tex) in &self.texs {
-            if Arc::strong_count(&tex) == 1 {
+            if Rc::strong_count(&tex) == 1 {
                 garbage.push(*id);
             }
         }
