@@ -8,11 +8,12 @@ use mopa::{Any, mopafy};
 
 use crate::general::{Body, Color, Polygon, Size2D, TexturedPolygon};
 use crate::texture::{AlphaSoftTexture, RAMSoftTexture, SoftTexture};
-use crate::window::WindowBuilder;
+use crate::window::Window;
 
-pub trait Widget: Any + Debug {
+pub trait Widget: Any + Debug + Send {
+    // TODO global ids
     fn id(&self) -> usize;
-    fn build(&mut self) -> Result<Body, Box<(dyn Error)>>;
+    fn build(&mut self) -> Body;
 }
 
 mopafy!(Widget);
@@ -43,9 +44,7 @@ impl Widget for Image {
     fn id(&self) -> usize {
         self.id
     }
-
-    fn build(&mut self)
-             -> Result<Body, Box<(dyn Error)>> {
+    fn build(&mut self) -> Body {
         if self.needs_update {
             self.body.polygons = vec![TexturedPolygon {
                 poly: Polygon { vers: vec![], inds: vec![] },
@@ -53,7 +52,7 @@ impl Widget for Image {
             }];
             self.needs_update = false;
         }
-        Ok(self.body.clone())
+        self.body.clone()
     }
 }
 
@@ -98,13 +97,13 @@ impl Text {
         self.text = text.to_string();
         self.needs_update = true;
     }
-    pub fn get_by_id(window: &mut WindowBuilder, id: usize) -> Result<&mut Text, Box<dyn Error>> {
+    pub fn get_by_id(window: &mut Window, id: usize) -> Result<&mut Text, Box<dyn Error>> {
         if let Some(widget) = window.get_widget_by_id(id) {
             return if let Some(text) = widget.downcast_mut::<Text>() {
                 Ok(text)
             } else {
                 Err(Box::from("Not a Text"))
-            }
+            };
         }
         Err(Box::from("Not found"))
     }
@@ -167,9 +166,7 @@ impl Widget for Text {
     fn id(&self) -> usize {
         self.id
     }
-
-    fn build(&mut self)
-             -> Result<Body, Box<(dyn Error)>> {
+    fn build(&mut self) -> Body {
         if self.needs_update {
             let (tex, body) = Text::get_tex_and_body(&self.text,
                                                      self.font_size, self.font.clone(),
@@ -178,6 +175,6 @@ impl Widget for Text {
             self.body = body;
             self.needs_update = false;
         }
-        Ok(self.body.clone())
+        self.body.clone()
     }
 }

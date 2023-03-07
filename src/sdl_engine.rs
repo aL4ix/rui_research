@@ -8,7 +8,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::render::{Canvas, Texture};
 
-use crate::window::WindowBuilder;
+use crate::window::Window;
 
 pub struct SDLEngine {}
 
@@ -16,10 +16,10 @@ impl SDLEngine {
     pub fn main_loop(_windows_dsl: String) -> Result<(), Box<(dyn std::error::Error)>> {
         let sdl_context = init()?;
         let sdl_video = sdl_context.video()?;
-        let window = sdl_video.window("Title", 800, 600).build()?;
-        let mut canvas = window.into_canvas().build()?;
+        let sdl_window = sdl_video.window("Title", 800, 600).build()?;
+        let mut canvas = sdl_window.into_canvas().build()?;
 
-        let mut window_builder = WindowBuilder::new()?;
+        let mut window = Window::new()?;
 
         let mut event_pump = sdl_context.event_pump()?;
         'running: loop {
@@ -30,15 +30,16 @@ impl SDLEngine {
                         keycode: Some(Keycode::Escape),
                         ..
                     } => break 'running,
-                    Event::KeyDown {keycode: Some(key), ..} => window_builder.key_down(key),
+                    Event::KeyDown {keycode: Some(key), ..} => window.key_down(key),
                     _ => {}
                 }
             }
+            window.build()?;
 
             canvas.set_draw_color(Color::RGB(0, 0, 0));
             canvas.clear();
 
-            window_builder.render(&mut canvas)?;
+            window.render(&mut canvas)?;
 
             canvas.present();
             sleep(Duration::new(0, 1_000_000_000u32 / 30));

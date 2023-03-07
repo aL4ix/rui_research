@@ -1,6 +1,5 @@
 use std::{fs, thread};
 use std::collections::btree_map::BTreeMap;
-// use std::collections::BTreeMap;
 use std::error::Error;
 use std::path::Path;
 use std::sync::mpsc;
@@ -9,17 +8,18 @@ use glyph_brush::ab_glyph::FontArc;
 use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 
-use crate::general::Color;
+use crate::general::{Body, Color};
 use crate::tex_man::TextureManager;
 use crate::widgets::*;
 
-pub struct WindowBuilder {
+pub struct Window {
     widgets: BTreeMap<usize, Box<dyn Widget>>,
+    bodies: BTreeMap<usize, Body>,
     tex_man: TextureManager,
 }
 
-impl WindowBuilder {
-    pub fn new() -> Result<WindowBuilder, Box<(dyn Error)>> {
+impl Window {
+    pub fn new() -> Result<Window, Box<(dyn Error)>> {
         let mut widgets: BTreeMap<usize, Box<dyn Widget>> = BTreeMap::new();
 
         let (tx, rx) = mpsc::channel();
@@ -29,6 +29,7 @@ impl WindowBuilder {
             tx.send(image).unwrap();
         });
         let image = rx.iter().next().unwrap();
+        // TODO what to do with errors in widget constructors
         widgets.insert(0, Box::new(image?));
 
         let font_name = "Nouveau_IBM.ttf".to_string();
@@ -38,15 +39,35 @@ impl WindowBuilder {
                              Color { r: 50, g: 50, b: 255, a: 200 });
         widgets.insert(1, Box::new(text));
 
-        Ok(WindowBuilder {
+        Ok(Window {
             widgets,
+            bodies: Default::default(),
             tex_man: TextureManager::new(),
         })
     }
+    pub fn build(&mut self) -> Result<(), Box<(dyn Error)>> {
+        // TODO Check if new widgets are needed based on DSL
+        self.bodies.clear();
+        let mut split = self.widgets.split_off(&0);
+        let (tx, rx) = mpsc::channel();
+        thread::spawn(move || {
+            let mut bodies = BTreeMap::new();
+            for (id, widget) in &mut split {
+                let body = widget.build();
+                bodies.insert(*id, body);
+            }
+            tx.send((bodies, split)).unwrap();
+        });
+        let (mut bodies, mut split) = rx.iter().next().unwrap();
+        self.widgets.append(&mut split);
+        self.bodies.append(&mut bodies);
+
+        // TODO Delete not needed widgets
+        Ok(())
+    }
     pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn Error)>> {
         let tex_creator = canvas.texture_creator();
-        for (_id, widget) in &mut self.widgets {
-            let mut body = widget.build()?;
+        for (_id, body) in &mut self.bodies {
             body.render(canvas, &tex_creator, &mut self.tex_man)?;
         }
 
@@ -62,7 +83,10 @@ impl WindowBuilder {
         None
     }
     pub fn key_down(&mut self, key: Keycode) {
-        let text = Text::get_by_id(self, 2).expect("key_down");
-        text.set_text(&key.to_string())
+        if let Ok(text) = Text::get_by_id(self, 2) {
+            text.set_text(&key.to_string())
+        } else {
+            panic!("key_down")
+        }
     }
 }

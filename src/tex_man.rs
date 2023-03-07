@@ -9,6 +9,7 @@ use sdl2::video::WindowContext;
 use crate::texture::soft_texture_default_destroy;
 
 pub struct TextureManager {
+    // TODO Maybe change to Rc
     texs: HashMap<usize, Arc<Mutex<sdl2::render::Texture>>>,
     last_id: usize,
 }
