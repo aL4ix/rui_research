@@ -33,5 +33,5 @@ Loop {
 fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let rui_dsl = String::from("");
     SDLEngine::main_loop(rui_dsl)?;
-    return Ok(());
+    Ok(())
 }

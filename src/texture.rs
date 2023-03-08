@@ -88,7 +88,7 @@ pub struct RAMSoftTexture {
 impl RAMSoftTexture {
     pub fn from_bmp(path: Box<Path>) -> Result<RAMSoftTexture, String> {
         let surface = Surface::load_bmp(path)?;
-        let raw_data = Vec::from(surface.with_lock(|x: &[u8]| Vec::from(x)));
+        let raw_data = surface.with_lock(|x: &[u8]| Vec::from(x));
         let width = surface.width();
         let height = surface.height();
         let pitch = surface.pitch();
@@ -112,7 +112,7 @@ impl SoftTexture for RAMSoftTexture {
     }
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
-        if let None = self.tex {
+        if self.tex.is_none() {
             println!("{}", self.class());
             let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
                                                    self.height, self.pixel_format)?;
@@ -218,7 +218,7 @@ impl SoftTexture for AlphaSoftTexture {
     }
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
-        if let None = self.tex {
+        if self.tex.is_none() {
             println!("{}", self.class());
             let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
                                                    self.height, PixelFormatEnum::RGBA32)?;
@@ -233,7 +233,7 @@ impl SoftTexture for AlphaSoftTexture {
             self.id = id;
             self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
                                                       self.color.a);
-            self.tex = Some(rc_tex.clone());
+            self.tex = Some(rc_tex);
             self.raw_data = vec![]; // freeing raw_data from RAM since it could be large
         }
         match &self.tex {

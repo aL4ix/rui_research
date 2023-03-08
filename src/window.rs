@@ -33,7 +33,7 @@ impl Window {
         widgets.insert(0, Box::new(image?));
 
         let font_name = "Nouveau_IBM.ttf".to_string();
-        let file = fs::read(font_name.clone())?;
+        let file = fs::read(font_name)?;
         let font = FontArc::try_from_vec(file)?;
         let text = Text::new(2, "RUI", 300.0, font,
                              Color { r: 50, g: 50, b: 255, a: 200 });
@@ -67,7 +67,7 @@ impl Window {
     }
     pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn Error)>> {
         let tex_creator = canvas.texture_creator();
-        for (_id, body) in &mut self.bodies {
+        for body in &mut self.bodies.values_mut() {
             body.render(canvas, &tex_creator, &mut self.tex_man)?;
         }
 
@@ -75,12 +75,7 @@ impl Window {
         Ok(())
     }
     pub fn get_widget_by_id(&mut self, id: usize) -> Option<&mut Box<dyn Widget>> {
-        for (_, widget) in &mut self.widgets {
-            if widget.id() == id {
-                return Some(widget);
-            }
-        }
-        None
+        self.widgets.values_mut().find(|widget| widget.id() == id)
     }
     pub fn key_down(&mut self, key: Keycode) {
         if let Ok(text) = Text::get_by_id(self, 2) {

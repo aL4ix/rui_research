@@ -108,7 +108,7 @@ impl Text {
         Err(Box::from("Not found"))
     }
     fn text_to_alpha_data(text: &str, font_size: f32, font: FontArc) -> (Vec<u8>, u32, u32) {
-        let bounds = Self::get_texture_bounds(&text, font_size, font.clone());
+        let bounds = Self::get_texture_bounds(text, font_size, font.clone());
         println!("{}() {:?}", stringify!(text_to_alpha), bounds);
         let width = bounds.width;
         let height = bounds.height;
