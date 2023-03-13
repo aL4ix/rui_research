@@ -1,50 +1,70 @@
 use std::ptr;
-use std::thread::sleep;
-use std::time::Duration;
 
-use sdl2::{init, sys};
+use emscripten_main_loop::MainLoopEvent;
+use emscripten_main_loop::MainLoopEvent::{Continue, Terminate};
+use sdl2::{EventPump, init, sys, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use sdl2::render::{Canvas, Texture};
+use sdl2::render::{Canvas, Texture, WindowCanvas};
 
 use crate::window::Window;
 
-pub struct SDLEngine {}
+#[allow(dead_code)]
+pub struct SDLEngine {
+    sdl_context: sdl2::Sdl,
+    sdl_video: VideoSubsystem,
+    canvas: WindowCanvas,
+    window: Window,
+    event_pump: EventPump,
+}
 
 impl SDLEngine {
-    pub fn main_loop(_windows_dsl: String) -> Result<(), Box<(dyn std::error::Error)>> {
+    pub fn new_main_loop(_windows_dsl: String) -> Result<(), Box<(dyn std::error::Error)>> {
         let sdl_context = init()?;
         let sdl_video = sdl_context.video()?;
         let sdl_window = sdl_video.window("Title", 800, 600).build()?;
-        let mut canvas = sdl_window.into_canvas().build()?;
+        let canvas = sdl_window.into_canvas().build()?;
 
-        let mut window = Window::new()?;
+        let window = Window::new()?;
 
-        let mut event_pump = sdl_context.event_pump()?;
-        'running: loop {
-            for event in event_pump.poll_iter() {
-                match event {
-                    Event::Quit { .. }
-                    | Event::KeyDown {
-                        keycode: Some(Keycode::Escape),
-                        ..
-                    } => break 'running,
-                    Event::KeyDown {keycode: Some(key), ..} => window.key_down(key),
-                    _ => {}
-                }
-            }
-            window.build()?;
+        let event_pump = sdl_context.event_pump()?;
+        let sdl_engine = SDLEngine {
+            sdl_context,
+            sdl_video,
+            canvas,
+            window,
+            event_pump,
+        };
 
-            canvas.set_draw_color(Color::RGB(0, 0, 0));
-            canvas.clear();
-
-            window.render(&mut canvas)?;
-
-            canvas.present();
-            sleep(Duration::new(0, 1_000_000_000u32 / 30));
-        }
+        emscripten_main_loop::run(sdl_engine);
         Ok(())
+    }
+}
+
+impl emscripten_main_loop::MainLoop for SDLEngine {
+    fn main_loop(&mut self) -> MainLoopEvent {
+        for event in self.event_pump.poll_iter() {
+            match event {
+                Event::Quit { .. }
+                | Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => return Terminate,
+                Event::KeyDown { keycode: Some(key), .. } => self.window.key_down(key),
+                _ => {}
+            }
+        }
+        self.window.build().expect("Build()");
+
+        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
+        self.canvas.clear();
+
+        self.window.render(&mut self.canvas).expect("Render()");
+
+        self.canvas.present();
+        // sleep(Duration::new(0, 1_000_000_000u32 / 30));
+        Continue
     }
 }
 

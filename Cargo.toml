@@ -9,3 +9,4 @@ edition = "2021"
 sdl2 = { path = "../rust-sdl2-2.0.18", features = ["unsafe_textures"] }
 glyph_brush = "0.7.7"
 mopa = "0.2.2"
+emscripten_main_loop = "0.1.1"

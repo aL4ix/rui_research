@@ -31,7 +31,8 @@ Loop {
  */
 
 fn main() -> Result<(), Box<(dyn std::error::Error)>> {
+    std::env::set_var("RUST_BACKTRACE", "full");
     let rui_dsl = String::from("");
-    SDLEngine::main_loop(rui_dsl)?;
+    SDLEngine::new_main_loop(rui_dsl)?;
     Ok(())
 }

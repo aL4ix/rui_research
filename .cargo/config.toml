@@ -1,0 +1,6 @@
+[target.wasm32-unknown-emscripten]
+rustflags = [
+    "-C", "link-arg=-s", "-C", "link-arg=USE_SDL=2",
+    "-C", "link-arg=--preload-file", "-C", "link-arg=assets",
+    "-C", "link-arg=-otarget/deploy/rui.html",
+]

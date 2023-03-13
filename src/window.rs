@@ -1,8 +1,7 @@
-use std::{fs, thread};
+use std::fs;
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
 use std::path::Path;
-use std::sync::mpsc;
 
 use glyph_brush::ab_glyph::FontArc;
 use sdl2::keyboard::Keycode;
@@ -22,17 +21,22 @@ impl Window {
     pub fn new() -> Result<Window, Box<(dyn Error)>> {
         let mut widgets: BTreeMap<usize, Box<dyn Widget>> = BTreeMap::new();
 
-        let (tx, rx) = mpsc::channel();
-        thread::spawn(move || { // Lets test if it's possible to create widgets from other threads
-            let image = Image::from_bmp(1, Box::from(Path::new("image.bmp")));
+        // Multi-threaded
+        // let (tx, rx) = mpsc::channel();
+        // thread::spawn(move || { // Lets test if it's possible to create widgets from other threads
+        //     let image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")));
+        //
+        //     tx.send(image).unwrap();
+        // });
+        // let image = rx.iter().next().unwrap();
 
-            tx.send(image).unwrap();
-        });
-        let image = rx.iter().next().unwrap();
+        // Single-threaded
+        let image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")));
+
         // TODO what to do with errors in widget constructors
         widgets.insert(0, Box::new(image?));
 
-        let font_name = "Nouveau_IBM.ttf".to_string();
+        let font_name = "assets/Nouveau_IBM.ttf".to_string();
         let file = fs::read(font_name)?;
         let font = FontArc::try_from_vec(file)?;
         let text = Text::new(2, "RUI", 300.0, font,
@@ -48,19 +52,27 @@ impl Window {
     pub fn build(&mut self) -> Result<(), Box<(dyn Error)>> {
         // TODO Check if new widgets are needed based on DSL
         self.bodies.clear();
-        let mut split = self.widgets.split_off(&0);
-        let (tx, rx) = mpsc::channel();
-        thread::spawn(move || {
-            let mut bodies = BTreeMap::new();
-            for (id, widget) in &mut split {
-                let body = widget.build();
-                bodies.insert(*id, body);
-            }
-            tx.send((bodies, split)).unwrap();
-        });
-        let (mut bodies, mut split) = rx.iter().next().unwrap();
-        self.widgets.append(&mut split);
-        self.bodies.append(&mut bodies);
+
+        // Multi-threaded
+        // let mut split = self.widgets.split_off(&0);
+        // let (tx, rx) = mpsc::channel();
+        // thread::spawn(move || {
+        //     let mut bodies = BTreeMap::new();
+        //     for (id, widget) in &mut split {
+        //         let body = widget.build();
+        //         bodies.insert(*id, body);
+        //     }
+        //     tx.send((bodies, split)).unwrap();
+        // });
+        // let (mut bodies, mut split) = rx.iter().next().unwrap();
+        // self.widgets.append(&mut split);
+        // self.bodies.append(&mut bodies);
+
+        // Single-threaded
+        for (id, widget) in &mut self.widgets {
+            let body = widget.build();
+            self.bodies.insert(*id, body);
+        }
 
         // TODO Delete not needed widgets
         Ok(())
