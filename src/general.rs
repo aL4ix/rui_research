@@ -144,10 +144,10 @@ impl Body {
     pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
                   tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
         for tex_poly in &mut self.polygons {
-            // println!("{:?}", tex_poly);
+            // info!("{:?}", tex_poly);
             if let Some(arc_tex) = &mut tex_poly.tex {
                 let mut guard = arc_tex.lock().unwrap();
-                // println!("{:?}", guard);
+                // info!("{:?}", guard);
                 let rendered_tex = guard.render(tex_creator, tex_man)?;
                 let guard = rendered_tex.borrow();
                 let tex = Some(guard.deref());

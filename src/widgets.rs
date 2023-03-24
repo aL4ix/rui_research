@@ -4,6 +4,7 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use glyph_brush::ab_glyph::{Font, FontArc, ScaleFont};
+use log::info;
 use mopa::{Any, mopafy};
 
 use crate::general::{Body, Color, Polygon, Size2D, TexturedPolygon};
@@ -109,7 +110,7 @@ impl Text {
     }
     fn text_to_alpha_data(text: &str, font_size: f32, font: FontArc) -> (Vec<u8>, u32, u32) {
         let bounds = Self::get_texture_bounds(text, font_size, font.clone());
-        println!("{}() {:?}", stringify!(text_to_alpha), bounds);
+        info!("{}() {:?}", stringify!(text_to_alpha), bounds);
         let width = bounds.width;
         let height = bounds.height;
         let scaled_font = font.as_scaled(font_size);
@@ -126,7 +127,7 @@ impl Text {
             // let v_advance = scaled_font.v_advance(glyph_id);
             let v_side_bearing = scaled_font.v_side_bearing(glyph_id);
             let top_space = -glyph_bounds.min.y - v_side_bearing;
-            // println!(
+            // info!(
             //     "{} {} {} {} {} {:?}",
             //     ch, width, height, v_advance, v_side_bearing, glyph_bounds
             // );
@@ -139,7 +140,7 @@ impl Text {
                     let dx = x as usize + accumulated_x.round() as usize;
                     let dy = y as usize + top_space.round() as usize;
                     raw_data[dy * width as usize + dx] = alpha;
-                    //println!("{} {} {}", x, y, c)
+                    //info!("{} {} {}", x, y, c)
                 });
             }
 

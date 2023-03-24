@@ -32,6 +32,10 @@ Loop {
 
 fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     std::env::set_var("RUST_BACKTRACE", "full");
+    // std::env::set_var("RUST_LOG", "info");
+    env_logger::builder()
+        .format_timestamp(None)
+        .init();
     let rui_dsl = String::from("");
     SDLEngine::new_main_loop(rui_dsl)?;
     Ok(())

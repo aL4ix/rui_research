@@ -4,6 +4,7 @@ use std::fmt::{Debug, Formatter};
 use std::path::Path;
 use std::rc::Rc;
 
+use log::info;
 use sdl2::pixels::{PixelFormat, PixelFormatEnum};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Texture, TextureCreator};
@@ -27,7 +28,6 @@ pub trait SoftTexture: Send {
     fn width(&self) -> u32;
     fn height(&self) -> u32;
     fn poly(&self) -> &Polygon;
-    // fn clone_dyn(&self) -> Box<dyn SoftTexture>;
     fn fmt_dyn(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let id = format!("{:?}", self.id());
         let class = format!("{:?}", self.class());
@@ -44,13 +44,6 @@ impl Debug for dyn SoftTexture {
         self.fmt_dyn(f)
     }
 }
-
-// TODO maybe we don't need this
-// impl Clone for Box<dyn SoftTexture> {
-//     fn clone(&self) -> Self {
-//         self.clone_dyn()
-//     }
-// }
 
 /// According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
 /// tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
@@ -70,10 +63,9 @@ pub fn soft_texture_default_destroy(tex: Rc<RefCell<Texture>>,
     unsafe {
         internal_tex.destroy()
     }
-    println!("Tex destroyed!")
+    info!("Tex destroyed!");
 }
 
-// #[derive(Clone)]
 pub struct RAMSoftTexture {
     id: usize,
     tex: Option<Rc<RefCell<Texture>>>,
@@ -113,9 +105,9 @@ impl SoftTexture for RAMSoftTexture {
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if self.tex.is_none() {
-            println!("{}", self.class());
+            info!("{}", self.class());
             let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
-                                                   self.height, self.pixel_format)?;
+                                               self.height, self.pixel_format)?;
             {
                 let mut guard = rc_tex.borrow_mut();
                 guard.update(None, &self.raw_data, self.pitch as usize)?;
@@ -143,10 +135,6 @@ impl SoftTexture for RAMSoftTexture {
     fn poly(&self) -> &Polygon {
         &self.poly
     }
-
-    // fn clone_dyn(&self) -> Box<dyn SoftTexture> {
-    //     Box::new(self.clone())
-    // }
 }
 
 /// SDL_Texture has no Send implemented, and shouldn't because SDL2 doesn't allow to render in a
@@ -156,7 +144,6 @@ unsafe impl Send for RAMSoftTexture {}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// #[derive(Clone)]
 pub struct AlphaSoftTexture {
     id: usize,
     tex: Option<Rc<RefCell<Texture>>>,
@@ -190,7 +177,7 @@ impl AlphaSoftTexture {
         raw_data: &Vec<u8>,
         color: &Color,
     ) -> Result<(), Box<dyn Error>> {
-        println!("update_texture_from_alpha()");
+        info!("update_texture_from_alpha()");
         let format_enum = texture.query().format;
         let bytes_per_pixel = format_enum.byte_size_per_pixel();
         let pitch = bytes_per_pixel * rect.width() as usize;
@@ -201,7 +188,7 @@ impl AlphaSoftTexture {
             b: color.b,
             a: 0,
         };
-        let mut new_data: Vec<u8> = vec![];
+        let mut new_data: Vec<u8> = Vec::with_capacity(raw_data.len() * 4);
         for alpha in raw_data {
             sdl_color.a = *alpha;
             let native = sdl_color.to_u32(&pixel_format).to_ne_bytes();
@@ -219,9 +206,9 @@ impl SoftTexture for AlphaSoftTexture {
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if self.tex.is_none() {
-            println!("{}", self.class());
+            info!("{}", self.class());
             let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
-                                                   self.height, PixelFormatEnum::RGBA32)?;
+                                               self.height, PixelFormatEnum::RGBA32)?;
             {
                 let mut tex = rc_tex.borrow_mut();
                 tex.set_blend_mode(BlendMode::Blend);
@@ -253,10 +240,6 @@ impl SoftTexture for AlphaSoftTexture {
     fn poly(&self) -> &Polygon {
         &self.poly
     }
-
-    // fn clone_dyn(&self) -> Box<dyn SoftTexture> {
-    //     Box::new(self.clone())
-    // }
 }
 
 impl Debug for AlphaSoftTexture {
