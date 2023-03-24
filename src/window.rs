@@ -1,9 +1,11 @@
-use std::fs;
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
+use std::fs;
 use std::path::Path;
 
 use glyph_brush::ab_glyph::FontArc;
+#[cfg(not(target_family = "wasm"))]
+use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 
@@ -53,26 +55,14 @@ impl Window {
         // TODO Check if new widgets are needed based on DSL
         self.bodies.clear();
 
-        // Multi-threaded
-        // let mut split = self.widgets.split_off(&0);
-        // let (tx, rx) = mpsc::channel();
-        // thread::spawn(move || {
-        //     let mut bodies = BTreeMap::new();
-        //     for (id, widget) in &mut split {
-        //         let body = widget.build();
-        //         bodies.insert(*id, body);
-        //     }
-        //     tx.send((bodies, split)).unwrap();
-        // });
-        // let (mut bodies, mut split) = rx.iter().next().unwrap();
-        // self.widgets.append(&mut split);
-        // self.bodies.append(&mut bodies);
+        #[cfg(not(target_family = "wasm"))]
+            let functional_iter = self.widgets.par_iter_mut();
+        #[cfg(target_family = "wasm")]
+            let functional_iter = self.widgets.iter_mut();
 
-        // Single-threaded
-        for (id, widget) in &mut self.widgets {
-            let body = widget.build();
-            self.bodies.insert(*id, body);
-        }
+        self.bodies = functional_iter
+            .map(|w| (*w.0, w.1.build()))
+            .collect();
 
         // TODO Delete not needed widgets
         Ok(())
