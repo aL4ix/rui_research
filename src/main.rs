@@ -1,11 +1,8 @@
-use crate::sdl_engine::SDLEngine;
+use env_logger::Target;
+use std::io::Write;
 
-mod texture;
-mod widgets;
-mod window;
-mod sdl_engine;
-mod tex_man;
-mod general;
+use crate::sdl_engine::SDLEngine;
+use crate::utils::SDLLoggerPipe;
 
 /*
 Start with one DSL, it could be empty, declare it old_dsl
@@ -19,7 +16,7 @@ Loop {
         then if not send it to the focused component and let that propagate it to its children.
         The idea is defaults will change DSL, and events' programming will too. No access to the
         built components. We need a different name for DSL compo and built compo. Maybe element,
-        widget and body.
+        widget and geometry.
 
     build() (multithreaded)
         Compare DSL with old_dsl from previous frame
@@ -30,12 +27,21 @@ Loop {
 }
  */
 
-fn main() -> Result<(), Box<(dyn std::error::Error)>> {
+/*
+In reality the main() for the binary is inside bin.rs and for the library is in lib.rs, but both
+end up calling this main()
+ */
+pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     std::env::set_var("RUST_BACKTRACE", "full");
-    // std::env::set_var("RUST_LOG", "info");
+    std::env::set_var("RUST_LOG", "info");
     env_logger::builder()
         .format_timestamp(None)
+        .format(|buf, record| {
+            writeln!(buf, "{}: {}", record.target(), record.args())
+        })
+        .target(Target::Pipe(Box::new(SDLLoggerPipe)))
         .init();
+
     let rui_dsl = String::from("");
     SDLEngine::new_main_loop(rui_dsl)?;
     Ok(())

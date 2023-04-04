@@ -4,17 +4,17 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use glyph_brush::ab_glyph::{Font, FontArc, ScaleFont};
-use log::info;
+use log::{debug};
 use mopa::{Any, mopafy};
 
-use crate::general::{Body, Color, Polygon, Size2D, TexturedPolygon};
+use crate::general::{Geometry, Color, Polygon, Size2D, TexturedPolygon};
 use crate::texture::{AlphaSoftTexture, RAMSoftTexture, SoftTexture};
 use crate::window::Window;
 
 pub trait Widget: Any + Debug + Send {
     // TODO global ids
     fn id(&self) -> usize;
-    fn build(&mut self) -> Body;
+    fn build(&mut self) -> Geometry;
 }
 
 mopafy!(Widget);
@@ -23,7 +23,7 @@ mopafy!(Widget);
 pub struct Image {
     id: usize,
     tex: Arc<Mutex<dyn SoftTexture>>,
-    body: Body,
+    geometry: Geometry,
     needs_update: bool,
 }
 
@@ -35,7 +35,7 @@ impl Image {
         Ok(Image {
             id,
             tex: arc_tex.clone(),
-            body: Body::new_for_texture("Image", arc_tex, poly),
+            geometry: Geometry::new_for_texture("Image", arc_tex, poly),
             needs_update: false,
         })
     }
@@ -45,15 +45,15 @@ impl Widget for Image {
     fn id(&self) -> usize {
         self.id
     }
-    fn build(&mut self) -> Body {
+    fn build(&mut self) -> Geometry {
         if self.needs_update {
-            self.body.polygons = vec![TexturedPolygon {
+            self.geometry.polygons = vec![TexturedPolygon {
                 poly: Polygon { vers: vec![], inds: vec![] },
                 tex: Some(self.tex.clone()),
             }];
             self.needs_update = false;
         }
-        self.body.clone()
+        self.geometry.clone()
     }
 }
 
@@ -61,7 +61,7 @@ impl Widget for Image {
 pub struct Text {
     id: usize,
     tex: Arc<Mutex<AlphaSoftTexture>>,
-    body: Body,
+    geometry: Geometry,
     needs_update: bool,
     text: String,
     font_size: f32,
@@ -71,12 +71,12 @@ pub struct Text {
 
 impl Text {
     pub fn new(id: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> Text {
-        let (tex, body) = Self::get_tex_and_body(text, font_size,
-                                                 font.clone(), color.clone());
+        let (tex, geometry) = Self::get_tex_and_geometry(text, font_size,
+                                                         font.clone(), color.clone());
         Text {
             id,
             tex,
-            body,
+            geometry,
             needs_update: false,
             text: text.to_string(),
             font_size,
@@ -84,15 +84,15 @@ impl Text {
             color,
         }
     }
-    fn get_tex_and_body(text: &str, font_size: f32, font: FontArc, color: Color)
-                        -> (Arc<Mutex<AlphaSoftTexture>>, Body) {
+    fn get_tex_and_geometry(text: &str, font_size: f32, font: FontArc, color: Color)
+                            -> (Arc<Mutex<AlphaSoftTexture>>, Geometry) {
         let (raw_data, width, height) = Self::text_to_alpha_data(text,
                                                                  font_size, font);
         let tex = AlphaSoftTexture::new(raw_data, width, height, color);
         let poly = tex.poly().clone();
         let tex = Arc::new(Mutex::new(tex));
-        let body = Body::new_for_texture("Text", tex.clone(), poly);
-        (tex, body)
+        let geometry = Geometry::new_for_texture("Text", tex.clone(), poly);
+        (tex, geometry)
     }
     pub fn set_text(&mut self, text: &str) {
         self.text = text.to_string();
@@ -110,7 +110,7 @@ impl Text {
     }
     fn text_to_alpha_data(text: &str, font_size: f32, font: FontArc) -> (Vec<u8>, u32, u32) {
         let bounds = Self::get_texture_bounds(text, font_size, font.clone());
-        info!("{}() {:?}", stringify!(text_to_alpha), bounds);
+        debug!("{}() {:?}", stringify!(text_to_alpha), bounds);
         let width = bounds.width;
         let height = bounds.height;
         let scaled_font = font.as_scaled(font_size);
@@ -167,15 +167,15 @@ impl Widget for Text {
     fn id(&self) -> usize {
         self.id
     }
-    fn build(&mut self) -> Body {
+    fn build(&mut self) -> Geometry {
         if self.needs_update {
-            let (tex, body) = Text::get_tex_and_body(&self.text,
-                                                     self.font_size, self.font.clone(),
-                                                     self.color.clone());
+            let (tex, geometry) = Text::get_tex_and_geometry(&self.text,
+                                                             self.font_size, self.font.clone(),
+                                                             self.color.clone());
             self.tex = tex;
-            self.body = body;
+            self.geometry = geometry;
             self.needs_update = false;
         }
-        self.body.clone()
+        self.geometry.clone()
     }
 }

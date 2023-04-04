@@ -134,13 +134,13 @@ pub struct TexturedPolygon {
 
 /// It's a group of multiple polygons
 #[derive(Debug, Clone)]
-pub struct Body {
+pub struct Geometry {
     #[allow(dead_code)]
     pub(crate) class: String,
     pub(crate) polygons: Vec<TexturedPolygon>,
 }
 
-impl Body {
+impl Geometry {
     pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
                   tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
         for tex_poly in &mut self.polygons {
@@ -159,8 +159,8 @@ impl Body {
         }
         Ok(())
     }
-    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Body {
-        Body {
+    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Geometry {
+        Geometry {
             class: class.to_string(),
             polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
         }

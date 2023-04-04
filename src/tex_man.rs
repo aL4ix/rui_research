@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::rc::Rc;
-use log::info;
+use log::{debug};
 
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, TextureCreator};
@@ -25,7 +25,7 @@ impl TextureManager {
     fn push(&mut self, tex: &Rc<RefCell<Texture>>) -> usize {
         self.last_id += 1;
         self.textures.insert(self.last_id, tex.clone());
-        info!("Created tex: {}", self.last_id);
+        debug!("Created tex: {}", self.last_id);
         self.last_id
     }
     // pub fn reserve_from_surface(&mut self, tex_creator: &TextureCreator<WindowContext>, surface: Surface)
@@ -50,7 +50,7 @@ impl TextureManager {
             }
         }
         for id in garbage {
-            info!("Killing tex: {}", id);
+            debug!("Killing tex: {}", id);
             let tex = self.textures.remove(&id).unwrap();
             soft_texture_default_destroy(tex, &tex_creator);
         }

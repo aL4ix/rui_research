@@ -2,6 +2,7 @@ use std::ptr;
 
 use emscripten_main_loop::MainLoopEvent;
 use emscripten_main_loop::MainLoopEvent::{Continue, Terminate};
+use log::{debug};
 use sdl2::{EventPump, init, sys, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -22,8 +23,10 @@ pub struct SDLEngine {
 impl SDLEngine {
     pub fn new_main_loop(_windows_dsl: String) -> Result<(), Box<(dyn std::error::Error)>> {
         let sdl_context = init()?;
+        debug!("RUI Started SDL");
         let sdl_video = sdl_context.video()?;
         let sdl_window = sdl_video.window("Title", 800, 600).build()?;
+        debug!("RUI Started video");
         let canvas = sdl_window.into_canvas().build()?;
 
         let window = Window::new()?;
@@ -63,7 +66,6 @@ impl emscripten_main_loop::MainLoop for SDLEngine {
         self.window.render(&mut self.canvas).expect("Render()");
 
         self.canvas.present();
-        // sleep(Duration::new(0, 1_000_000_000u32 / 30));
         Continue
     }
 }

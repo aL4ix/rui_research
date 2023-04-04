@@ -1,6 +1,5 @@
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
-use std::fs;
 use std::path::Path;
 
 use glyph_brush::ab_glyph::FontArc;
@@ -9,13 +8,14 @@ use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 
-use crate::general::{Body, Color};
+use crate::general::{Color, Geometry};
 use crate::tex_man::TextureManager;
+use crate::utils::Assets;
 use crate::widgets::*;
 
 pub struct Window {
     widgets: BTreeMap<usize, Box<dyn Widget>>,
-    bodies: BTreeMap<usize, Body>,
+    geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
 }
 
@@ -38,39 +38,39 @@ impl Window {
         // TODO what to do with errors in widget constructors
         widgets.insert(0, Box::new(image?));
 
-        let font_name = "assets/Nouveau_IBM.ttf".to_string();
-        let file = fs::read(font_name)?;
-        let font = FontArc::try_from_vec(file)?;
+        let font_path = "assets/Nouveau_IBM.ttf";
+        let font_vec = Assets::read(font_path)?;
+        let font = FontArc::try_from_vec(font_vec)?;
         let text = Text::new(2, "RUI", 300.0, font,
                              Color { r: 50, g: 50, b: 255, a: 200 });
         widgets.insert(1, Box::new(text));
 
         Ok(Window {
             widgets,
-            bodies: Default::default(),
+            geometries: Default::default(),
             tex_man: TextureManager::new(),
         })
     }
     pub fn build(&mut self) -> Result<(), Box<(dyn Error)>> {
-        // TODO Check if new widgets are needed based on DSL
-        self.bodies.clear();
+        // Check if new widgets are needed based on DSL
+        self.geometries.clear();
 
         #[cfg(not(target_family = "wasm"))]
             let functional_iter = self.widgets.par_iter_mut();
         #[cfg(target_family = "wasm")]
             let functional_iter = self.widgets.iter_mut();
 
-        self.bodies = functional_iter
+        self.geometries = functional_iter
             .map(|w| (*w.0, w.1.build()))
             .collect();
 
-        // TODO Delete not needed widgets
+        // Delete not needed widgets
         Ok(())
     }
     pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn Error)>> {
         let tex_creator = canvas.texture_creator();
-        for body in &mut self.bodies.values_mut() {
-            body.render(canvas, &tex_creator, &mut self.tex_man)?;
+        for geometry in &mut self.geometries.values_mut() {
+            geometry.render(canvas, &tex_creator, &mut self.tex_man)?;
         }
 
         self.tex_man.garbage_collect(tex_creator);

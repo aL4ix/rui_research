@@ -4,7 +4,7 @@ use std::fmt::{Debug, Formatter};
 use std::path::Path;
 use std::rc::Rc;
 
-use log::info;
+use log::{debug};
 use sdl2::pixels::{PixelFormat, PixelFormatEnum};
 use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Texture, TextureCreator};
@@ -17,7 +17,6 @@ use crate::tex_man::TextureManager;
 /// All Textures are lazy, because they can only be created or updated during render time.
 /// https://documentation.help/SDL/thread.html
 /// Note tex_creator and tex_man are references, which means it disallows multi-threaded usages.
-/// All Textures are soft which means they can be cloned without allocating more GPU memory.
 /// All Textures are static, once one is created it won't change. Basically at the first time it
 /// gets rendered it creates the actual texture and then after than it will never change.
 pub trait SoftTexture: Send {
@@ -52,6 +51,7 @@ impl Debug for dyn SoftTexture {
 /// to lock the mutex would see undefined memory.
 pub fn soft_texture_default_destroy(tex: Rc<RefCell<Texture>>,
                                     _tex_creator: &TextureCreator<WindowContext>) {
+    // TODO integrate to TexMan
     let refcell = match Rc::try_unwrap(tex) {
         Ok(x) => x,
         Err(_) => return, // Maybe panic here
@@ -63,7 +63,7 @@ pub fn soft_texture_default_destroy(tex: Rc<RefCell<Texture>>,
     unsafe {
         internal_tex.destroy()
     }
-    info!("Tex destroyed!");
+    debug!("Tex destroyed!");
 }
 
 pub struct RAMSoftTexture {
@@ -105,7 +105,7 @@ impl SoftTexture for RAMSoftTexture {
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if self.tex.is_none() {
-            info!("{}", self.class());
+            debug!("{}", self.class());
             let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
                                                self.height, self.pixel_format)?;
             {
@@ -177,7 +177,7 @@ impl AlphaSoftTexture {
         raw_data: &Vec<u8>,
         color: &Color,
     ) -> Result<(), Box<dyn Error>> {
-        info!("update_texture_from_alpha()");
+        debug!("update_texture_from_alpha()");
         let format_enum = texture.query().format;
         let bytes_per_pixel = format_enum.byte_size_per_pixel();
         let pitch = bytes_per_pixel * rect.width() as usize;
@@ -206,7 +206,7 @@ impl SoftTexture for AlphaSoftTexture {
     fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
               -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if self.tex.is_none() {
-            info!("{}", self.class());
+            debug!("{}", self.class());
             let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
                                                self.height, PixelFormatEnum::RGBA32)?;
             {
