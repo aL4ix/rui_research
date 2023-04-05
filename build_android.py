@@ -16,6 +16,7 @@ from subprocess import check_call
 
 # Configuration section
 ANDROID_PROJECT_NAME = 'android_project'
+ANDROID_SDK_PATH = '~/Android/Sdk'
 NDK_PATH = '~/Android/Sdk/ndk/25.2.9519653'
 RUST_SDL2_REPO = 'rust-sdl2-2.0.18'
 LIB_NAME = 'libmain.so'
@@ -75,19 +76,19 @@ def check_path_exists(path, name):
             f'{name} not found at: {path}')
 
 
-def generate_cargo_config(ndk_path, config_path):
+def generate_cargo_config(ndk_abs_path, config_path):
     template = f"""
 [target.aarch64-linux-android]
-ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
-linker ="{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
+ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
+linker ="{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
 
 [target.armv7-linux-androideabi]
-ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
-linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
+ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
+linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
 
 [target.i686-linux-android]
-ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar"
-linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
+ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar"
+linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
     """
     with open(config_path, 'w') as f:
         f.write(template)
@@ -96,12 +97,14 @@ linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-androi
 def build_android():
     original_cwd = getcwd()
     check_path_exists(f'../{RUST_SDL2_REPO}', 'Rust-SDL2 repo')
+    android_sdk_abs_path = expanduser(ANDROID_SDK_PATH)
+    check_path_exists(android_sdk_abs_path, 'Android SDK')
 
     if not exists(f'../{ANDROID_PROJECT_NAME}'):
-        ndk_path = expanduser(NDK_PATH)
-        check_path_exists(ndk_path, 'NDK path')
-        generate_cargo_config(ndk_path, expanduser('~/.cargo/config'))
-        environ['PATH'] += pathsep + ndk_path
+        ndk_abs_path = expanduser(NDK_PATH)
+        check_path_exists(ndk_abs_path, 'NDK path')
+        generate_cargo_config(ndk_abs_path, expanduser('~/.cargo/config'))
+        environ['PATH'] += pathsep + ndk_abs_path
         chdir(f'../{RUST_SDL2_REPO}/sdl2-sys')
         check_call('cargo build', shell=True)  # In fact, we only need this so
         # it auto downloads the SDL source code
@@ -120,6 +123,8 @@ def build_android():
             f'{ANDROID_PROJECT_NAME}/app/build.gradle', 'cmake', False)
         comment_line(f'{ANDROID_PROJECT_NAME}/app/jni/CMakeLists.txt',
                      'add_subdirectory(src)')
+        with open(f'{ANDROID_PROJECT_NAME}/local.properties', 'w') as f:
+            f.write(f'sdk.dir={android_sdk_abs_path}')
         chdir(original_cwd)
 
     # Copy sdl2 libs into rust's build dir
