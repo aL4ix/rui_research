@@ -171,6 +171,13 @@ def build_android():
     mkdir(assets_path)
     copytree('assets', f'{assets_path}/assets')
 
+    # Assemble debug
+    chdir(fr'../{ANDROID_PROJECT_NAME}')
+    check_call('./gradlew assembleDebug')
+    # Why debug, because release needs a certificate
+    cwd = getcwd()
+    print(f'CONGRATS! Debug APK generated at {cwd}/app/build/outputs/apk/debug')
+
 
 if __name__ == '__main__':
     build_android()
