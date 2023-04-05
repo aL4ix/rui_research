@@ -178,7 +178,7 @@ def build_android():
 
     # Assemble debug
     chdir(fr'../{ANDROID_PROJECT_NAME}')
-    check_call('./gradlew assembleDebug')
+    check_call('./gradlew assembleDebug', shell=True)
     # Why debug, because release needs a certificate
     cwd = getcwd()
     print(f'CONGRATS! Debug APK generated at {cwd}/app/build/outputs/apk/debug')
