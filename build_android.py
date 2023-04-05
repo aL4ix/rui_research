@@ -89,7 +89,7 @@ linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-andr
 ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar"
 linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
     """
-    with open(config_path, 'a') as f:
+    with open(config_path, 'w') as f:
         f.write(template)
 
 
