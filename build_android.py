@@ -75,16 +75,34 @@ def check_path_exists(path, name):
             f'{name} not found at: {path}')
 
 
+def generate_cargo_config(ndk_path, config_path):
+    template = f"""
+[target.aarch64-linux-android]
+ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
+linker ="{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
+
+[target.armv7-linux-androideabi]
+ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
+linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
+
+[target.i686-linux-android]
+ar = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar"
+linker = "{ndk_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
+    """
+    with open(config_path, 'a') as f:
+        f.write(template)
+
+
 def build_android():
     original_cwd = getcwd()
-    rust_sdl2_repo = f'../{RUST_SDL2_REPO}'
-    check_path_exists(rust_sdl2_repo, 'Rust-SDL2 repo')
+    check_path_exists(f'../{RUST_SDL2_REPO}', 'Rust-SDL2 repo')
 
     if not exists(f'../{ANDROID_PROJECT_NAME}'):
         ndk_path = expanduser(NDK_PATH)
         check_path_exists(ndk_path, 'NDK path')
+        generate_cargo_config(ndk_path, expanduser('~/.cargo/config'))
         environ['PATH'] += pathsep + ndk_path
-        chdir(f'../{rust_sdl2_repo}/sdl2-sys')
+        chdir(f'../{RUST_SDL2_REPO}/sdl2-sys')
         check_call('cargo build', shell=True)  # In fact, we only need this so
         # it auto downloads the SDL source code
         chdir(original_cwd)
