@@ -26,7 +26,7 @@ Loop {
         render all resources and manipulate GPU textures
 }
  */
-
+// TODO wasm32 is now not compiling due to the bin/lib/main changes done for Android
 /*
 In reality the main() for the binary is inside bin.rs and for the library is in lib.rs, but both
 end up calling this main()

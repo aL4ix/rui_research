@@ -4,10 +4,10 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use glyph_brush::ab_glyph::{Font, FontArc, ScaleFont};
-use log::{debug};
+use log::debug;
 use mopa::{Any, mopafy};
 
-use crate::general::{Geometry, Color, Polygon, Size2D, TexturedPolygon};
+use crate::general::{Color, Geometry, Polygon, Size2D, TexturedPolygon};
 use crate::texture::{AlphaSoftTexture, RAMSoftTexture, SoftTexture};
 use crate::window::Window;
 
@@ -177,5 +177,43 @@ impl Widget for Text {
             self.needs_update = false;
         }
         self.geometry.clone()
+    }
+}
+
+#[derive(Debug)]
+pub struct Shape {
+    id: usize,
+    poly: Polygon,
+}
+
+impl Shape {
+    pub fn square(x: i32, y: i32, width: i32, height: i32, rounded: i32) -> Shape {
+        Shape {
+            id: 0,
+            poly: Polygon::new_square(x as f32, y as f32, width as f32, height as f32, rounded as f32),
+        }
+    }
+    pub fn reg_poly(x: i32, y: i32, width: i32, height: i32, sides: u32, rotate: f32) -> Shape {
+        Shape {
+            id: 0,
+            poly: Polygon::new_reg_poly(x as f32, y as f32, width as f32, height as f32,
+                                        sides, rotate),
+        }
+    }
+}
+
+impl Widget for Shape {
+    fn id(&self) -> usize {
+        self.id
+    }
+
+    fn build(&mut self) -> Geometry {
+        Geometry {
+            class: "Shape".to_string(),
+            polygons: vec![TexturedPolygon {
+                poly: self.poly.clone(),
+                tex: None,
+            }],
+        }
     }
 }

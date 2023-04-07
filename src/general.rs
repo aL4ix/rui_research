@@ -122,6 +122,59 @@ impl Polygon {
             inds: vec![0, 1, 2, 2, 3, 0],
         }
     }
+
+    pub(crate) fn new_square(x: f32, y: f32, width: f32, height: f32, rounded: f32) -> Polygon {
+        todo!();
+    }
+
+    pub fn new_reg_poly(x: f32, y: f32, w: f32, h: f32, sides: u32, rotate: f32) -> Polygon {
+        let max = 2.0 * std::f32::consts::PI;
+        let step = max / sides as f32;
+        let x = x + w / 2.0;
+        let y = y + h / 2.0;
+        let mut vers = Vec::with_capacity(sides as usize);
+        for i in 0..sides {
+            let cur_step = step * i as f32 + rotate;
+            vers.push(sys::SDL_Vertex {
+                position: sys::SDL_FPoint {
+                    x: x + w * cur_step.sin(),
+                    y: y + h * -cur_step.cos(),
+                },
+                color: sys::SDL_Color {
+                    r: 255,
+                    g: 255,
+                    b: 255,
+                    a: 0,
+                },
+                tex_coord: sys::SDL_FPoint {
+                    x: 0.0,
+                    y: 0.0,
+                },
+            });
+        }
+        vers.get_mut(0).expect("").color = sys::SDL_Color {
+            r: 128,
+            g: 128,
+            b: 128,
+            a: 0,
+        };
+
+        let mut inds = Vec::with_capacity(((sides - 2) * 3) as usize);
+        inds.push(0);
+        inds.push(1);
+        inds.push(2);
+        for i in 0..sides as i32 - 3 {
+            let start = 2 + i;
+            inds.push(0);
+            inds.push(start);
+            inds.push(start + 1);
+        }
+
+        Polygon {
+            vers,
+            inds,
+        }
+    }
 }
 
 

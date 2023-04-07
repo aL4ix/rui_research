@@ -43,7 +43,10 @@ impl Window {
         let font = FontArc::try_from_vec(font_vec)?;
         let text = Text::new(2, "RUI", 300.0, font,
                              Color { r: 50, g: 50, b: 255, a: 200 });
-        widgets.insert(1, Box::new(text));
+        widgets.insert(2, Box::new(text));
+
+        let shape = Shape::square(100, 100, 100, 50, 0);
+        widgets.insert(1, Box::from(shape));
 
         Ok(Window {
             widgets,
