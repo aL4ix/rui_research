@@ -7,7 +7,7 @@ use glyph_brush::ab_glyph::{Font, FontArc, ScaleFont};
 use log::debug;
 use mopa::{Any, mopafy};
 
-use crate::general::{Color, Geometry, Polygon, Size2D, TexturedPolygon};
+use crate::general::{Color, Geometry, Polygon, Size2D, TexturedPolygon, Vector2D};
 use crate::texture::{AlphaSoftTexture, RAMSoftTexture, SoftTexture};
 use crate::window::Window;
 
@@ -15,6 +15,10 @@ pub trait Widget: Any + Debug + Send {
     // TODO global ids
     fn id(&self) -> usize;
     fn build(&mut self) -> Geometry;
+    fn x(&self) -> f32;
+    fn y(&self) -> f32;
+    fn width(&self) -> f32;
+    fn height(&self) -> f32;
 }
 
 mopafy!(Widget);
@@ -25,6 +29,8 @@ pub struct Image {
     tex: Arc<Mutex<dyn SoftTexture>>,
     geometry: Geometry,
     needs_update: bool,
+    position: Vector2D<f32>,
+    size: Vector2D<f32>
 }
 
 impl Image {
@@ -37,6 +43,8 @@ impl Image {
             tex: arc_tex.clone(),
             geometry: Geometry::new_for_texture("Image", arc_tex, poly),
             needs_update: false,
+            position: Vector2D::new_zero(),
+            size: Vector2D::new_zero(),
         })
     }
 }
@@ -55,6 +63,22 @@ impl Widget for Image {
         }
         self.geometry.clone()
     }
+
+    fn x(&self) -> f32 {
+        self.position.x()
+    }
+
+    fn y(&self) -> f32 {
+        self.position.y()
+    }
+
+    fn width(&self) -> f32 {
+        self.size.x()
+    }
+
+    fn height(&self) -> f32 {
+        self.size.y()
+    }
 }
 
 #[derive(Debug)]
@@ -67,6 +91,8 @@ pub struct Text {
     font_size: f32,
     font: FontArc,
     color: Color,
+    position: Vector2D<f32>,
+    size: Vector2D<f32>
 }
 
 impl Text {
@@ -82,6 +108,8 @@ impl Text {
             font_size,
             font,
             color,
+            position: Vector2D::new_zero(),
+            size: Vector2D::new_zero()
         }
     }
     fn get_tex_and_geometry(text: &str, font_size: f32, font: FontArc, color: Color)
@@ -178,26 +206,49 @@ impl Widget for Text {
         }
         self.geometry.clone()
     }
+
+    fn x(&self) -> f32 {
+        self.position.x()
+    }
+
+    fn y(&self) -> f32 {
+        self.position.y()
+    }
+
+    fn width(&self) -> f32 {
+        self.size.x()
+    }
+
+    fn height(&self) -> f32 {
+        self.size.y()
+    }
 }
 
 #[derive(Debug)]
 pub struct Shape {
     id: usize,
     poly: Polygon,
+    position: Vector2D<f32>,
+    size: Vector2D<f32>
 }
 
 impl Shape {
-    pub fn square(x: i32, y: i32, width: i32, height: i32, rounded: i32) -> Shape {
+    pub fn square(size: Vector2D<f32>, radius: i32, color: Color) -> Shape {
+        let position = Vector2D::new_zero();
         Shape {
             id: 0,
-            poly: Polygon::new_square(x as f32, y as f32, width as f32, height as f32, rounded as f32),
+            poly: Polygon::new_square(size.clone(), radius as f32, color),
+            position,
+            size
         }
     }
-    pub fn reg_poly(x: i32, y: i32, width: i32, height: i32, sides: u32, rotate: f32) -> Shape {
+    pub fn reg_poly(size: Vector2D<f32>, sides: u32, rotate: f32) -> Shape {
+        let position = Vector2D::new_zero();
         Shape {
             id: 0,
-            poly: Polygon::new_reg_poly(x as f32, y as f32, width as f32, height as f32,
-                                        sides, rotate),
+            poly: Polygon::new_reg_poly(size.clone(), sides, rotate),
+            position,
+            size
         }
     }
 }
@@ -215,5 +266,21 @@ impl Widget for Shape {
                 tex: None,
             }],
         }
+    }
+
+    fn x(&self) -> f32 {
+        self.position.x()
+    }
+
+    fn y(&self) -> f32 {
+        self.position.y()
+    }
+
+    fn width(&self) -> f32 {
+        self.size.x()
+    }
+
+    fn height(&self) -> f32 {
+        self.size.y()
     }
 }

@@ -6,12 +6,11 @@ use std::rc::Rc;
 
 use log::{debug};
 use sdl2::pixels::{PixelFormat, PixelFormatEnum};
-use sdl2::rect::Rect;
 use sdl2::render::{BlendMode, Texture, TextureCreator};
 use sdl2::surface::Surface;
 use sdl2::video::WindowContext;
 
-use crate::general::{Color, Polygon};
+use crate::general::{Color, Polygon, Rect};
 use crate::tex_man::TextureManager;
 
 /// All Textures are lazy, because they can only be created or updated during render time.
@@ -90,7 +89,7 @@ impl RAMSoftTexture {
             tex: None,
             width,
             height,
-            poly: Polygon::new_for_rect_texture(Rect::new(0, 0, width, height), 255),
+            poly: Polygon::new_rect_for_texture(Rect::new(0, 0, width, height), 255),
             raw_data,
             pitch,
             pixel_format,
@@ -113,7 +112,7 @@ impl SoftTexture for RAMSoftTexture {
                 guard.update(None, &self.raw_data, self.pitch as usize)?;
             }
             self.id = id;
-            self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
+            self.poly = Polygon::new_rect_for_texture(Rect::new(0, 0, self.width, self.height),
                                                       255);
             self.tex = Some(rc_tex);
             self.raw_data = vec![]; // Removing raw_data since it could be large
@@ -160,7 +159,7 @@ impl AlphaSoftTexture {
             panic!("Texture dimensions cannot be zero")
         }
 
-        let alpha = color.a;
+        let alpha = color.a();
         AlphaSoftTexture {
             id: 0,
             tex: None,
@@ -168,11 +167,11 @@ impl AlphaSoftTexture {
             width,
             height,
             color,
-            poly: Polygon::new_for_rect_texture(Rect::new(0, 0, width, height), alpha),
+            poly: Polygon::new_rect_for_texture(Rect::new(0, 0, width, height), alpha),
         }
     }
     fn update_texture_from_alpha(
-        rect: &Rect,
+        rect: &Rect<u32>,
         texture: &mut Texture,
         raw_data: &Vec<u8>,
         color: &Color,
@@ -183,9 +182,9 @@ impl AlphaSoftTexture {
         let pitch = bytes_per_pixel * rect.width() as usize;
         let pixel_format = PixelFormat::try_from(format_enum)?;
         let mut sdl_color = sdl2::pixels::Color {
-            r: color.r,
-            g: color.g,
-            b: color.b,
+            r: color.r(),
+            g: color.g(),
+            b: color.b(),
             a: 0,
         };
         let mut new_data: Vec<u8> = Vec::with_capacity(raw_data.len() * 4);
@@ -218,8 +217,8 @@ impl SoftTexture for AlphaSoftTexture {
                                                 &self.color)?;
             }
             self.id = id;
-            self.poly = Polygon::new_for_rect_texture(Rect::new(0, 0, self.width, self.height),
-                                                      self.color.a);
+            self.poly = Polygon::new_rect_for_texture(Rect::new(0, 0, self.width, self.height),
+                                                      self.color.a());
             self.tex = Some(rc_tex);
             self.raw_data = vec![]; // freeing raw_data from RAM since it could be large
         }

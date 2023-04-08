@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
 use sdl2::render::WindowCanvas;
 
-use crate::general::{Color, Geometry};
+use crate::general::{Color, Geometry, Vector2D};
 use crate::tex_man::TextureManager;
 use crate::utils::Assets;
 use crate::widgets::*;
@@ -42,10 +42,11 @@ impl Window {
         let font_vec = Assets::read(font_path)?;
         let font = FontArc::try_from_vec(font_vec)?;
         let text = Text::new(2, "RUI", 300.0, font,
-                             Color { r: 50, g: 50, b: 255, a: 200 });
+                             Color::new(50, 50, 255, 200));
         widgets.insert(2, Box::new(text));
 
-        let shape = Shape::square(100, 100, 100, 50, 0);
+        let shape = Shape::square(Vector2D::new(100.0, 50.0), 0,
+                                  Color::new(255, 255, 255, 255));
         widgets.insert(1, Box::from(shape));
 
         Ok(Window {
