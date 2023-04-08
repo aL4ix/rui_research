@@ -33,10 +33,11 @@ impl Window {
         // let image = rx.iter().next().unwrap();
 
         // Single-threaded
-        let image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")));
+        let mut image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")))?;
+        image.set_position(Vector2D::new(0.0, 100.0));
 
         // TODO what to do with errors in widget constructors
-        widgets.insert(0, Box::new(image?));
+        widgets.insert(0, Box::new(image));
 
         let font_path = "assets/Nouveau_IBM.ttf";
         let font_vec = Assets::read(font_path)?;
@@ -45,8 +46,9 @@ impl Window {
                              Color::new(50, 50, 255, 200));
         widgets.insert(2, Box::new(text));
 
-        let shape = Shape::square(Vector2D::new(100.0, 50.0), 0,
-                                  Color::new(255, 255, 255, 255));
+        let mut shape = Shape::new_square(Vector2D::new(100.0, 50.0), 0,
+                                          Color::new(255, 255, 255, 255));
+        shape.set_position(Vector2D::new(100.0, 100.0));
         widgets.insert(1, Box::from(shape));
 
         Ok(Window {

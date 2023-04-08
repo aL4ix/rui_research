@@ -50,9 +50,6 @@ impl<T: Copy + Default> Vector2D<T> {
             y,
         }
     }
-    pub fn new_zero() -> Vector2D<T> {
-        Self::new(Default::default(), Default::default())
-    }
     pub fn x(&self) -> T {
         self.x
     }
@@ -61,6 +58,12 @@ impl<T: Copy + Default> Vector2D<T> {
     }
     pub fn unpack(&self) -> (T, T) {
         (self.x, self.y)
+    }
+}
+
+impl<T: Copy + Default> Default for Vector2D<T> {
+    fn default() -> Self {
+        Self::new(Default::default(), Default::default())
     }
 }
 
@@ -112,8 +115,8 @@ impl Into<Option<sdl2::rect::Rect>> for Rect<u32> {
     fn into(self) -> Option<sdl2::rect::Rect> {
         Some(sdl2::rect::Rect::new(self.x().try_into().unwrap(),
                                    self.y().try_into().unwrap(),
-                                   self.width().try_into().unwrap(),
-                                   self.height().try_into().unwrap()))
+                                   self.width(),
+                                   self.height()))
     }
 }
 
@@ -187,22 +190,22 @@ impl Polygon {
         let top_left = Self::new_vertex(
             Vector2D::new(0.0, 0.0),
             colors.0,
-            Vector2D::new_zero(),
+            Default::default(),
         );
         let bottom_left = Self::new_vertex(
             Vector2D::new(0.0, size.y()),
             colors.1,
-            Vector2D::new_zero(),
+            Default::default(),
         );
         let bottom_right = Self::new_vertex(
             Vector2D::new(size.x(), size.y()),
             colors.2,
-            Vector2D::new_zero(),
+            Default::default(),
         );
         let top_right = Self::new_vertex(
             Vector2D::new(size.x(), 0.0),
             colors.3,
-            Vector2D::new_zero(),
+            Default::default(),
         );
         Polygon {
             vers: vec![top_left, bottom_left, bottom_right, top_right],
@@ -221,7 +224,7 @@ impl Polygon {
             let cur_step = step * i as f32 + rotate;
             let position = Vector2D::new(x + w * cur_step.sin(), y + h * -cur_step.cos());
             let color = Color::new(255, 255, 255, 0);
-            let tex_coords: Vector2D<f32> = Vector2D::new_zero();
+            let tex_coords: Vector2D<f32> = Default::default();
             vers.push(Self::new_vertex(position, color, tex_coords));
         }
         // vers.get_mut(0).expect("").color = sys::SDL_Color {
@@ -307,6 +310,23 @@ impl Geometry {
         Geometry {
             class: class.to_string(),
             polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
+        }
+    }
+    pub fn translate(&mut self, position: &Vector2D<f32>) {
+        for tex_poly in &mut self.polygons {
+            for mut ver in &mut tex_poly.poly.vers {
+                ver.position.x += position.x;
+                ver.position.y += position.y;
+            }
+        }
+    }
+}
+
+impl Default for Geometry {
+    fn default() -> Self {
+        Geometry {
+            class: "".to_string(),
+            polygons: vec![],
         }
     }
 }
