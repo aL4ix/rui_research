@@ -328,7 +328,7 @@ impl Shape {
         Shape {
             id: 0,
             poly: poly.clone(),
-            needs_update: true,
+            needs_update: false,
             geometry: Self::geometry_out_of_poly(poly),
             position,
             needs_translation: true,
