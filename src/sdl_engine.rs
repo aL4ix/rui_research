@@ -2,7 +2,7 @@ use std::ptr;
 
 use emscripten_main_loop::MainLoopEvent;
 use emscripten_main_loop::MainLoopEvent::{Continue, Terminate};
-use log::{debug};
+use log::debug;
 use sdl2::{EventPump, init, sys, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -11,13 +11,18 @@ use sdl2::render::{Canvas, Texture, WindowCanvas};
 
 use crate::window::Window;
 
-#[allow(dead_code)]
 pub struct SDLEngine {
     sdl_context: sdl2::Sdl,
     sdl_video: VideoSubsystem,
     canvas: WindowCanvas,
     window: Window,
     event_pump: EventPump,
+}
+
+#[derive(PartialEq, Eq)]
+pub enum MainLoopStatus {
+    Continue,
+    Terminate,
 }
 
 impl SDLEngine {
@@ -43,20 +48,28 @@ impl SDLEngine {
         emscripten_main_loop::run(sdl_engine);
         Ok(())
     }
-}
-
-impl emscripten_main_loop::MainLoop for SDLEngine {
-    fn main_loop(&mut self) -> MainLoopEvent {
+    pub fn process_events(&mut self) -> MainLoopStatus {
+        // TODO accept a given closure to continue matching the event
         for event in self.event_pump.poll_iter() {
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {
                     keycode: Some(Keycode::Escape),
                     ..
-                } => return Terminate,
-                Event::KeyDown { keycode: Some(key), .. } => self.window.key_down(key),
+                } => return MainLoopStatus::Terminate,
+                Event::KeyDown { keycode: Some(key), .. } => self.window.event_key_down(key),
+                Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => self.window.event_mouse_button_down(mouse_btn, x, y),
                 _ => {}
             }
+        }
+        MainLoopStatus::Continue
+    }
+}
+
+impl emscripten_main_loop::MainLoop for SDLEngine {
+    fn main_loop(&mut self) -> MainLoopEvent {
+        if self.process_events() == MainLoopStatus::Terminate {
+            return Terminate;
         }
         self.window.build().expect("Build()");
 

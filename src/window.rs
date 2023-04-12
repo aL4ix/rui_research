@@ -3,9 +3,11 @@ use std::error::Error;
 use std::path::Path;
 
 use glyph_brush::ab_glyph::FontArc;
+use log::info;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
+use sdl2::mouse::MouseButton;
 use sdl2::render::WindowCanvas;
 
 use crate::general::{Color, Geometry, Vector2D};
@@ -18,6 +20,7 @@ pub struct Window {
     geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
 }
+
 
 impl Window {
     pub fn new() -> Result<Window, Box<(dyn Error)>> {
@@ -85,11 +88,14 @@ impl Window {
     pub fn get_widget_by_id(&mut self, id: usize) -> Option<&mut Box<dyn Widget>> {
         self.widgets.values_mut().find(|widget| widget.id() == id)
     }
-    pub fn key_down(&mut self, key: Keycode) {
+    pub fn event_key_down(&mut self, key: Keycode) {
         if let Ok(text) = Text::get_by_id(self, 2) {
             text.set_text(&key.to_string())
         } else {
             panic!("key_down")
         }
+    }
+    pub fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32) {
+        info!("{:?} {} {}", mouse_btn, x, y);
     }
 }

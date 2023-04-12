@@ -72,6 +72,7 @@ pub struct Image {
 impl Image {
     pub fn from_bmp(id: usize, path: Box<Path>) -> Result<Image, String> {
         let tex = RAMSoftTexture::from_bmp(path)?;
+        let size = Vector2D::new(tex.width() as f32, tex.height() as f32);
         let poly = tex.poly().clone();
         let arc_tex = Arc::new(Mutex::new(tex));
         Ok(Image {
@@ -82,7 +83,7 @@ impl Image {
             position: Default::default(),
             needs_translation: true,
             translated_geometry: Default::default(),
-            size: Default::default(),
+            size,
         })
     }
 }
@@ -159,11 +160,11 @@ pub struct Text {
 
 impl Text {
     pub fn new(id: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> Text {
-        let (tex, geometry) = Self::get_tex_and_geometry(text, font_size,
-                                                         font.clone(), color.clone());
+        let (arc_tex, geometry, size) =
+            Self::get_tex_geometry_and_size(text, font_size, font.clone(), color.clone());
         Text {
             id,
-            tex,
+            tex: arc_tex,
             geometry,
             needs_update: false,
             text: text.to_string(),
@@ -173,18 +174,18 @@ impl Text {
             position: Default::default(),
             needs_translation: true,
             translated_geometry: Default::default(),
-            size: Default::default(),
+            size,
         }
     }
-    fn get_tex_and_geometry(text: &str, font_size: f32, font: FontArc, color: Color)
-                            -> (Arc<Mutex<AlphaSoftTexture>>, Geometry) {
+    fn get_tex_geometry_and_size(text: &str, font_size: f32, font: FontArc, color: Color)
+                                 -> (Arc<Mutex<AlphaSoftTexture>>, Geometry, Vector2D<f32>) {
         let (raw_data, width, height) = Self::text_to_alpha_data(text,
                                                                  font_size, font);
         let tex = AlphaSoftTexture::new(raw_data, width, height, color);
         let poly = tex.poly().clone();
         let tex = Arc::new(Mutex::new(tex));
         let geometry = Geometry::new_for_texture("Text", tex.clone(), poly);
-        (tex, geometry)
+        (tex, geometry, Vector2D::new(width as f32, height as f32))
     }
     pub fn set_text(&mut self, text: &str) {
         self.text = text.to_string();
@@ -257,11 +258,12 @@ impl Text {
 
 impl private::PrivateWidgetMethods for Text {
     fn update_geometry(&mut self) {
-        let (tex, geometry) = Text::get_tex_and_geometry(&self.text,
-                                                         self.font_size, self.font.clone(),
-                                                         self.color.clone());
+        let (tex, geometry, size) =
+            Text::get_tex_geometry_and_size(&self.text, self.font_size, self.font.clone(),
+                                            self.color.clone());
         self.tex = tex;
         self.geometry = geometry;
+        self.size = size;
     }
     fn needs_update(&self) -> bool {
         self.needs_update
