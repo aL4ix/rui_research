@@ -23,6 +23,7 @@ pub struct SDLEngine {
 pub enum MainLoopStatus {
     Continue,
     Terminate,
+    Supress,
 }
 
 impl SDLEngine {
@@ -48,9 +49,15 @@ impl SDLEngine {
         emscripten_main_loop::run(sdl_engine);
         Ok(())
     }
-    pub fn process_events(&mut self) -> MainLoopStatus {
-        // TODO accept a given closure to continue matching the event
+    pub fn process_events(&mut self, user_event_handler: Option<fn(&Event) -> MainLoopStatus>) -> MainLoopStatus {
         for event in self.event_pump.poll_iter() {
+            if let Some(event_handler) = user_event_handler {
+                match event_handler(&event) {
+                    MainLoopStatus::Terminate => return MainLoopStatus::Terminate,
+                    MainLoopStatus::Supress => continue,
+                    MainLoopStatus::Continue => {}
+                }
+            }
             match event {
                 Event::Quit { .. }
                 | Event::KeyDown {
@@ -68,7 +75,7 @@ impl SDLEngine {
 
 impl emscripten_main_loop::MainLoop for SDLEngine {
     fn main_loop(&mut self) -> MainLoopEvent {
-        if self.process_events() == MainLoopStatus::Terminate {
+        if self.process_events(None) == MainLoopStatus::Terminate {
             return Terminate;
         }
         self.window.build().expect("Build()");
