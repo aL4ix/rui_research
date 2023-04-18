@@ -15,8 +15,9 @@ pub struct SDLEngine {
     sdl_context: sdl2::Sdl,
     sdl_video: VideoSubsystem,
     canvas: WindowCanvas,
-    window: Window,
+    windows: Vec<Window>,
     event_pump: EventPump,
+    user_event_handler: Option<fn(&Event) -> MainLoopStatus>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -27,7 +28,7 @@ pub enum MainLoopStatus {
 }
 
 impl SDLEngine {
-    pub fn new_main_loop(_windows_dsl: String) -> Result<(), Box<(dyn std::error::Error)>> {
+    pub fn init() -> Result<SDLEngine, Box<(dyn std::error::Error)>> {
         let sdl_context = init()?;
         debug!("RUI Started SDL");
         let sdl_video = sdl_context.video()?;
@@ -35,23 +36,29 @@ impl SDLEngine {
         debug!("RUI Started video");
         let canvas = sdl_window.into_canvas().build()?;
 
-        let window = Window::new()?;
-
         let event_pump = sdl_context.event_pump()?;
         let sdl_engine = SDLEngine {
             sdl_context,
             sdl_video,
             canvas,
-            window,
+            windows: vec![],
             event_pump,
+            user_event_handler: None,
         };
-
-        emscripten_main_loop::run(sdl_engine);
-        Ok(())
+        Ok(sdl_engine)
     }
-    pub fn process_events(&mut self, user_event_handler: Option<fn(&Event) -> MainLoopStatus>) -> MainLoopStatus {
+    pub fn add_window(&mut self, window: Window) {
+        self.windows.push(window);
+    }
+    pub fn set_user_event_handler(&mut self, user_event_handler: Option<fn(&Event) -> MainLoopStatus>) {
+        self.user_event_handler = user_event_handler;
+    }
+    pub fn main_loop(self) {
+        emscripten_main_loop::run(self);
+    }
+    pub fn process_events(&mut self) -> MainLoopStatus {
         for event in self.event_pump.poll_iter() {
-            if let Some(event_handler) = user_event_handler {
+            if let Some(event_handler) = self.user_event_handler {
                 match event_handler(&event) {
                     MainLoopStatus::Terminate => return MainLoopStatus::Terminate,
                     MainLoopStatus::Supress => continue,
@@ -64,8 +71,9 @@ impl SDLEngine {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => return MainLoopStatus::Terminate,
-                Event::KeyDown { keycode: Some(key), .. } => self.window.event_key_down(key),
-                Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => self.window.event_mouse_button_down(mouse_btn, x, y),
+                // TODO fix getting hardcoded window
+                Event::KeyDown { keycode: Some(key), .. } => self.windows[0].event_key_down(key),
+                Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => self.windows[0].event_mouse_button_down(mouse_btn, x, y),
                 _ => {}
             }
         }
@@ -75,15 +83,19 @@ impl SDLEngine {
 
 impl emscripten_main_loop::MainLoop for SDLEngine {
     fn main_loop(&mut self) -> MainLoopEvent {
-        if self.process_events(None) == MainLoopStatus::Terminate {
+        if self.process_events() == MainLoopStatus::Terminate {
             return Terminate;
         }
-        self.window.build().expect("Build()");
+        for window in &mut self.windows {
+            window.build().expect("Build()");
+        }
 
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
 
-        self.window.render(&mut self.canvas).expect("Render()");
+        for window in &mut self.windows {
+            window.render(&mut self.canvas).expect("Render()");
+        }
 
         self.canvas.present();
         Continue

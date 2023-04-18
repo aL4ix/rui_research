@@ -111,14 +111,15 @@ impl<T: std::ops::Add<Output=T> + Copy + Default> Rect<T> {
     }
 }
 
-impl Into<Option<sdl2::rect::Rect>> for Rect<u32> {
-    fn into(self) -> Option<sdl2::rect::Rect> {
-        Some(sdl2::rect::Rect::new(self.x().try_into().unwrap(),
-                                   self.y().try_into().unwrap(),
-                                   self.width(),
-                                   self.height()))
+impl From<Rect<u32>> for Option<sdl2::rect::Rect> {
+    fn from(val: Rect<u32>) -> Self {
+        Some(sdl2::rect::Rect::new(val.x().try_into().unwrap(),
+                                   val.y().try_into().unwrap(),
+                                   val.width(),
+                                   val.height()))
     }
 }
+
 
 #[derive(Clone)]
 pub struct Polygon {
