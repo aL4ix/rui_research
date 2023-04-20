@@ -175,7 +175,7 @@ def build_android():
     cwd = getcwd()
     print('')
     print('')
-    print(f'==================================================================')
+    print('=' * 79)
     print(f'CONGRATS! Debug APK generated at {cwd}/app/build/outputs/apk/debug')
 
 
