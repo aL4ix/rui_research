@@ -78,18 +78,15 @@ def generate_cargo_config(ndk_abs_path, config_path):
     template = f"""
 [target.aarch64-linux-android]
 ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
-linker ="{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux
--android26-clang"
+linker ="{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
 
 [target.armv7-linux-androideabi]
 ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
-linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux
--androideabi26-clang"
+linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
 
 [target.i686-linux-android]
 ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar"
-linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26
--clang"
+linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
     """
     with open(config_path, 'w') as f:
         f.write(template)
@@ -155,7 +152,7 @@ def build_android():
     mkdir(f'{jni_libs_path}/armeabi-v7a')
     mkdir(f'{jni_libs_path}/x86')
 
-    print('And copy the rust library into the android studio project, ready for'
+    print('And copy the rust library into the android studio project, ready for '
           'being included into the APK')
     copy(f'target/aarch64-linux-android/{BUILD_MODE}/{LIB_NAME}',
          f'{jni_libs_path}/arm64-v8a/libmain.so')
@@ -176,6 +173,9 @@ def build_android():
     check_call('./gradlew assembleDebug', shell=True)
     # Why debug, because release needs a certificate
     cwd = getcwd()
+    print('')
+    print('')
+    print(f'==================================================================')
     print(f'CONGRATS! Debug APK generated at {cwd}/app/build/outputs/apk/debug')
 
 
