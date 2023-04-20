@@ -13,6 +13,8 @@ pub struct TextureManager {
     last_id: usize,
 }
 
+type RcTexAndId = (Rc<RefCell<Texture>>, usize);
+
 impl TextureManager {
     pub fn new() -> TextureManager {
         TextureManager {
@@ -34,7 +36,7 @@ impl TextureManager {
     // }
     pub fn reserve(&mut self, tex_creator: &TextureCreator<WindowContext>, width: u32, height: u32,
                    format: PixelFormatEnum)
-                   -> Result<(Rc<RefCell<Texture>>, usize), Box<dyn Error>> {
+                   -> Result<RcTexAndId, Box<dyn Error>> {
         let tex = tex_creator.create_texture_static(format, width, height)?;
         let rc = Rc::new(RefCell::new(tex));
         let id = self.push(&rc);

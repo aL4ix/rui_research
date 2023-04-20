@@ -34,6 +34,7 @@ impl Shape {
         let poly = Polygon::new_square(size.clone(), radius as f32, color);
         Self::new(size, poly)
     }
+    #[allow(dead_code)]
     pub fn new_reg_poly(size: Vector2D<f32>, sides: u32, rotate: f32) -> Shape {
         let poly = Polygon::new_reg_poly(size.clone(), sides, rotate);
         Self::new(size, poly)

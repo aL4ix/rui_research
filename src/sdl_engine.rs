@@ -11,6 +11,7 @@ use sdl2::render::{Canvas, Texture, WindowCanvas};
 
 use crate::window::Window;
 
+#[allow(dead_code)]
 pub struct SDLEngine {
     sdl_context: sdl2::Sdl,
     sdl_video: VideoSubsystem,
@@ -20,6 +21,7 @@ pub struct SDLEngine {
     user_event_handler: Option<fn(&Event) -> MainLoopStatus>,
 }
 
+#[allow(dead_code)]
 #[derive(PartialEq, Eq)]
 pub enum MainLoopStatus {
     Continue,
@@ -50,6 +52,7 @@ impl SDLEngine {
     pub fn add_window(&mut self, window: Window) {
         self.windows.push(window);
     }
+    #[allow(dead_code)]
     pub fn set_user_event_handler(&mut self, user_event_handler: Option<fn(&Event) -> MainLoopStatus>) {
         self.user_event_handler = user_event_handler;
     }
@@ -73,7 +76,9 @@ impl SDLEngine {
                 } => return MainLoopStatus::Terminate,
                 // TODO fix getting hardcoded window
                 Event::KeyDown { keycode: Some(key), .. } => self.windows[0].event_key_down(key),
-                Event::MouseButtonDown { timestamp, window_id, which, mouse_btn, clicks, x, y } => self.windows[0].event_mouse_button_down(mouse_btn, x, y),
+                Event::MouseButtonDown { timestamp: _timestamp, window_id: _window_id, which: _which,
+                    mouse_btn, clicks: _clicks, x, y } =>
+                    self.windows[0].event_mouse_button_down(mouse_btn, x, y),
                 _ => {}
             }
         }

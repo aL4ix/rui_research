@@ -3,10 +3,8 @@ use std::path::Path;
 
 use env_logger::Target;
 use glyph_brush::ab_glyph::FontArc;
-use log::info;
 
 use crate::general::{Color, Vector2D};
-use crate::sdl_engine;
 use crate::sdl_engine::SDLEngine;
 use crate::utils::{Assets, SDLLoggerPipe};
 use crate::widgets::{Image, Shape, Text, Widget};
