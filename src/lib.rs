@@ -8,11 +8,10 @@ use sdl2::libc;
 mod texture;
 mod widgets;
 mod window;
-mod sdl_engine;
 mod general;
 mod main;
 mod utils;
-
+mod engines;
 
 #[no_mangle]
 pub extern fn SDL_main(_argc: libc::c_int, _argv: *const *const libc::c_char) -> libc::c_int {

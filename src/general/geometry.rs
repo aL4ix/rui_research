@@ -5,7 +5,7 @@ use sdl2::render::{TextureCreator, WindowCanvas};
 use sdl2::video::WindowContext;
 
 use crate::general::{Polygon, TexturedPolygon, Vector2D};
-use crate::sdl_engine::render_geometry;
+use crate::engines::sdl::render_geometry;
 use crate::texture::TextureManager;
 use crate::texture::SoftTexture;
 

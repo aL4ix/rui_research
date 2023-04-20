@@ -12,18 +12,18 @@ use crate::general::Geometry;
 use crate::texture::TextureManager;
 use crate::widgets::*;
 
-pub struct Window {
+pub struct WindowSpecs {
     widgets: BTreeMap<usize, Box<dyn Widget>>,
     geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
 }
 
 
-impl Window {
-    pub fn new() -> Result<Window, Box<(dyn Error)>> {
+impl WindowSpecs {
+    pub fn new() -> Result<WindowSpecs, Box<(dyn Error)>> {
         let widgets: BTreeMap<usize, Box<dyn Widget>> = BTreeMap::new();
 
-        Ok(Window {
+        Ok(WindowSpecs {
             widgets,
             geometries: Default::default(),
             tex_man: TextureManager::new(),
@@ -70,4 +70,14 @@ impl Window {
     pub fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32) {
         info!("{:?} {} {}", mouse_btn, x, y);
     }
+}
+
+pub trait Window {
+    fn get_specs(&self) -> &WindowSpecs;
+    fn event_key_down(&mut self, key: Keycode);
+    fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32);
+    fn build(&mut self) -> Result<(), Box<(dyn Error)>>;
+    fn render(&mut self) -> Result<(), Box<(dyn Error)>>;
+    fn clear_canvas(&mut self);
+    fn present_canvas(&mut self);
 }

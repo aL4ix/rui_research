@@ -42,7 +42,7 @@ impl TextureManager {
         let id = self.push(&rc);
         Ok((rc, id))
     }
-    pub fn garbage_collect(&mut self, tex_creator: TextureCreator<WindowContext>) {
+    pub fn garbage_collect(&mut self, _tex_creator: TextureCreator<WindowContext>) {
         let mut garbage = vec![];
         for (id, tex) in &self.textures {
             if Rc::strong_count(tex) == 1 {
@@ -52,30 +52,20 @@ impl TextureManager {
         for id in garbage {
             debug!("Killing tex: {}", id);
             let tex = self.textures.remove(&id).unwrap();
-            soft_texture_default_destroy(tex, &tex_creator);
+            // According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
+            // tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
+            // Note _tex_creator is moved, which means it disallows multi-threaded usages.
+            // Also we simply exit if this is not the last Arc or Mutex for this tex, otherwise the next caller
+            // to lock the mutex would see undefined memory.
+            let refcell = match Rc::try_unwrap(tex) {
+                Ok(x) => x,
+                Err(_) => return, // Maybe panic here
+            };
+            let internal_tex = refcell.into_inner();
+            unsafe {
+                internal_tex.destroy()
+            }
+            debug!("Tex destroyed!");
         }
     }
-}
-
-
-/// According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
-/// tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
-/// Note _tex_creator is a reference, which means it disallows multi-threaded usages.
-/// Also we simply exit if this is not the last Arc or Mutex for this tex, otherwise the next caller
-/// to lock the mutex would see undefined memory.
-pub fn soft_texture_default_destroy(tex: Rc<RefCell<Texture>>,
-                                    _tex_creator: &TextureCreator<WindowContext>) {
-    // TODO integrate to TexMan
-    let refcell = match Rc::try_unwrap(tex) {
-        Ok(x) => x,
-        Err(_) => return, // Maybe panic here
-    };
-    let internal_tex = refcell.into_inner();
-    // if _tex_creator.upgrade().is_none() {
-    //     return;
-    // }
-    unsafe {
-        internal_tex.destroy()
-    }
-    debug!("Tex destroyed!");
 }

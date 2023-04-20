@@ -9,7 +9,7 @@ use crate::general::{Color, Geometry, Size2D, Vector2D};
 use crate::texture::{AlphaSoftTexture, SoftTexture};
 use crate::widgets::Widget;
 use crate::widgets::widget::private;
-use crate::window::Window;
+use crate::window::WindowSpecs;
 
 #[derive(Debug)]
 pub struct Text {
@@ -60,7 +60,7 @@ impl Text {
         self.text = text.to_string();
         self.needs_update = true;
     }
-    pub fn get_by_id(window: &mut Window, id: usize) -> Result<&mut Text, Box<dyn Error>> {
+    pub fn get_by_id(window: &mut WindowSpecs, id: usize) -> Result<&mut Text, Box<dyn Error>> {
         if let Some(widget) = window.get_widget_by_id(id) {
             return if let Some(text) = widget.downcast_mut::<Text>() {
                 Ok(text)

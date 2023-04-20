@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::default::Default;
+use std::error::Error;
 use std::ptr;
 
 use emscripten_main_loop::MainLoopEvent;
@@ -6,17 +9,19 @@ use log::debug;
 use sdl2::{EventPump, init, sys, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::Color;
-use sdl2::render::{Canvas, Texture, WindowCanvas};
+use sdl2::render::{Canvas, Texture};
 
-use crate::window::Window;
+pub use sdl_window::SDLWindow;
+
+use crate::window::{Window, WindowSpecs};
+
+mod sdl_window;
 
 #[allow(dead_code)]
 pub struct SDLEngine {
     sdl_context: sdl2::Sdl,
     sdl_video: VideoSubsystem,
-    canvas: WindowCanvas,
-    windows: Vec<Window>,
+    windows: HashMap<u32, SDLWindow>,
     event_pump: EventPump,
     user_event_handler: Option<fn(&Event) -> MainLoopStatus>,
 }
@@ -30,27 +35,28 @@ pub enum MainLoopStatus {
 }
 
 impl SDLEngine {
-    pub fn init() -> Result<SDLEngine, Box<(dyn std::error::Error)>> {
+    pub fn init() -> Result<SDLEngine, Box<(dyn Error)>> {
         let sdl_context = init()?;
         debug!("RUI Started SDL");
         let sdl_video = sdl_context.video()?;
-        let sdl_window = sdl_video.window("Title", 800, 600).build()?;
         debug!("RUI Started video");
-        let canvas = sdl_window.into_canvas().build()?;
 
         let event_pump = sdl_context.event_pump()?;
         let sdl_engine = SDLEngine {
             sdl_context,
             sdl_video,
-            canvas,
-            windows: vec![],
+            windows: Default::default(),
             event_pump,
             user_event_handler: None,
         };
         Ok(sdl_engine)
     }
-    pub fn add_window(&mut self, window: Window) {
-        self.windows.push(window);
+    pub fn add_window(&mut self, window_specs: WindowSpecs) -> Result<(), Box<dyn Error>> {
+        let sdl_window = self.sdl_video.window("Title1", 800, 600).build()?;
+        let id = sdl_window.id();
+        debug!("Created window {}", id);
+        self.windows.insert(id, SDLWindow::new(window_specs, sdl_window)?);
+        Ok(())
     }
     #[allow(dead_code)]
     pub fn set_user_event_handler(&mut self, user_event_handler: Option<fn(&Event) -> MainLoopStatus>) {
@@ -74,11 +80,10 @@ impl SDLEngine {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => return MainLoopStatus::Terminate,
-                // TODO fix getting hardcoded window
-                Event::KeyDown { keycode: Some(key), .. } => self.windows[0].event_key_down(key),
-                Event::MouseButtonDown { timestamp: _timestamp, window_id: _window_id, which: _which,
-                    mouse_btn, clicks: _clicks, x, y } =>
-                    self.windows[0].event_mouse_button_down(mouse_btn, x, y),
+                Event::KeyDown { window_id, keycode: Some(key), .. } =>
+                    self.windows.get_mut(&window_id).expect("").event_key_down(key),
+                Event::MouseButtonDown { window_id, mouse_btn, x, y, .. } =>
+                    self.windows.get(&window_id).expect("").event_mouse_button_down(mouse_btn, x, y),
                 _ => {}
             }
         }
@@ -91,18 +96,16 @@ impl emscripten_main_loop::MainLoop for SDLEngine {
         if self.process_events() == MainLoopStatus::Terminate {
             return Terminate;
         }
-        for window in &mut self.windows {
+        for (_, window) in &mut self.windows {
             window.build().expect("Build()");
         }
 
-        self.canvas.set_draw_color(Color::RGB(0, 0, 0));
-        self.canvas.clear();
-
-        for window in &mut self.windows {
-            window.render(&mut self.canvas).expect("Render()");
+        for (_, window) in &mut self.windows {
+            window.clear_canvas();
+            window.render().expect("Render()");
+            window.present_canvas();
         }
 
-        self.canvas.present();
         Continue
     }
 }

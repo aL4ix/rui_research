@@ -5,10 +5,10 @@
 mod texture;
 mod widgets;
 mod window;
-mod sdl_engine;
 mod general;
 mod main;
 mod utils;
+mod engines;
 
 fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     main::main()

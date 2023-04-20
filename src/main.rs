@@ -4,11 +4,11 @@ use std::path::Path;
 use env_logger::Target;
 use glyph_brush::ab_glyph::FontArc;
 
+use crate::engines::sdl::SDLEngine;
 use crate::general::{Color, Vector2D};
-use crate::sdl_engine::SDLEngine;
 use crate::utils::{Assets, SDLLoggerPipe};
 use crate::widgets::{Image, Shape, Text, Widget};
-use crate::window::Window;
+use crate::window::WindowSpecs;
 
 /*
 Start with one DSL, it could be empty, declare it old_dsl
@@ -39,7 +39,7 @@ end up calling this main()
  */
 pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     std::env::set_var("RUST_BACKTRACE", "full");
-    std::env::set_var("RUST_LOG", "info");
+    // std::env::set_var("RUST_LOG", "info");
     env_logger::builder()
         .format_timestamp(None)
         .format(|buf, record| {
@@ -60,7 +60,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // let image = rx.iter().next().unwrap();
 
     // Single-threaded
-    let mut window = Window::new()?;
+    let mut window = WindowSpecs::new()?;
     let mut image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")))?;
     image.set_position(Vector2D::new(0.0, 100.0));
 
@@ -70,7 +70,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let font_path = "assets/Nouveau_IBM.ttf";
     let font_vec = Assets::read(font_path)?;
     let font = FontArc::try_from_vec(font_vec)?;
-    let text = Text::new(2, "RUI", 300.0, font,
+    let text = Text::new(2, "RUI", 300.0, font.clone(),
                          Color::new(50, 50, 255, 200));
     window.add_widget(2, Box::new(text));
 
@@ -78,11 +78,15 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
                                       Color::new(255, 255, 255, 255));
     shape.set_position(Vector2D::new(100.0, 100.0));
     window.add_widget(1, Box::from(shape));
-    sdl_engine.add_window(window);
+    sdl_engine.add_window(window)?;
+    // let mut w2 = WindowSpecs::new()?;
+    // let t2 = Text::new(1, "w2", 30.0, font, Color::new(255, 255, 255, 128));
+    // w2.add_widget(1, Box::new(t2));
+    // sdl_engine.add_window(w2)?;
 
     // sdl_engine.set_user_event_handler(Some(|event| {
-    //     info!("{:?}", event);
-    //     sdl_engine::MainLoopStatus::Continue
+    //     log::info!("{:?}", event);
+    //     crate::engines::sdl::MainLoopStatus::Continue
     // }));
 
     sdl_engine.main_loop();
