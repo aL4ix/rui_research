@@ -36,8 +36,7 @@ def comment_line(file, line_to_comment):
                 found = True
             f.write(f'{line}\n')
     if not found:
-        raise LookupError(
-            f'Could not find line "{line_to_comment}" in file {file}')
+        raise LookupError(f'Could not find line "{line_to_comment}" in file {file}')
 
 
 def process_section_in_gradle(file, section, comment_action):
@@ -72,35 +71,39 @@ def process_section_in_gradle(file, section, comment_action):
 
 def check_path_exists(path, name):
     if not exists(path):
-        raise FileNotFoundError(
-            f'{name} not found at: {path}')
+        raise FileNotFoundError(f'{name} not found at: {path}')
 
 
 def generate_cargo_config(ndk_abs_path, config_path):
     template = f"""
 [target.aarch64-linux-android]
 ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android-ar"
-linker ="{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang"
+linker ="{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux
+-android26-clang"
 
 [target.armv7-linux-androideabi]
 ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/arm-linux-androideabi-ar"
-linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi26-clang"
+linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux
+-androideabi26-clang"
 
 [target.i686-linux-android]
 ar = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android-ar"
-linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26-clang"
+linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-android26
+-clang"
     """
     with open(config_path, 'w') as f:
         f.write(template)
 
 
 def build_android():
+    print('Staring build_android()')
     original_cwd = getcwd()
     check_path_exists(f'../{RUST_SDL2_REPO}', 'Rust-SDL2 repo')
     android_sdk_abs_path = expanduser(ANDROID_SDK_PATH)
     check_path_exists(android_sdk_abs_path, 'Android SDK')
 
     if not exists(f'../{ANDROID_PROJECT_NAME}'):
+        print('Setting up Android project for the first time')
         ndk_abs_path = expanduser(NDK_PATH)
         check_path_exists(ndk_abs_path, 'NDK path')
         generate_cargo_config(ndk_abs_path, expanduser('~/.cargo/config'))
@@ -115,43 +118,35 @@ def build_android():
                    'APP_PLATFORM=android-19', shell=True)
         copytree('android-project', f'../{ANDROID_PROJECT_NAME}')
         chdir('..')
-        check_call(f'ln -s `pwd`/SDL {ANDROID_PROJECT_NAME}/app/jni/',
-                   shell=True)
-        process_section_in_gradle(
-            f'{ANDROID_PROJECT_NAME}/app/build.gradle', 'ndkBuild', True)
-        process_section_in_gradle(
-            f'{ANDROID_PROJECT_NAME}/app/build.gradle', 'cmake', False)
+        check_call(f'ln -s `pwd`/SDL {ANDROID_PROJECT_NAME}/app/jni/', shell=True)
+        process_section_in_gradle(f'{ANDROID_PROJECT_NAME}/app/build.gradle', 'ndkBuild',
+                                  True)
+        process_section_in_gradle(f'{ANDROID_PROJECT_NAME}/app/build.gradle', 'cmake',
+                                  False)
         comment_line(f'{ANDROID_PROJECT_NAME}/app/jni/CMakeLists.txt',
                      'add_subdirectory(src)')
         with open(f'{ANDROID_PROJECT_NAME}/local.properties', 'w') as f:
             f.write(f'sdk.dir={android_sdk_abs_path}')
         chdir(original_cwd)
 
-    # Copy sdl2 libs into rust's build dir
+    print('Copy sdl2 libs into rust\'s build dir')
     makedirs(f'target/aarch64-linux-android/{BUILD_MODE}/deps/', exist_ok=True)
-    makedirs(f'target/armv7-linux-androideabi/{BUILD_MODE}/deps/',
-             exist_ok=True)
+    makedirs(f'target/armv7-linux-androideabi/{BUILD_MODE}/deps/', exist_ok=True)
     makedirs(f'target/i686-linux-android/{BUILD_MODE}/deps/', exist_ok=True)
     copytree(f'{SDL2_LIBS_PATH}/arm64-v8a',
-             f'target/aarch64-linux-android/{BUILD_MODE}/deps/',
-             dirs_exist_ok=True)
+             f'target/aarch64-linux-android/{BUILD_MODE}/deps/', dirs_exist_ok=True)
     copytree(f'{SDL2_LIBS_PATH}/armeabi-v7a',
-             f'target/armv7-linux-androideabi/{BUILD_MODE}/deps/',
-             dirs_exist_ok=True)
-    copytree(f'{SDL2_LIBS_PATH}/x86',
-             f'target/i686-linux-android/{BUILD_MODE}/deps/',
+             f'target/armv7-linux-androideabi/{BUILD_MODE}/deps/', dirs_exist_ok=True)
+    copytree(f'{SDL2_LIBS_PATH}/x86', f'target/i686-linux-android/{BUILD_MODE}/deps/',
              dirs_exist_ok=True)
 
-    # Build the libraries
+    print('Build the libraries')
     build_mode = '' if BUILD_MODE == 'debug' else f'--{BUILD_MODE}'
-    check_call(f'cargo build --target aarch64-linux-android {build_mode}',
-               shell=True)
-    check_call(f'cargo build --target armv7-linux-androideabi {build_mode}',
-               shell=True)
-    check_call(f'cargo build --target i686-linux-android {build_mode}',
-               shell=True)
+    check_call(f'cargo build --target aarch64-linux-android {build_mode}', shell=True)
+    check_call(f'cargo build --target armv7-linux-androideabi {build_mode}', shell=True)
+    check_call(f'cargo build --target i686-linux-android {build_mode}', shell=True)
 
-    # Prepare folders...
+    print('Prepare folders...')
     jni_libs_path = f'../{ANDROID_PROJECT_NAME}/app/src/main/jniLibs'
     with suppress(FileNotFoundError):
         rmtree(f'{jni_libs_path}')
@@ -160,8 +155,8 @@ def build_android():
     mkdir(f'{jni_libs_path}/armeabi-v7a')
     mkdir(f'{jni_libs_path}/x86')
 
-    # And copy the rust library into the android studio project, ready for
-    # being included into the APK
+    print('And copy the rust library into the android studio project, ready for'
+          'being included into the APK')
     copy(f'target/aarch64-linux-android/{BUILD_MODE}/{LIB_NAME}',
          f'{jni_libs_path}/arm64-v8a/libmain.so')
     copy(f'target/armv7-linux-androideabi/{BUILD_MODE}/{LIB_NAME}',
@@ -169,14 +164,14 @@ def build_android():
     copy(f'target/i686-linux-android/{BUILD_MODE}/{LIB_NAME}',
          f'{jni_libs_path}/x86/libmain.so')
 
-    # Copy assets
+    print('Copy assets')
     assets_path = f'../{ANDROID_PROJECT_NAME}/app/src/main/assets'
     if exists(assets_path):
         rmtree(assets_path)
     mkdir(assets_path)
     copytree('assets', f'{assets_path}/assets')
 
-    # Assemble debug
+    print('Assemble debug')
     chdir(fr'../{ANDROID_PROJECT_NAME}')
     check_call('./gradlew assembleDebug', shell=True)
     # Why debug, because release needs a certificate

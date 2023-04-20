@@ -9,5 +9,7 @@ fi
 source "$HOME/emsdk/emsdk_env.sh" && # Replace with your emscripten sdk's path
 cargo build --bin rui_research --target=wasm32-unknown-emscripten --release &&
 echo &&
-echo You can now open a browser at http://localhost:8000 &&
+echo &&
+echo =========================================================================== &&
+echo You can open a browser at http://localhost:8000. CTRL-C to close the server &&
 python3 -m http.server --directory target/deploy
