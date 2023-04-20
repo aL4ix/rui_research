@@ -9,7 +9,6 @@ mod texture;
 mod widgets;
 mod window;
 mod sdl_engine;
-mod tex_man;
 mod general;
 mod main;
 mod utils;

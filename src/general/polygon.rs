@@ -1,125 +1,8 @@
 use std::fmt::{Debug, Formatter};
-use std::ops::Deref;
-use std::sync::{Arc, Mutex};
 
-use sdl2::render::{TextureCreator, WindowCanvas};
 use sdl2::sys;
-use sdl2::video::WindowContext;
 
-use crate::sdl_engine::render_geometry;
-use crate::tex_man::TextureManager;
-use crate::texture::SoftTexture;
-
-/// Alpha of 255 is opaque, 0 is transparent
-#[derive(Clone, Debug)]
-pub struct Color {
-    r: u8,
-    g: u8,
-    b: u8,
-    a: u8,
-}
-
-impl Color {
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
-        Self { r, g, b, a }
-    }
-    pub fn r(&self) -> u8 {
-        self.r
-    }
-    pub fn g(&self) -> u8 {
-        self.g
-    }
-    pub fn b(&self) -> u8 {
-        self.b
-    }
-    pub fn a(&self) -> u8 {
-        self.a
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Vector2D<T> {
-    x: T,
-    y: T,
-}
-
-impl<T: Copy + Default> Vector2D<T> {
-    pub fn new(x: T, y: T) -> Vector2D<T> {
-        Vector2D {
-            x,
-            y,
-        }
-    }
-    pub fn x(&self) -> T {
-        self.x
-    }
-    pub fn y(&self) -> T {
-        self.y
-    }
-    pub fn unpack(&self) -> (T, T) {
-        (self.x, self.y)
-    }
-}
-
-impl<T: Copy + Default> Default for Vector2D<T> {
-    fn default() -> Self {
-        Self::new(Default::default(), Default::default())
-    }
-}
-
-#[derive(Clone, Debug, Copy)]
-pub struct Rect<T> {
-    x: T,
-    y: T,
-    width: T,
-    height: T,
-}
-
-impl<T: std::ops::Add<Output=T> + Copy + Default> Rect<T> {
-    pub fn new(x: T, y: T, width: T, height: T) -> Rect<T> {
-        Rect {
-            x,
-            y,
-            width,
-            height,
-        }
-    }
-    pub fn new_zero() -> Rect<T> {
-        Self::new(Default::default(), Default::default(), Default::default(),
-                  Default::default())
-    }
-    pub fn bottom(&self) -> T {
-        self.y + self.height
-    }
-    pub fn right(&self) -> T {
-        self.x + self.width
-    }
-    pub fn x(&self) -> T {
-        self.x
-    }
-    pub fn y(&self) -> T {
-        self.y
-    }
-    pub fn width(&self) -> T {
-        self.width
-    }
-    pub fn height(&self) -> T {
-        self.height
-    }
-    pub fn unpack(&self) -> (T, T, T, T) {
-        (self.x, self.y, self.width, self.height)
-    }
-}
-
-impl From<Rect<u32>> for Option<sdl2::rect::Rect> {
-    fn from(val: Rect<u32>) -> Self {
-        Some(sdl2::rect::Rect::new(val.x().try_into().unwrap(),
-                                   val.y().try_into().unwrap(),
-                                   val.width(),
-                                   val.height()))
-    }
-}
-
+use crate::general::{Color, Rect, Vector2D};
 
 #[derive(Clone)]
 pub struct Polygon {
@@ -154,12 +37,12 @@ impl Polygon {
     pub fn new_rect_for_texture(rect: Rect<u32>, alpha_for_all_vertices: u8) -> Polygon {
         let color_for_all = Color::new(255, 255, 255, alpha_for_all_vertices);
         let top_left = Self::new_vertex(
-            Vector2D::new(rect.x as f32, rect.y as f32),
+            Vector2D::new(rect.x() as f32, rect.y() as f32),
             color_for_all.clone(),
             Vector2D::new(0.0, 0.0),
         );
         let bottom_left = Self::new_vertex(
-            Vector2D::new(rect.x as f32, rect.bottom() as f32),
+            Vector2D::new(rect.x() as f32, rect.bottom() as f32),
             color_for_all.clone(),
             Vector2D::new(0.0, 1.0),
         );
@@ -169,7 +52,7 @@ impl Polygon {
             Vector2D::new(1.0, 1.0),
         );
         let top_right = Self::new_vertex(
-            Vector2D::new(rect.right() as f32, rect.y as f32),
+            Vector2D::new(rect.right() as f32, rect.y() as f32),
             color_for_all,
             Vector2D::new(1.0, 0.0),
         );
@@ -270,70 +153,4 @@ impl Polygon {
             },
         }
     }
-}
-
-
-/// A representation of SDL's geometry as defined in SDL_RenderGeometry
-#[derive(Clone, Debug)]
-pub struct TexturedPolygon {
-    pub(crate) poly: Polygon,
-    pub(crate) tex: Option<Arc<Mutex<dyn SoftTexture>>>,
-}
-
-/// It's a group of multiple polygons
-#[derive(Debug, Clone)]
-pub struct Geometry {
-    #[allow(dead_code)]
-    pub(crate) class: String,
-    pub(crate) polygons: Vec<TexturedPolygon>,
-}
-
-impl Geometry {
-    pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
-                  tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
-        for tex_poly in &mut self.polygons {
-            // info!("{:?}", tex_poly);
-            if let Some(arc_tex) = &mut tex_poly.tex {
-                let mut guard = arc_tex.lock().unwrap();
-                // info!("{:?}", guard);
-                let rendered_tex = guard.render(tex_creator, tex_man)?;
-                let guard = rendered_tex.borrow();
-                let tex = Some(guard.deref());
-                render_geometry(canvas, tex, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
-            } else {
-                // Is there a way to avoid duplicating render_geometry? the tex mutex guard is blocking it
-                render_geometry(canvas, None, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
-            }
-        }
-        Ok(())
-    }
-    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Geometry {
-        Geometry {
-            class: class.to_string(),
-            polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
-        }
-    }
-    pub fn translate(&mut self, position: &Vector2D<f32>) {
-        for tex_poly in &mut self.polygons {
-            for mut ver in &mut tex_poly.poly.vers {
-                ver.position.x += position.x;
-                ver.position.y += position.y;
-            }
-        }
-    }
-}
-
-impl Default for Geometry {
-    fn default() -> Self {
-        Geometry {
-            class: "".to_string(),
-            polygons: vec![],
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct Size2D {
-    pub(crate) width: u32,
-    pub(crate) height: u32,
 }

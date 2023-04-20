@@ -2,13 +2,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::error::Error;
 use std::rc::Rc;
-use log::{debug};
 
+use log::debug;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, TextureCreator};
 use sdl2::video::WindowContext;
-
-use crate::texture::soft_texture_default_destroy;
 
 pub struct TextureManager {
     textures: HashMap<usize, Rc<RefCell<Texture>>>,
@@ -55,4 +53,27 @@ impl TextureManager {
             soft_texture_default_destroy(tex, &tex_creator);
         }
     }
+}
+
+
+/// According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
+/// tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
+/// Note _tex_creator is a reference, which means it disallows multi-threaded usages.
+/// Also we simply exit if this is not the last Arc or Mutex for this tex, otherwise the next caller
+/// to lock the mutex would see undefined memory.
+pub fn soft_texture_default_destroy(tex: Rc<RefCell<Texture>>,
+                                    _tex_creator: &TextureCreator<WindowContext>) {
+    // TODO integrate to TexMan
+    let refcell = match Rc::try_unwrap(tex) {
+        Ok(x) => x,
+        Err(_) => return, // Maybe panic here
+    };
+    let internal_tex = refcell.into_inner();
+    // if _tex_creator.upgrade().is_none() {
+    //     return;
+    // }
+    unsafe {
+        internal_tex.destroy()
+    }
+    debug!("Tex destroyed!");
 }

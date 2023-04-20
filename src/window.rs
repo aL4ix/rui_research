@@ -9,7 +9,7 @@ use sdl2::mouse::MouseButton;
 use sdl2::render::WindowCanvas;
 
 use crate::general::Geometry;
-use crate::tex_man::TextureManager;
+use crate::texture::TextureManager;
 use crate::widgets::*;
 
 pub struct Window {
