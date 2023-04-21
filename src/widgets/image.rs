@@ -20,6 +20,7 @@ pub struct Image {
 }
 
 impl Image {
+    /// An *id* of zero means it will be set to an automatic value when adding it to a window
     pub fn from_bmp(id: usize, path: Box<Path>) -> Result<Image, String> {
         let tex = RAMSoftTexture::from_bmp(path)?;
         let size = Vector2D::new(tex.width() as f32, tex.height() as f32);
@@ -71,6 +72,9 @@ impl private::PrivateWidgetMethods for Image {
 impl Widget for Image {
     fn id(&self) -> usize {
         self.id
+    }
+    fn set_id(&mut self, id: usize) {
+        self.id = id;
     }
     fn x(&self) -> f32 {
         self.position.x()

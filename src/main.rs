@@ -61,7 +61,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
 
     // Single-threaded
     let mut window_builder = WindowBuilder::new()?;
-    let mut image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")))?;
+    let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")))?;
     image.set_position(Vector2D::new(0.0, 100.0));
 
     // TODO what to do with errors in widget constructors
@@ -70,19 +70,19 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let font_path = "assets/Nouveau_IBM.ttf";
     let font_vec = Assets::read(font_path)?;
     let font = FontArc::try_from_vec(font_vec)?;
-    let text = Text::new(2, "RUI", 300.0, font.clone(),
+    let text = Text::new(0, "RUI", 300.0, font.clone(),
                          Color::new(50, 50, 255, 200));
     window_builder.add_widget(2, Box::new(text));
 
-    let mut shape = Shape::new_square(Vector2D::new(100.0, 50.0), 0,
+    let mut shape = Shape::new_square(0, Vector2D::new(100.0, 50.0), 0,
                                       Color::new(255, 255, 255, 255));
     shape.set_position(Vector2D::new(100.0, 100.0));
     window_builder.add_widget(1, Box::from(shape));
     sdl_engine.add_window_builder(window_builder)?;
-    // let mut w2 = WindowSpecs::new()?;
-    // let t2 = Text::new(1, "w2", 30.0, font, Color::new(255, 255, 255, 128));
+    // let mut w2 = WindowBuilder::new()?;
+    // let t2 = Text::new(0, "w2", 30.0, font, Color::new(255, 255, 255, 128));
     // w2.add_widget(1, Box::new(t2));
-    // sdl_engine.add_window(w2)?;
+    // sdl_engine.add_window_builder(w2)?;
 
     // sdl_engine.set_user_event_handler(Some(|event| {
     //     log::info!("{:?}", event);

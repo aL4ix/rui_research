@@ -20,8 +20,8 @@ pub(in crate::widgets) mod private {
 }
 
 pub trait Widget: Any + Debug + Send + private::PrivateWidgetMethods {
-    // TODO global ids
     fn id(&self) -> usize;
+    fn set_id(&mut self, id: usize);
     fn x(&self) -> f32;
     fn y(&self) -> f32;
     fn position(&self) -> &Vector2D<f32>;
@@ -35,7 +35,7 @@ pub trait Widget: Any + Debug + Send + private::PrivateWidgetMethods {
         self.set_needs_translation(false);
         geometry
     }
-    fn build(&mut self) -> Geometry {
+    fn build_geometry(&mut self) -> Geometry {
         if self.needs_update() {
             self.update_geometry();
             self.set_needs_update(false);

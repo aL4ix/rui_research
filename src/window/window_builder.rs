@@ -1,11 +1,12 @@
-use log::info;
+use std::collections::btree_map::BTreeMap;
+use std::error::Error;
+
+use log::{debug, info};
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 use sdl2::render::WindowCanvas;
-use std::collections::btree_map::BTreeMap;
-use std::error::Error;
 
 use crate::general::Geometry;
 use crate::texture::TextureManager;
@@ -15,6 +16,7 @@ pub struct WindowBuilder {
     widgets: BTreeMap<usize, Box<dyn Widget>>,
     geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
+    widget_global_id: usize,
 }
 
 impl WindowBuilder {
@@ -25,9 +27,15 @@ impl WindowBuilder {
             widgets,
             geometries: Default::default(),
             tex_man: TextureManager::new(),
+            widget_global_id: 1, // Starting id
         })
     }
-    pub fn add_widget(&mut self, render_id: usize, widget: Box<dyn Widget>) {
+    pub fn add_widget(&mut self, render_id: usize, mut widget: Box<dyn Widget>) {
+        if widget.id() == 0 {
+            debug!("Setting id={} automatically to {:?}", self.widget_global_id, widget);
+            widget.set_id(self.widget_global_id);
+            self.widget_global_id += 1;
+        }
         self.widgets.insert(render_id, widget);
     }
     pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
@@ -40,7 +48,7 @@ impl WindowBuilder {
             let functional_iter = self.widgets.iter_mut();
 
         self.geometries = functional_iter
-            .map(|w| (*w.0, w.1.build()))
+            .map(|w| (*w.0, w.1.build_geometry()))
             .collect();
 
         // Delete not needed widgets
@@ -59,10 +67,11 @@ impl WindowBuilder {
         self.widgets.values_mut().find(|widget| widget.id() == id)
     }
     pub fn event_key_down(&mut self, key: Keycode) {
-        if let Ok(text) = Text::get_by_id(self, 2) {
+        let result = Text::get_by_id(self, 2);
+        if let Ok(text) = result {
             text.set_text(&key.to_string())
         } else {
-            panic!("key_down")
+            panic!("key_down {:?}", result)
         }
     }
     pub fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32) {

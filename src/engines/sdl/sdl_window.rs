@@ -27,28 +27,22 @@ impl Window for SDLWindow {
     fn get_builder(&self) -> &WindowBuilder {
         &self.window_builder
     }
-
     fn event_key_down(&mut self, key: Keycode) {
         self.window_builder.event_key_down(key)
     }
-
     fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32) {
         self.window_builder.event_mouse_button_down(mouse_btn, x, y)
     }
-
     fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
         self.window_builder.build_geometry()
     }
-
     fn render(&mut self) -> Result<(), Box<(dyn Error)>> {
         self.window_builder.render(&mut self.canvas)
     }
-
     fn clear_canvas(&mut self) {
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
     }
-
     fn present_canvas(&mut self) {
         self.canvas.present();
     }
