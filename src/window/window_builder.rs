@@ -11,17 +11,17 @@ use crate::general::Geometry;
 use crate::texture::TextureManager;
 use crate::widgets::*;
 
-pub struct WindowSpecs {
+pub struct WindowBuilder {
     widgets: BTreeMap<usize, Box<dyn Widget>>,
     geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
 }
 
-impl WindowSpecs {
-    pub fn new() -> Result<WindowSpecs, Box<(dyn Error)>> {
+impl WindowBuilder {
+    pub fn new() -> Result<WindowBuilder, Box<(dyn Error)>> {
         let widgets: BTreeMap<usize, Box<dyn Widget>> = BTreeMap::new();
 
-        Ok(WindowSpecs {
+        Ok(WindowBuilder {
             widgets,
             geometries: Default::default(),
             tex_man: TextureManager::new(),
@@ -30,7 +30,7 @@ impl WindowSpecs {
     pub fn add_widget(&mut self, render_id: usize, widget: Box<dyn Widget>) {
         self.widgets.insert(render_id, widget);
     }
-    pub fn build(&mut self) -> Result<(), Box<(dyn Error)>> {
+    pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
         // Check if new widgets are needed based on DSL
         self.geometries.clear();
 

@@ -13,7 +13,7 @@ use sdl2::render::{Canvas, Texture};
 
 pub use sdl_window::SDLWindow;
 
-use crate::window::{Window, WindowSpecs};
+use crate::window::{Window, WindowBuilder};
 
 mod sdl_window;
 
@@ -51,7 +51,7 @@ impl SDLEngine {
         };
         Ok(sdl_engine)
     }
-    pub fn add_window(&mut self, window_specs: WindowSpecs) -> Result<(), Box<dyn Error>> {
+    pub fn add_window_builder(&mut self, window_specs: WindowBuilder) -> Result<(), Box<dyn Error>> {
         let sdl_window = self.sdl_video.window("Title1", 800, 600).build()?;
         let id = sdl_window.id();
         debug!("Created window {}", id);
@@ -96,11 +96,11 @@ impl emscripten_main_loop::MainLoop for SDLEngine {
         if self.process_events() == MainLoopStatus::Terminate {
             return Terminate;
         }
-        for (_, window) in &mut self.windows {
-            window.build().expect("Build()");
+        for window in &mut self.windows.values_mut() {
+            window.build_geometry().expect("Build()");
         }
 
-        for (_, window) in &mut self.windows {
+        for window in &mut self.windows.values_mut() {
             window.clear_canvas();
             window.render().expect("Render()");
             window.present_canvas();

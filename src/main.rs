@@ -8,7 +8,7 @@ use crate::engines::sdl::SDLEngine;
 use crate::general::{Color, Vector2D};
 use crate::utils::{Assets, SDLLoggerPipe};
 use crate::widgets::{Image, Shape, Text, Widget};
-use crate::window::WindowSpecs;
+use crate::window::WindowBuilder;
 
 /*
 Start with one DSL, it could be empty, declare it old_dsl
@@ -60,25 +60,25 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // let image = rx.iter().next().unwrap();
 
     // Single-threaded
-    let mut window = WindowSpecs::new()?;
+    let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(1, Box::from(Path::new("assets/image.bmp")))?;
     image.set_position(Vector2D::new(0.0, 100.0));
 
     // TODO what to do with errors in widget constructors
-    window.add_widget(0, Box::new(image));
+    window_builder.add_widget(0, Box::new(image));
 
     let font_path = "assets/Nouveau_IBM.ttf";
     let font_vec = Assets::read(font_path)?;
     let font = FontArc::try_from_vec(font_vec)?;
     let text = Text::new(2, "RUI", 300.0, font.clone(),
                          Color::new(50, 50, 255, 200));
-    window.add_widget(2, Box::new(text));
+    window_builder.add_widget(2, Box::new(text));
 
     let mut shape = Shape::new_square(Vector2D::new(100.0, 50.0), 0,
                                       Color::new(255, 255, 255, 255));
     shape.set_position(Vector2D::new(100.0, 100.0));
-    window.add_widget(1, Box::from(shape));
-    sdl_engine.add_window(window)?;
+    window_builder.add_widget(1, Box::from(shape));
+    sdl_engine.add_window_builder(window_builder)?;
     // let mut w2 = WindowSpecs::new()?;
     // let t2 = Text::new(1, "w2", 30.0, font, Color::new(255, 255, 255, 128));
     // w2.add_widget(1, Box::new(t2));
