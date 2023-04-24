@@ -83,7 +83,7 @@ impl SDLEngine {
                 Event::KeyDown { window_id, keycode: Some(key), .. } =>
                     self.windows.get_mut(&window_id).expect("").event_key_down(key),
                 Event::MouseButtonDown { window_id, mouse_btn, x, y, .. } =>
-                    self.windows.get(&window_id).expect("").event_mouse_button_down(mouse_btn, x, y),
+                    self.windows.get_mut(&window_id).expect("").event_mouse_button_down(mouse_btn, x, y),
                 _ => {}
             }
         }

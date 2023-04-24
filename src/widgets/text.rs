@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::Debug;
 use std::sync::{Arc, Mutex};
 
@@ -7,9 +6,8 @@ use log::debug;
 
 use crate::general::{Color, Geometry, Size2D, Vector2D};
 use crate::texture::{AlphaSoftTexture, SoftTexture};
-use crate::widgets::Widget;
-use crate::widgets::widget::private;
-use crate::window::WindowBuilder;
+use crate::widgets::Primitive;
+use crate::widgets::primitive::private::PrivatePrimitiveMethods;
 
 #[derive(Debug)]
 pub struct Text {
@@ -60,16 +58,6 @@ impl Text {
     pub fn set_text(&mut self, text: &str) {
         self.text = text.to_string();
         self.needs_update = true;
-    }
-    pub fn get_by_id(window: &mut WindowBuilder, id: usize) -> Result<&mut Text, Box<dyn Error>> {
-        if let Some(widget) = window.get_widget_by_id(id) {
-            return if let Some(text) = widget.downcast_mut::<Text>() {
-                Ok(text)
-            } else {
-                Err(Box::from("Not a Text"))
-            };
-        }
-        Err(Box::from("Not found"))
     }
     fn text_to_alpha_data(text: &str, font_size: f32, font: FontArc) -> (Vec<u8>, u32, u32) {
         let bounds = Self::get_texture_bounds(text, font_size, font.clone());
@@ -126,7 +114,7 @@ impl Text {
     }
 }
 
-impl private::PrivateWidgetMethods for Text {
+impl PrivatePrimitiveMethods for Text {
     fn update_geometry(&mut self) {
         let (tex, geometry, size) =
             Text::get_tex_geometry_and_size(&self.text, self.font_size, self.font.clone(),
@@ -158,7 +146,7 @@ impl private::PrivateWidgetMethods for Text {
     }
 }
 
-impl Widget for Text {
+impl Primitive for Text {
     fn id(&self) -> usize {
         self.id
     }
@@ -182,5 +170,8 @@ impl Widget for Text {
     }
     fn height(&self) -> f32 {
         self.size.y()
+    }
+    fn size(&self) -> &Vector2D<f32> {
+        &self.size
     }
 }

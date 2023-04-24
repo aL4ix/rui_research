@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 
 use crate::general::{Geometry, Polygon, TexturedPolygon, Vector2D};
 use crate::texture::{RAMSoftTexture, SoftTexture};
-use crate::widgets::Widget;
-use crate::widgets::widget::private;
+use crate::widgets::Primitive;
+use crate::widgets::primitive::private::PrivatePrimitiveMethods;
 
 #[derive(Debug)]
 pub struct Image {
@@ -39,7 +39,7 @@ impl Image {
     }
 }
 
-impl private::PrivateWidgetMethods for Image {
+impl PrivatePrimitiveMethods for Image {
     fn update_geometry(&mut self) {
         self.geometry.polygons = vec![TexturedPolygon {
             poly: Polygon { vers: vec![], inds: vec![] },
@@ -69,7 +69,7 @@ impl private::PrivateWidgetMethods for Image {
     }
 }
 
-impl Widget for Image {
+impl Primitive for Image {
     fn id(&self) -> usize {
         self.id
     }
@@ -93,5 +93,8 @@ impl Widget for Image {
     }
     fn height(&self) -> f32 {
         self.size.y()
+    }
+    fn size(&self) -> &Vector2D<f32> {
+        &self.size
     }
 }

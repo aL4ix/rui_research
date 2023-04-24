@@ -1,7 +1,7 @@
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
 
-use log::{debug, info};
+use log::debug;
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
@@ -32,6 +32,9 @@ impl WindowBuilder {
     }
     pub fn add_widget(&mut self, render_id: usize, mut widget: Box<dyn Widget>) {
         if widget.id() == 0 {
+            while self.widgets.contains_key(&self.widget_global_id) {
+                self.widget_global_id += 1;
+            }
             debug!("Setting id={} automatically to {:?}", self.widget_global_id, widget);
             widget.set_id(self.widget_global_id);
             self.widget_global_id += 1;
@@ -67,14 +70,18 @@ impl WindowBuilder {
         self.widgets.values_mut().find(|widget| widget.id() == id)
     }
     pub fn event_key_down(&mut self, key: Keycode) {
-        let result = Text::get_by_id(self, 2);
+        let result = TextBox::get_by_id(self, 1);
         if let Ok(text) = result {
             text.set_text(&key.to_string())
         } else {
             panic!("key_down {:?}", result)
         }
     }
-    pub fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32) {
-        info!("{:?} {} {}", mouse_btn, x, y);
+    pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
+        for widget in &mut self.widgets.values_mut() {
+            if widget.accepts_mouse(x, y) {
+                widget.event_mouse_button_down(x, y);
+            }
+        }
     }
 }

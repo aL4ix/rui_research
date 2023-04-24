@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 
 use crate::general::{Color, Geometry, Polygon, TexturedPolygon, Vector2D};
-use crate::widgets::Widget;
-use crate::widgets::widget::private;
+use crate::widgets::Primitive;
+use crate::widgets::primitive::private::PrivatePrimitiveMethods;
 
 #[derive(Debug)]
 pub struct Shape {
@@ -53,7 +53,7 @@ impl Shape {
     }
 }
 
-impl private::PrivateWidgetMethods for Shape {
+impl PrivatePrimitiveMethods for Shape {
     fn update_geometry(&mut self) {
         self.geometry = Shape::geometry_out_of_poly(self.poly.clone());
     }
@@ -80,7 +80,7 @@ impl private::PrivateWidgetMethods for Shape {
     }
 }
 
-impl Widget for Shape {
+impl Primitive for Shape {
     fn id(&self) -> usize {
         self.id
     }
@@ -104,5 +104,8 @@ impl Widget for Shape {
     }
     fn height(&self) -> f32 {
         self.size.y()
+    }
+    fn size(&self) -> &Vector2D<f32> {
+        &self.size
     }
 }

@@ -18,6 +18,25 @@ pub struct Geometry {
 }
 
 impl Geometry {
+    pub fn new_empty_with_class(class: &str) -> Geometry {
+        Geometry {
+            class: class.to_string(),
+            polygons: vec![]
+        }
+    }
+    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Geometry {
+        Geometry {
+            class: class.to_string(),
+            polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
+        }
+    }
+    pub fn new_from_geometries(class: &str, geometries: Vec<Geometry>) -> Geometry {
+        let mut result = Self::new_empty_with_class(class);
+        for mut geometry in geometries {
+            result.polygons.append(&mut geometry.polygons);
+        }
+        result
+    }
     pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
                   tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
         for tex_poly in &mut self.polygons {
@@ -35,12 +54,6 @@ impl Geometry {
             }
         }
         Ok(())
-    }
-    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Geometry {
-        Geometry {
-            class: class.to_string(),
-            polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
-        }
     }
     pub fn translate(&mut self, position: &Vector2D<f32>) {
         for tex_poly in &mut self.polygons {

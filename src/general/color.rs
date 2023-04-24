@@ -1,4 +1,3 @@
-/// Alpha of 255 is opaque, 0 is transparent
 #[derive(Clone, Debug)]
 pub struct Color {
     r: u8,
@@ -8,8 +7,12 @@ pub struct Color {
 }
 
 impl Color {
+    /// Alpha of 255 is opaque, 0 is transparent
     pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
         Self { r, g, b, a }
+    }
+    pub fn new_opaque(r: u8, g: u8, b: u8) -> Self {
+        Self { r, g, b, a: 255 }
     }
     pub fn r(&self) -> u8 {
         self.r

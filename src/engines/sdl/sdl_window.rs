@@ -30,7 +30,7 @@ impl Window for SDLWindow {
     fn event_key_down(&mut self, key: Keycode) {
         self.window_builder.event_key_down(key)
     }
-    fn event_mouse_button_down(&self, mouse_btn: MouseButton, x: i32, y: i32) {
+    fn event_mouse_button_down(&mut self, mouse_btn: MouseButton, x: i32, y: i32) {
         self.window_builder.event_mouse_button_down(mouse_btn, x, y)
     }
     fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {

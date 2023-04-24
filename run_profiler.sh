@@ -8,4 +8,4 @@ CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph
 echo Returning original value of $original_paranoid to /proc/sys/kernel/perf_event_paranoid
 echo $original_paranoid | sudo tee /proc/sys/kernel/perf_event_paranoid > /dev/null
 sudo -k
-echo This terminal has no longer sudo privileges
+echo This terminal no longer has sudo privileges

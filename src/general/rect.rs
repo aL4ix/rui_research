@@ -1,3 +1,5 @@
+use crate::general::Vector2D;
+
 #[derive(Clone, Debug, Copy)]
 pub struct Rect<T> {
     x: T,
@@ -6,7 +8,7 @@ pub struct Rect<T> {
     height: T,
 }
 
-impl<T: std::ops::Add<Output=T> + Copy + Default> Rect<T> {
+impl<T: std::ops::Add<Output=T> + PartialOrd + Copy + Default> Rect<T> {
     pub fn new(x: T, y: T, width: T, height: T) -> Rect<T> {
         Rect {
             x,
@@ -39,6 +41,13 @@ impl<T: std::ops::Add<Output=T> + Copy + Default> Rect<T> {
     }
     pub fn unpack(&self) -> (T, T, T, T) {
         (self.x, self.y, self.width, self.height)
+    }
+    pub fn contains_point(&self, point: Vector2D<T>) -> bool {
+        if self.x() < point.x() && point.x() < self.right()
+            && self.y() < point.y() && point.y() < self.bottom() {
+            return true;
+        }
+        false
     }
 }
 
