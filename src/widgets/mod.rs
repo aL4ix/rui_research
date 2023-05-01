@@ -1,16 +1,14 @@
 pub use button::Button;
-pub use image::Image;
-pub use primitive::Primitive;
-pub use shape::Shape;
-pub use text::Text;
+pub use primitives::Primitive;
 pub use text_box::TextBox;
 pub use widget::Widget;
+pub use img::Image;
+pub use common_widget::CommonWidget;
 
-mod primitive;
-mod image;
-mod text;
-mod shape;
+mod primitives;
 mod button;
 mod widget;
 mod events;
 mod text_box;
+mod img;
+mod common_widget;

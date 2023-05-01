@@ -2,15 +2,15 @@ use std::fmt::Debug;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use crate::general::{Geometry, Polygon, TexturedPolygon, Vector2D};
+use crate::general::{Geometry, Vector2D};
 use crate::texture::{RAMSoftTexture, SoftTexture};
 use crate::widgets::Primitive;
-use crate::widgets::primitive::private::PrivatePrimitiveMethods;
+use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 
 #[derive(Debug)]
-pub struct Image {
+pub struct Bitmap {
     id: usize,
-    tex: Arc<Mutex<dyn SoftTexture>>,
+    arc_tex: Arc<Mutex<dyn SoftTexture>>,
     geometry: Geometry,
     needs_update: bool,
     position: Vector2D<f32>,
@@ -19,17 +19,17 @@ pub struct Image {
     size: Vector2D<f32>,
 }
 
-impl Image {
+impl Bitmap {
     /// An *id* of zero means it will be set to an automatic value when adding it to a window
-    pub fn from_bmp(id: usize, path: Box<Path>) -> Result<Image, String> {
+    pub fn from_bmp(id: usize, path: Box<Path>) -> Result<Bitmap, String> {
         let tex = RAMSoftTexture::from_bmp(path)?;
         let size = Vector2D::new(tex.width() as f32, tex.height() as f32);
         let poly = tex.poly().clone();
         let arc_tex = Arc::new(Mutex::new(tex));
-        Ok(Image {
+        Ok(Bitmap {
             id,
-            tex: arc_tex.clone(),
-            geometry: Geometry::new_for_texture("Image", arc_tex, poly),
+            arc_tex: arc_tex.clone(),
+            geometry: Geometry::new_for_texture("Bitmap", arc_tex, poly),
             needs_update: false,
             position: Default::default(),
             needs_translation: true,
@@ -39,12 +39,10 @@ impl Image {
     }
 }
 
-impl PrivatePrimitiveMethods for Image {
+impl PrivatePrimitiveMethods for Bitmap {
     fn update_geometry(&mut self) {
-        self.geometry.polygons = vec![TexturedPolygon {
-            poly: Polygon { vers: vec![], inds: vec![] },
-            tex: Some(self.tex.clone()),
-        }];
+        let poly = self.arc_tex.lock().unwrap().poly().clone(); // Should we save poly instead?
+        self.geometry = Geometry::new_for_texture("Bitmap", self.arc_tex.clone(), poly);
     }
     fn needs_update(&self) -> bool {
         self.needs_update
@@ -69,7 +67,7 @@ impl PrivatePrimitiveMethods for Image {
     }
 }
 
-impl Primitive for Image {
+impl Primitive for Bitmap {
     fn id(&self) -> usize {
         self.id
     }

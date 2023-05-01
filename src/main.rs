@@ -64,9 +64,8 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")))?;
     image.set_position(Vector2D::new(0.0, 100.0));
-    //
-    // // TODO what to do with errors in widget constructors
-    // window_builder.add_widget(0, Box::new(image));
+    // TODO what to do with errors in widget constructors
+    window_builder.add_widget(0, Box::new(image));
 
     let font_path = "assets/Nouveau_IBM.ttf";
     let font_vec = Assets::read(font_path)?;

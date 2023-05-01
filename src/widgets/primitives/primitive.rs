@@ -1,4 +1,5 @@
 use std::fmt::Debug;
+use mopa::{Any, mopafy};
 
 use crate::general::{Geometry, Vector2D};
 
@@ -17,7 +18,7 @@ pub(in crate::widgets) mod private {
     }
 }
 
-pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods {
+pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods + Any {
     fn id(&self) -> usize;
     fn set_id(&mut self, id: usize);
     fn x(&self) -> f32;
@@ -46,3 +47,5 @@ pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods {
         }
     }
 }
+
+mopafy!(Primitive);

@@ -4,38 +4,24 @@ use std::fmt::Debug;
 use glyph_brush::ab_glyph::FontArc;
 
 use crate::general::{Color, Geometry, Vector2D};
-use crate::widgets::{Primitive, Text, Widget};
-use crate::widgets::events::MouseButtonDown;
-use crate::widgets::primitive::private::PrivatePrimitiveMethods;
+use crate::widgets::{CommonWidget, Primitive, Widget};
+use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::primitives::Text;
 use crate::window::WindowBuilder;
 
 #[derive(Debug)]
 pub struct TextBox {
-    id: usize,
-    position: Vector2D<f32>,
-    size: Vector2D<f32>,
-    text: Text,
-    geometry: Geometry,
-    needs_update: bool,
-    needs_translation: bool,
-    translated_geometry: Geometry,
-    event_mouse_button_down: MouseButtonDown,
+    common: CommonWidget,
 }
 
 impl TextBox {
     pub fn new(id: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> TextBox {
         let text = Text::new(0, text, font_size, font, color);
         let size = text.size().clone();
+        let primitives: Vec<Box<dyn Primitive>> = vec![Box::new(text)];
+        let common_widget = CommonWidget::new(id, "TextBox", primitives, size);
         TextBox {
-            id,
-            position: Default::default(),
-            size,
-            text,
-            geometry: Default::default(),
-            needs_update: true, // TODO don't be lazy, also is there a way to force not being lazy?
-            needs_translation: true,
-            translated_geometry: Default::default(),
-            event_mouse_button_down: Default::default(),
+            common: common_widget
         }
     }
     pub fn get_by_id(window: &mut WindowBuilder, id: usize) -> Result<&mut TextBox, Box<dyn Error>> {
@@ -49,75 +35,76 @@ impl TextBox {
         Err(Box::from("Not found"))
     }
     pub fn set_text(&mut self, text: &str) {
-        self.text.set_text(text);
-        self.needs_update = true;
+        let primitive = self.common.get_primitive_by_id(0);
+        let p_text: &mut Text = primitive.downcast_mut::<Text>().expect("downcast");
+        // TODO how to improve this?
+        p_text.set_text(text);
+        self.set_needs_update(true);
     }
 }
 
 impl Primitive for TextBox {
     fn id(&self) -> usize {
-        self.id
+        self.common.id()
     }
     fn set_id(&mut self, id: usize) {
-        self.id = id
+        self.common.set_id(id)
     }
     fn x(&self) -> f32 {
-        self.position.x()
+        self.common.x()
     }
     fn y(&self) -> f32 {
-        self.position.y()
+        self.common.y()
     }
     fn position(&self) -> &Vector2D<f32> {
-        &self.position
+        self.common.position()
     }
     fn set_position(&mut self, position: Vector2D<f32>) {
-        self.position = position
+        self.common.set_position(position)
     }
     fn width(&self) -> f32 {
-        self.size.x()
+        self.common.width()
     }
     fn height(&self) -> f32 {
-        self.size.y()
+        self.common.height()
     }
     fn size(&self) -> &Vector2D<f32> {
-        &self.size
+        self.common.size()
     }
 }
 
 impl PrivatePrimitiveMethods for TextBox {
     fn update_geometry(&mut self) {
-        self.geometry = self.text.build_geometry()
+        self.common.update_geometry()
     }
     fn needs_update(&self) -> bool {
-        self.needs_update
+        self.common.needs_update()
     }
     fn set_needs_update(&mut self, needs_update: bool) {
-        self.needs_update = needs_update
+        self.common.set_needs_update(needs_update)
     }
     fn needs_translation(&self) -> bool {
-        self.needs_translation
+        self.common.needs_translation()
     }
     fn set_needs_translation(&mut self, needs_translation: bool) {
-        self.needs_translation = needs_translation
+        self.common.set_needs_translation(needs_translation)
     }
     fn clone_geometry(&self) -> Geometry {
-        self.geometry.clone()
+        self.common.clone_geometry()
     }
     fn set_translated_geometry(&mut self, translated_geometry: Geometry) {
-        self.translated_geometry = translated_geometry
+        self.common.set_translated_geometry(translated_geometry)
     }
     fn clone_translated_geometry(&self) -> Geometry {
-        self.translated_geometry.clone()
+        self.common.clone_translated_geometry()
     }
 }
 
 impl Widget for TextBox {
     fn event_mouse_button_down(&mut self, x: i32, y: i32) {
-        (self.event_mouse_button_down.callback)(self, x, y)
+        self.common.event_mouse_button_down(x, y)
     }
     fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Widget, i32, i32)) {
-        self.event_mouse_button_down = MouseButtonDown {
-            callback
-        };
+        self.common.set_event_mouse_button_down(callback)
     }
 }

@@ -70,7 +70,7 @@ impl WindowBuilder {
         self.widgets.values_mut().find(|widget| widget.id() == id)
     }
     pub fn event_key_down(&mut self, key: Keycode) {
-        let result = TextBox::get_by_id(self, 1);
+        let result = TextBox::get_by_id(self, 2);
         if let Ok(text) = result {
             text.set_text(&key.to_string())
         } else {
@@ -80,6 +80,7 @@ impl WindowBuilder {
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
         for widget in &mut self.widgets.values_mut() {
             if widget.accepts_mouse(x, y) {
+                // TODO send Window trait
                 widget.event_mouse_button_down(x, y);
             }
         }

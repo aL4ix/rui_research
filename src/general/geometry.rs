@@ -8,6 +8,7 @@ use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::engines::sdl::render_geometry;
 use crate::texture::TextureManager;
 use crate::texture::SoftTexture;
+use crate::widgets::Primitive;
 
 /// It's a group of multiple polygons
 #[derive(Debug, Clone)]
@@ -36,6 +37,16 @@ impl Geometry {
             result.polygons.append(&mut geometry.polygons);
         }
         result
+    }
+    pub fn new_from_primitives(class: &str, primitives: &mut Vec<Box<dyn Primitive>>) -> Geometry {
+        let mut geometries = Vec::with_capacity(primitives.len());
+        for primitive in primitives {
+            if primitive.needs_update() {
+                primitive.update_geometry();
+            }
+            geometries.push(primitive.clone_geometry());
+        }
+        Geometry::new_from_geometries(class, geometries)
     }
     pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
                   tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
