@@ -35,10 +35,10 @@ impl TextBox {
         Err(Box::from("Not found"))
     }
     pub fn set_text(&mut self, text: &str) {
-        let primitive = self.common.get_primitive_by_id(0);
-        let p_text: &mut Text = primitive.downcast_mut::<Text>().expect("downcast");
+        let primitive = self.common.get_primitive_by_id_mut(0);
+        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("downcast");
         // TODO how to improve this?
-        p_text.set_text(text);
+        text_pri.set_text(text);
         self.set_needs_update(true);
     }
 }

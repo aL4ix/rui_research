@@ -33,7 +33,7 @@ impl CommonWidget {
             class: class.to_string(),
         }
     }
-    pub fn get_primitive_by_id(&mut self, id: usize) -> &mut Box<dyn Primitive> {
+    pub fn get_primitive_by_id_mut(&mut self, id: usize) -> &mut Box<dyn Primitive> {
         self.primitives.get_mut(id).unwrap()
     }
 }
