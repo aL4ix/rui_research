@@ -27,3 +27,19 @@ impl Color {
         self.a
     }
 }
+
+impl From<&Vec<u8>> for Color {
+    fn from(v: &Vec<u8>) -> Self {
+        let l = v.len();
+        if l == 3 {
+            Color::new_opaque(v[0], v[1], v[2])
+        }
+        else if l == 4 {
+            Color::new(v[0], v[1], v[2], v[3])
+        }
+        else {
+            panic!("Cannot convert Vec of length {} to Color", l)
+            // TODO move to compile_error!
+        }
+    }
+}

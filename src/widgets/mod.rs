@@ -12,4 +12,4 @@ mod events;
 mod text_box;
 mod image;
 mod common_widget;
-mod theme;
+pub mod themes;

@@ -9,6 +9,7 @@ use crate::engines::sdl::SDLEngine;
 use crate::general::{Color, Vector2D};
 use crate::utils::{Assets, SDLLoggerPipe};
 use crate::widgets::{Button, Image, Primitive, TextBox, Widget};
+use crate::widgets::themes::{SimpleTheme, StyleMaster};
 use crate::window::WindowBuilder;
 
 /*
@@ -61,6 +62,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // let image = rx.iter().next().unwrap();
 
     // Single-threaded
+    let style = StyleMaster::new(Box::new(SimpleTheme));
     let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")))?;
     image.set_position(Vector2D::new(0.0, 100.0));
