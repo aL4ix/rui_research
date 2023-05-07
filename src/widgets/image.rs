@@ -1,22 +1,25 @@
 use std::error::Error;
-use std::fmt::{Debug};
+use std::fmt::Debug;
 use std::path::Path;
+
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Primitive, Widget};
-use crate::widgets::primitives::Bitmap;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::themes::StyleMaster;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Image {
     common: CommonWidget,
+    bitmap_index: usize,
 }
 
 impl Image {
-    pub fn from_bmp(id: usize, path: Box<Path>) -> Result<Image, Box<dyn Error>> {
-        let bitmap = Bitmap::from_bmp(0, path)?;
-        let size = bitmap.size().clone();
+    pub fn from_bmp(id: usize, path: Box<Path>, style: &StyleMaster) -> Result<Image, Box<dyn Error>> {
+        let (size, primitives, bitmap_index) = style.one_image(Vector2D::default(), path)?;
         Ok(Image {
-            common: CommonWidget::new(id, "Image", vec![Box::new(bitmap)], size),
+            common: CommonWidget::new(id, Self::class_name(), primitives, size),
+            bitmap_index,
         })
     }
 }
@@ -94,6 +97,9 @@ impl PrivatePrimitiveMethods for Image {
 }
 
 impl Widget for Image {
+    fn class_name() -> &'static str {
+        "Image"
+    }
     fn event_mouse_button_down(&mut self, x: i32, y: i32) {
         self.common.event_mouse_button_down(x, y)
     }

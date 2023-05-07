@@ -1,43 +1,41 @@
 use std::error::Error;
 use std::fmt::Debug;
 
-use glyph_brush::ab_glyph::FontArc;
-
-use crate::general::{Color, Geometry, Vector2D};
+use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Primitive, Widget};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Text;
+use crate::widgets::themes::StyleMaster;
 use crate::window::WindowBuilder;
 
 #[derive(Debug)]
 pub struct TextBox {
     common: CommonWidget,
+    text_index: usize,
 }
 
 impl TextBox {
-    pub fn new(id: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> TextBox {
-        let text = Text::new(0, text, font_size, font, color);
-        let size = text.size().clone();
-        let primitives: Vec<Box<dyn Primitive>> = vec![Box::new(text)];
-        let common_widget = CommonWidget::new(id, "TextBox", primitives, size);
-        TextBox {
-            common: common_widget
-        }
+    pub fn new(id: usize, text: &str, style: &StyleMaster) -> Result<TextBox, Box<dyn Error>> {
+        let (size, primitives, text_index) = style.one_textbox(Vector2D::default(), text)?;
+        let common_widget = CommonWidget::new(id, Self::class_name(), primitives, size);
+        Ok(TextBox {
+            common: common_widget,
+            text_index,
+        })
     }
     pub fn get_by_id(window: &mut WindowBuilder, id: usize) -> Result<&mut TextBox, Box<dyn Error>> {
         if let Some(widget) = window.get_widget_by_id(id) {
             return if let Some(text_box) = widget.downcast_mut::<TextBox>() {
                 Ok(text_box)
             } else {
-                Err(Box::from("Not a Text"))
+                Err(Box::from(format!("Not a {}", Self::class_name())))
             };
         }
         Err(Box::from("Not found"))
     }
     pub fn set_text(&mut self, text: &str) {
-        let primitive = self.common.get_primitive_by_id_mut(0);
-        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("downcast");
-        // TODO how to improve this?
+        let primitive = self.common.get_primitive_by_index_mut(self.text_index);
+        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("downcast_mut");
         text_pri.set_text(text);
         self.set_needs_update(true);
     }
@@ -101,6 +99,9 @@ impl PrivatePrimitiveMethods for TextBox {
 }
 
 impl Widget for TextBox {
+    fn class_name() -> &'static str {
+        "TextBox"
+    }
     fn event_mouse_button_down(&mut self, x: i32, y: i32) {
         self.common.event_mouse_button_down(x, y)
     }

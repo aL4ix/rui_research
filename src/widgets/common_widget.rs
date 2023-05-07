@@ -33,8 +33,8 @@ impl CommonWidget {
             class: class.to_string(),
         }
     }
-    pub fn get_primitive_by_id_mut(&mut self, id: usize) -> &mut Box<dyn Primitive> {
-        self.primitives.get_mut(id).unwrap()
+pub fn get_primitive_by_index_mut(&mut self, index: usize) -> &mut Box<dyn Primitive> {
+        self.primitives.get_mut(index).unwrap()
     }
 }
 
@@ -96,6 +96,9 @@ impl PrivatePrimitiveMethods for CommonWidget {
 }
 
 impl Widget for CommonWidget {
+    fn class_name() -> &'static str {
+        "CommonWidget"
+    }
     fn event_mouse_button_down(&mut self, x: i32, y: i32) {
         (self.event_mouse_button_down.callback)(self, x, y)
     }

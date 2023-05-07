@@ -28,15 +28,8 @@ impl<T: Copy + Default> Default for Vector2D<T> {
     }
 }
 
-impl<T: Copy + Default> From<&Vec<T>> for Vector2D<T> {
-    fn from(v: &Vec<T>) -> Self {
-        let l = v.len();
-        if l == 2 {
-            Vector2D::new(v[0], v[1])
-        }
-        else {
-            panic!("Cannot convert Vec of length {} to Vector2D", l)
-            // TODO convert to compile_error!
-        }
+impl<T: Copy + Default> From<&(T, T)> for Vector2D<T> {
+    fn from(v: &(T, T)) -> Self {
+        Vector2D::new(v.0, v.1)
     }
 }

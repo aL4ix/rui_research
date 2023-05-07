@@ -2,12 +2,11 @@ use std::io::Write;
 use std::path::Path;
 
 use env_logger::Target;
-use glyph_brush::ab_glyph::FontArc;
 use log::info;
 
 use crate::engines::sdl::SDLEngine;
-use crate::general::{Color, Vector2D};
-use crate::utils::{Assets, SDLLoggerPipe};
+use crate::general::Vector2D;
+use crate::utils::SDLLoggerPipe;
 use crate::widgets::{Button, Image, Primitive, TextBox, Widget};
 use crate::widgets::themes::{SimpleTheme, StyleMaster};
 use crate::window::WindowBuilder;
@@ -62,23 +61,17 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // let image = rx.iter().next().unwrap();
 
     // Single-threaded
-    let style = StyleMaster::new(Box::new(SimpleTheme));
+    let style = StyleMaster::new(Box::new(SimpleTheme))?;
     let mut window_builder = WindowBuilder::new()?;
-    let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")))?;
+    let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
     image.set_position(Vector2D::new(0.0, 100.0));
     // TODO what to do with errors in widget constructors
     window_builder.add_widget(0, Box::new(image));
 
-    let font_path = "assets/Nouveau_IBM.ttf";
-    let font_vec = Assets::read(font_path)?;
-    let font = FontArc::try_from_vec(font_vec)?;
-    let text_box = TextBox::new(0, "RUI", 300.0, font.clone(),
-                                Color::new(50, 50, 255, 200));
+    let text_box = TextBox::new(0, "RUI", &style)?;
     window_builder.add_widget(2, Box::new(text_box));
 
-    let mut button = Button::new(0, "button", 32.0, font,
-                                 Color::new_opaque(255, 0, 0),
-                                 Color::new_opaque(0, 0, 255));
+    let mut button = Button::new(0, "button", &style)?;
     button.set_event_mouse_button_down(|_button, x, y| {
         info!("Clicked! {} {}", x, y)
     });
