@@ -6,6 +6,7 @@ use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Primitive, Widget};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
+use crate::window::Root;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -100,11 +101,11 @@ impl Widget for Image {
     fn class_name() -> &'static str {
         "Image"
     }
-    fn event_mouse_button_down(&mut self, x: i32, y: i32) {
-        self.common.event_mouse_button_down(x, y)
+    fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32) {
+        self.common.event_mouse_button_down(root, x, y)
     }
 
-    fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Widget, i32, i32)) {
+    fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Root, i32, i32)) {
         self.common.set_event_mouse_button_down(callback)
     }
 }

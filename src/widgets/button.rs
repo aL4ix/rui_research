@@ -3,10 +3,10 @@ use std::fmt::Debug;
 
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Widget};
-use crate::widgets::primitives::Primitive;
+use crate::widgets::primitives::{Primitive, Text};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
-use crate::window::WindowBuilder;
+use crate::window::Root;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -23,16 +23,11 @@ impl Button {
             text_index,
         })
     }
-    #[allow(dead_code)]
-    pub fn get_by_id(window: &mut WindowBuilder, id: usize) -> Result<&mut Button, Box<dyn Error>> {
-        if let Some(widget) = window.get_widget_by_id(id) {
-            return if let Some(button) = widget.downcast_mut::<Button>() {
-                Ok(button)
-            } else {
-                Err(Box::from(format!("Not a {}", Self::class_name())))
-            };
-        }
-        Err(Box::from("Not found"))
+    pub fn set_text(&mut self, text: &str) {
+        let primitive = self.common.get_primitive_by_index_mut(self.text_index);
+        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("downcast_mut");
+        text_pri.set_text(text);
+        self.set_needs_update(true);
     }
 }
 
@@ -98,10 +93,10 @@ impl Widget for Button {
     fn class_name() -> &'static str {
         "Button"
     }
-    fn event_mouse_button_down(&mut self, x: i32, y: i32) {
-        self.common.event_mouse_button_down(x, y)
+    fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32) {
+        self.common.event_mouse_button_down(root, x, y)
     }
-    fn set_event_mouse_button_down(&mut self, callback: fn(this: &mut dyn Widget, x: i32, y: i32)) {
+    fn set_event_mouse_button_down(&mut self, callback: fn(this: &mut dyn Root, x: i32, y: i32)) {
         self.common.set_event_mouse_button_down(callback)
     }
 }

@@ -72,8 +72,11 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     window_builder.add_widget(2, Box::new(text_box));
 
     let mut button = Button::new(0, "button", &style)?;
-    button.set_event_mouse_button_down(|_button, x, y| {
-        info!("Clicked! {} {}", x, y)
+    button.set_event_mouse_button_down(|root, x, y| {
+        info!("Clicked! {} {}", x, y);
+        // let tx = TextBox::get_by_id(root, 2).expect("Nel");
+        let btn = Button::get_by_id(root, 3).expect("Nel");
+        btn.set_text(&format!("Clicked {} {}", x, y));
     });
     window_builder.add_widget(5, Box::new(button));
 

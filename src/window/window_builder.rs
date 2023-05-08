@@ -11,6 +11,7 @@ use sdl2::render::WindowCanvas;
 use crate::general::Geometry;
 use crate::texture::TextureManager;
 use crate::widgets::*;
+use crate::window::Root;
 
 pub struct WindowBuilder {
     widgets: BTreeMap<usize, Box<dyn Widget>>,
@@ -66,9 +67,6 @@ impl WindowBuilder {
         self.tex_man.garbage_collect(tex_creator);
         Ok(())
     }
-    pub fn get_widget_by_id(&mut self, id: usize) -> Option<&mut Box<dyn Widget>> {
-        self.widgets.values_mut().find(|widget| widget.id() == id)
-    }
     pub fn event_key_down(&mut self, key: Keycode) {
         let result = TextBox::get_by_id(self, 2);
         if let Ok(text) = result {
@@ -78,11 +76,29 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
-        for widget in &mut self.widgets.values_mut() {
-            if widget.accepts_mouse(x, y) {
-                // TODO send Window trait
-                widget.event_mouse_button_down(x, y);
-            }
+        let second_mut_ref: &mut dyn Root;
+        unsafe {
+            /*
+            This second_mut_ref will be used as a Root trait object, which only exposes
+            get_widget_by_id(), which is implemented here in this very file, and what it does is it
+            goes, takes self.widgets, searches and bring back a &mut to only one of its widgets.
+            After that then the user is able to do anything to that widget, so self is not
+            being modified per se, instead one of the elements inside self.widgets will be modified,
+            that's why I think it is safe to create a second mutable reference.
+             */
+            second_mut_ref = &mut *(self as *mut Self);
         }
+        let found = self.widgets.iter_mut()
+            .rev()
+            .find(|(_, w)| w.accepts_mouse(x, y));
+        if let Some((_, widget)) = found {
+            widget.event_mouse_button_down(second_mut_ref, x, y)
+        }
+    }
+}
+
+impl Root for WindowBuilder {
+    fn get_widget_by_id(&mut self, id: usize) -> Option<&mut Box<dyn Widget>> {
+        self.widgets.values_mut().find(|widget| widget.id() == id)
     }
 }

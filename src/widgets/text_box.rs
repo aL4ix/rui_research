@@ -6,7 +6,7 @@ use crate::widgets::{CommonWidget, Primitive, Widget};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Text;
 use crate::widgets::themes::StyleMaster;
-use crate::window::WindowBuilder;
+use crate::window::Root;
 
 #[derive(Debug)]
 pub struct TextBox {
@@ -22,16 +22,6 @@ impl TextBox {
             common: common_widget,
             text_index,
         })
-    }
-    pub fn get_by_id(window: &mut WindowBuilder, id: usize) -> Result<&mut TextBox, Box<dyn Error>> {
-        if let Some(widget) = window.get_widget_by_id(id) {
-            return if let Some(text_box) = widget.downcast_mut::<TextBox>() {
-                Ok(text_box)
-            } else {
-                Err(Box::from(format!("Not a {}", Self::class_name())))
-            };
-        }
-        Err(Box::from("Not found"))
     }
     pub fn set_text(&mut self, text: &str) {
         let primitive = self.common.get_primitive_by_index_mut(self.text_index);
@@ -102,10 +92,10 @@ impl Widget for TextBox {
     fn class_name() -> &'static str {
         "TextBox"
     }
-    fn event_mouse_button_down(&mut self, x: i32, y: i32) {
-        self.common.event_mouse_button_down(x, y)
+    fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32) {
+        self.common.event_mouse_button_down(root, x, y)
     }
-    fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Widget, i32, i32)) {
+    fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Root, i32, i32)) {
         self.common.set_event_mouse_button_down(callback)
     }
 }
