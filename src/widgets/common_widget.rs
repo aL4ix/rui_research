@@ -1,6 +1,6 @@
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::{Primitive, Widget};
-use crate::widgets::events::MouseButtonDown;
+use crate::widgets::events::{MouseButtonDown, MouseButtonDownCallback};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::window::Root;
 
@@ -103,7 +103,7 @@ impl Widget for CommonWidget {
     fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32) {
         (self.event_mouse_button_down.callback)(root, x, y)
     }
-    fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Root, i32, i32)) {
+    fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback) {
         self.event_mouse_button_down = MouseButtonDown {
             callback
         }

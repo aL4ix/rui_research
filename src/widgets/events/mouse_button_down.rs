@@ -3,8 +3,10 @@ use std::fmt::{Debug, Formatter};
 use crate::widgets::events::Event;
 use crate::window::Root;
 
+pub type MouseButtonDownCallback = fn(this: &mut dyn Root, x: i32, y: i32);
+
 pub struct MouseButtonDown {
-    pub callback: fn(this: &mut dyn Root, x: i32, y: i32),
+    pub callback: MouseButtonDownCallback,
 }
 
 impl MouseButtonDown {

@@ -3,6 +3,7 @@ use std::fmt::Debug;
 
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Widget};
+use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::{Primitive, Text};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
@@ -96,7 +97,7 @@ impl Widget for Button {
     fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32) {
         self.common.event_mouse_button_down(root, x, y)
     }
-    fn set_event_mouse_button_down(&mut self, callback: fn(this: &mut dyn Root, x: i32, y: i32)) {
+    fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback) {
         self.common.set_event_mouse_button_down(callback)
     }
 }

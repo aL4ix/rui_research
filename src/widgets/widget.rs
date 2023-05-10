@@ -2,12 +2,13 @@ use std::error::Error;
 use crate::general::{Rect, Vector2D};
 use crate::widgets::Primitive;
 use mopa::{Any, mopafy};
+use crate::widgets::events::MouseButtonDownCallback;
 use crate::window::Root;
 
 pub trait Widget: Primitive + Any {
     fn class_name() -> &'static str where Self: Sized;
     fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32);
-    fn set_event_mouse_button_down(&mut self, callback: fn(this: &mut dyn Root, x: i32, y: i32));
+    fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback);
     fn get_rect(&self) -> Rect<f32> { // Maybe upgrade to Primitive?
         let (w, h) = self.size().unpack();
         let (x, y) = self.position().unpack();

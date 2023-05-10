@@ -4,6 +4,7 @@ use std::path::Path;
 
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Primitive, Widget};
+use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
 use crate::window::Root;
@@ -105,7 +106,7 @@ impl Widget for Image {
         self.common.event_mouse_button_down(root, x, y)
     }
 
-    fn set_event_mouse_button_down(&mut self, callback: fn(&mut dyn Root, i32, i32)) {
+    fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback) {
         self.common.set_event_mouse_button_down(callback)
     }
 }
