@@ -68,6 +68,12 @@ impl PrivatePrimitiveMethods for Bitmap {
 }
 
 impl Primitive for Bitmap {
+    fn class_name() -> &'static str
+    where
+        Self: Sized,
+    {
+        "Bitmap"
+    }
     fn id(&self) -> usize {
         self.id
     }

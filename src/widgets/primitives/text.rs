@@ -153,6 +153,12 @@ impl PrivatePrimitiveMethods for Text {
 }
 
 impl Primitive for Text {
+    fn class_name() -> &'static str
+    where
+        Self: Sized,
+    {
+        "Text"
+    }
     fn id(&self) -> usize {
         self.id
     }

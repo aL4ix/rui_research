@@ -9,9 +9,6 @@ use crate::widgets::Primitive;
 use crate::window::Root;
 
 pub trait Widget: Primitive + Any {
-    fn class_name() -> &'static str
-    where
-        Self: Sized;
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback>;
     fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback);
     fn get_rect(&self) -> Rect<f32> {

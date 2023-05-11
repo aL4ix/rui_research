@@ -31,38 +31,33 @@ impl Image {
 }
 
 impl Primitive for Image {
+    fn class_name() -> &'static str {
+        "Image"
+    }
     fn id(&self) -> usize {
         self.common.id()
     }
-
     fn set_id(&mut self, id: usize) {
         self.common.set_id(id)
     }
-
     fn x(&self) -> f32 {
         self.common.x()
     }
-
     fn y(&self) -> f32 {
         self.common.y()
     }
-
     fn position(&self) -> &Vector2D<f32> {
         self.common.position()
     }
-
     fn set_position(&mut self, position: Vector2D<f32>) {
         self.common.set_position(position)
     }
-
     fn width(&self) -> f32 {
         self.common.width()
     }
-
     fn height(&self) -> f32 {
         self.common.height()
     }
-
     fn size(&self) -> &Vector2D<f32> {
         self.common.size()
     }
@@ -72,40 +67,30 @@ impl PrivatePrimitiveMethods for Image {
     fn update_geometry(&mut self) {
         self.common.update_geometry()
     }
-
     fn needs_update(&self) -> bool {
         self.common.needs_update()
     }
-
     fn set_needs_update(&mut self, needs_update: bool) {
         self.common.set_needs_update(needs_update)
     }
-
     fn needs_translation(&self) -> bool {
         self.common.needs_translation()
     }
-
     fn set_needs_translation(&mut self, needs_translation: bool) {
         self.common.set_needs_translation(needs_translation)
     }
-
     fn clone_geometry(&self) -> Geometry {
         self.common.clone_geometry()
     }
-
     fn set_translated_geometry(&mut self, translated_geometry: Geometry) {
         self.common.set_translated_geometry(translated_geometry)
     }
-
     fn clone_translated_geometry(&self) -> Geometry {
         self.common.clone_translated_geometry()
     }
 }
 
 impl Widget for Image {
-    fn class_name() -> &'static str {
-        "Image"
-    }
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
         self.common.event_mouse_button_down()
     }

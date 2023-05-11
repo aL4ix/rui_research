@@ -46,6 +46,9 @@ impl CommonWidget {
 }
 
 impl Primitive for CommonWidget {
+    fn class_name() -> &'static str {
+        "CommonWidget"
+    }
     fn id(&self) -> usize {
         self.id
     }
@@ -103,9 +106,6 @@ impl PrivatePrimitiveMethods for CommonWidget {
 }
 
 impl Widget for CommonWidget {
-    fn class_name() -> &'static str {
-        "CommonWidget"
-    }
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
         self.event_mouse_button_down.clone_callback()
     }

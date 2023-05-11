@@ -19,6 +19,15 @@ pub(in crate::widgets) mod private {
 }
 
 pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods + Any {
+    fn class_name() -> &'static str
+    where
+        Self: Sized;
+    fn class(&self) -> &'static str
+    where
+        Self: Sized,
+    {
+        Self::class_name()
+    }
     fn id(&self) -> usize;
     fn set_id(&mut self, id: usize);
     fn x(&self) -> f32;

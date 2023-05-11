@@ -33,6 +33,9 @@ impl Button {
 }
 
 impl Primitive for Button {
+    fn class_name() -> &'static str {
+        "Button"
+    }
     fn id(&self) -> usize {
         self.common.id()
     }
@@ -90,9 +93,6 @@ impl PrivatePrimitiveMethods for Button {
 }
 
 impl Widget for Button {
-    fn class_name() -> &'static str {
-        "Button"
-    }
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
         self.common.event_mouse_button_down()
     }

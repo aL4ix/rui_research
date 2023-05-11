@@ -33,6 +33,9 @@ impl TextBox {
 }
 
 impl Primitive for TextBox {
+    fn class_name() -> &'static str {
+        "TextBox"
+    }
     fn id(&self) -> usize {
         self.common.id()
     }
@@ -90,9 +93,6 @@ impl PrivatePrimitiveMethods for TextBox {
 }
 
 impl Widget for TextBox {
-    fn class_name() -> &'static str {
-        "TextBox"
-    }
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
         self.common.event_mouse_button_down()
     }

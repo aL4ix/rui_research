@@ -78,6 +78,12 @@ impl PrivatePrimitiveMethods for Shape {
 }
 
 impl Primitive for Shape {
+    fn class_name() -> &'static str
+    where
+        Self: Sized,
+    {
+        "Shape"
+    }
     fn id(&self) -> usize {
         self.id
     }
