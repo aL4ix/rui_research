@@ -4,10 +4,10 @@ use std::sync::{Arc, Mutex};
 use sdl2::render::{TextureCreator, WindowCanvas};
 use sdl2::video::WindowContext;
 
-use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::engines::sdl::render_geometry;
-use crate::texture::TextureManager;
+use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::texture::SoftTexture;
+use crate::texture::TextureManager;
 use crate::widgets::Primitive;
 
 /// It's a group of multiple polygons
@@ -22,13 +22,20 @@ impl Geometry {
     pub fn new_empty_with_class(class: &str) -> Geometry {
         Geometry {
             class: class.to_string(),
-            polygons: vec![]
+            polygons: vec![],
         }
     }
-    pub fn new_for_texture(class: &str, tex: Arc<Mutex<dyn SoftTexture>>, poly: Polygon) -> Geometry {
+    pub fn new_for_texture(
+        class: &str,
+        tex: Arc<Mutex<dyn SoftTexture>>,
+        poly: Polygon,
+    ) -> Geometry {
         Geometry {
             class: class.to_string(),
-            polygons: vec![TexturedPolygon { poly, tex: Some(tex) }],
+            polygons: vec![TexturedPolygon {
+                poly,
+                tex: Some(tex),
+            }],
         }
     }
     pub fn new_from_geometries(class: &str, geometries: Vec<Geometry>) -> Geometry {
@@ -48,8 +55,12 @@ impl Geometry {
         }
         Geometry::new_from_geometries(class, geometries)
     }
-    pub fn render(&mut self, canvas: &mut WindowCanvas, tex_creator: &TextureCreator<WindowContext>,
-                  tex_man: &mut TextureManager) -> Result<(), Box<(dyn std::error::Error)>> {
+    pub fn render(
+        &mut self,
+        canvas: &mut WindowCanvas,
+        tex_creator: &TextureCreator<WindowContext>,
+        tex_man: &mut TextureManager,
+    ) -> Result<(), Box<(dyn std::error::Error)>> {
         for tex_poly in &mut self.polygons {
             // info!("{:?}", tex_poly);
             if let Some(arc_tex) = &mut tex_poly.tex {

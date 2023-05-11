@@ -34,9 +34,13 @@ impl TextureManager {
     //     let id = self.push(&arc);
     //     Ok((arc, id))
     // }
-    pub fn reserve(&mut self, tex_creator: &TextureCreator<WindowContext>, width: u32, height: u32,
-                   format: PixelFormatEnum)
-                   -> Result<RcTexAndId, Box<dyn Error>> {
+    pub fn reserve(
+        &mut self,
+        tex_creator: &TextureCreator<WindowContext>,
+        width: u32,
+        height: u32,
+        format: PixelFormatEnum,
+    ) -> Result<RcTexAndId, Box<dyn Error>> {
         let tex = tex_creator.create_texture_static(format, width, height)?;
         let rc = Rc::new(RefCell::new(tex));
         let id = self.push(&rc);
@@ -62,9 +66,7 @@ impl TextureManager {
                 Err(_) => return, // Maybe panic here
             };
             let internal_tex = refcell.into_inner();
-            unsafe {
-                internal_tex.destroy()
-            }
+            unsafe { internal_tex.destroy() }
             debug!("Tex destroyed!");
         }
     }

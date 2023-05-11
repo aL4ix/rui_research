@@ -12,7 +12,7 @@ impl Write for SDLLoggerPipe {
                 sdl2::log::log(s);
                 Ok(buf.len())
             }
-            Err(_) => Err(std::io::Error::new(ErrorKind::InvalidInput, "Not UTF8"))
+            Err(_) => Err(std::io::Error::new(ErrorKind::InvalidInput, "Not UTF8")),
         }
     }
 

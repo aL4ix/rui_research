@@ -8,7 +8,7 @@ pub struct Rect<T> {
     height: T,
 }
 
-impl<T: std::ops::Add<Output=T> + PartialOrd + Copy + Default> Rect<T> {
+impl<T: std::ops::Add<Output = T> + PartialOrd + Copy + Default> Rect<T> {
     pub fn new(x: T, y: T, width: T, height: T) -> Rect<T> {
         Rect {
             x,
@@ -18,8 +18,12 @@ impl<T: std::ops::Add<Output=T> + PartialOrd + Copy + Default> Rect<T> {
         }
     }
     pub fn new_zero() -> Rect<T> {
-        Self::new(Default::default(), Default::default(), Default::default(),
-                  Default::default())
+        Self::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            Default::default(),
+        )
     }
     pub fn bottom(&self) -> T {
         self.y + self.height
@@ -43,8 +47,11 @@ impl<T: std::ops::Add<Output=T> + PartialOrd + Copy + Default> Rect<T> {
         (self.x, self.y, self.width, self.height)
     }
     pub fn contains_point(&self, point: Vector2D<T>) -> bool {
-        if self.x() < point.x() && point.x() < self.right()
-            && self.y() < point.y() && point.y() < self.bottom() {
+        if self.x() < point.x()
+            && point.x() < self.right()
+            && self.y() < point.y()
+            && point.y() < self.bottom()
+        {
             return true;
         }
         false
@@ -53,9 +60,11 @@ impl<T: std::ops::Add<Output=T> + PartialOrd + Copy + Default> Rect<T> {
 
 impl From<Rect<u32>> for Option<sdl2::rect::Rect> {
     fn from(val: Rect<u32>) -> Self {
-        Some(sdl2::rect::Rect::new(val.x().try_into().unwrap(),
-                                   val.y().try_into().unwrap(),
-                                   val.width(),
-                                   val.height()))
+        Some(sdl2::rect::Rect::new(
+            val.x().try_into().unwrap(),
+            val.y().try_into().unwrap(),
+            val.width(),
+            val.height(),
+        ))
     }
 }

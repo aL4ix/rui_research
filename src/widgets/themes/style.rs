@@ -9,10 +9,10 @@ use log::debug;
 
 use crate::general::{Color, Vector2D};
 use crate::utils::Assets;
-use crate::widgets::*;
-use crate::widgets::Primitive;
-use crate::widgets::themes::Property;
 use crate::widgets::themes::theme::{PrimitiveOrOneRef, Theme};
+use crate::widgets::themes::Property;
+use crate::widgets::Primitive;
+use crate::widgets::*;
 
 type PropertiesMap = HashMap<String, Property>;
 
@@ -53,7 +53,10 @@ impl Style for ButtonStyle {
         r.insert(s("class"), Button::class_name().to_string().into());
         r.insert(s("apply_to"), self.apply_to.clone().into());
         r.insert(s("color"), Color::from(&self.color).into());
-        r.insert(s("background_color"), Color::from(&self.background_color).into());
+        r.insert(
+            s("background_color"),
+            Color::from(&self.background_color).into(),
+        );
         r.insert(s("size"), (&self.size).into());
         r.insert(s("font"), self.font.clone().into());
         r.insert(s("font_size"), self.font_size.into());
@@ -81,7 +84,10 @@ impl Style for TextBoxStyle {
         r.insert(s("class"), TextBox::class_name().to_string().into());
         r.insert(s("apply_to"), self.apply_to.clone().into());
         r.insert(s("color"), Color::from(&self.color).into());
-        r.insert(s("background_color"), Color::from(&self.background_color).into());
+        r.insert(
+            s("background_color"),
+            Color::from(&self.background_color).into(),
+        );
         r.insert(s("size"), (&self.size).into());
         r.insert(s("font"), self.font.clone().into());
         r.insert(s("font_size"), self.font_size.into());
@@ -110,9 +116,10 @@ impl Style for ImageStyle {
     }
 }
 
-
 trait ThemeStyle {
-    fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>> where Self: Sized;
+    fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>>
+    where
+        Self: Sized;
 }
 
 #[derive(Debug)]
@@ -128,11 +135,31 @@ pub struct ThemeButtonStyle {
 impl ThemeStyle for ThemeButtonStyle {
     fn new(mut properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
         // TODO change to macro
-        let color = properties.remove("color").ok_or("No color")?.try_into().map_err(|e| e + " into color")?;
-        let background_color = properties.remove("background_color").ok_or("No background_color")?.try_into().map_err(|e| e + " into background_color")?;
-        let size = properties.remove("size").ok_or("No size")?.try_into().map_err(|e| e + " into size")?;
-        let font = properties.remove("font").ok_or("No font")?.try_into().map_err(|e| e + " into font")?;
-        let font_size = properties.remove("font_size").ok_or("No font_size")?.try_into().map_err(|e| e + " into font_size")?;
+        let color = properties
+            .remove("color")
+            .ok_or("No color")?
+            .try_into()
+            .map_err(|e| e + " into color")?;
+        let background_color = properties
+            .remove("background_color")
+            .ok_or("No background_color")?
+            .try_into()
+            .map_err(|e| e + " into background_color")?;
+        let size = properties
+            .remove("size")
+            .ok_or("No size")?
+            .try_into()
+            .map_err(|e| e + " into size")?;
+        let font = properties
+            .remove("font")
+            .ok_or("No font")?
+            .try_into()
+            .map_err(|e| e + " into font")?;
+        let font_size = properties
+            .remove("font_size")
+            .ok_or("No font_size")?
+            .try_into()
+            .map_err(|e| e + " into font_size")?;
         Ok(ThemeButtonStyle {
             color,
             background_color,
@@ -157,11 +184,31 @@ pub struct ThemeTextBoxStyle {
 impl ThemeStyle for ThemeTextBoxStyle {
     fn new(mut properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
         // TODO change to macro
-        let color = properties.remove("color").ok_or("No color")?.try_into().map_err(|e| e + " into color")?;
-        let background_color = properties.remove("background_color").ok_or("No background_color")?.try_into().map_err(|e| e + " into background_color")?;
-        let size = properties.remove("size").ok_or("No size")?.try_into().map_err(|e| e + " into size")?;
-        let font = properties.remove("font").ok_or("No font")?.try_into().map_err(|e| e + " into font")?;
-        let font_size = properties.remove("font_size").ok_or("No font_size")?.try_into().map_err(|e| e + " into font_size")?;
+        let color = properties
+            .remove("color")
+            .ok_or("No color")?
+            .try_into()
+            .map_err(|e| e + " into color")?;
+        let background_color = properties
+            .remove("background_color")
+            .ok_or("No background_color")?
+            .try_into()
+            .map_err(|e| e + " into background_color")?;
+        let size = properties
+            .remove("size")
+            .ok_or("No size")?
+            .try_into()
+            .map_err(|e| e + " into size")?;
+        let font = properties
+            .remove("font")
+            .ok_or("No font")?
+            .try_into()
+            .map_err(|e| e + " into font")?;
+        let font_size = properties
+            .remove("font_size")
+            .ok_or("No font_size")?
+            .try_into()
+            .map_err(|e| e + " into font_size")?;
         Ok(ThemeTextBoxStyle {
             color,
             background_color,
@@ -180,12 +227,9 @@ pub struct ThemeImageStyle {
 
 impl ThemeStyle for ThemeImageStyle {
     fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
-        Ok(ThemeImageStyle {
-            extra: properties,
-        })
+        Ok(ThemeImageStyle { extra: properties })
     }
 }
-
 
 pub struct StyleMaster {
     _fonts: HashMap<String, FontArc>,
@@ -218,9 +262,7 @@ impl StyleMaster {
                             fonts.insert(font_name.to_string(), font_arc.clone());
                             font_arc
                         }
-                        Some(font_arc) => {
-                            font_arc.clone()
-                        }
+                        Some(font_arc) => font_arc.clone(),
                     };
                     map.insert(Self::FONT.to_string(), Property::Font(font_arc));
                 } else {
@@ -235,8 +277,11 @@ impl StyleMaster {
             theme,
         })
     }
-    fn one_widget<T: Primitive + Debug>(size: Vector2D<f32>, vec_prim_rc: Vec<PrimitiveOrOneRef<T>>, reference: Rc<T>)
-                                        -> Result<OneWidget, Box<dyn Error>> {
+    fn one_widget<T: Primitive + Debug>(
+        size: Vector2D<f32>,
+        vec_prim_rc: Vec<PrimitiveOrOneRef<T>>,
+        reference: Rc<T>,
+    ) -> Result<OneWidget, Box<dyn Error>> {
         debug!("{:?}", vec_prim_rc);
         let mut found = None;
         for (index, e) in vec_prim_rc.iter().enumerate() {
@@ -249,27 +294,23 @@ impl StyleMaster {
         }
         let index = found.ok_or("Couldn't find Ref")?;
         drop(reference);
-        let vec_prim = vec_prim_rc.into_iter().map(|e| {
-            match e {
-                PrimitiveOrOneRef::Ref(r) => {
-                    Box::new(Rc::try_unwrap(r).expect(
-                        "This shouldn't fail, If so make sure the reference is dropped before."))
-                }
-                PrimitiveOrOneRef::Prim(p) => {
-                    p
-                }
-            }
-        }).collect();
+        let vec_prim = vec_prim_rc
+            .into_iter()
+            .map(|e| match e {
+                PrimitiveOrOneRef::Ref(r) => Box::new(Rc::try_unwrap(r).expect(
+                    "This shouldn't fail, If so make sure the reference is dropped before.",
+                )),
+                PrimitiveOrOneRef::Prim(p) => p,
+            })
+            .collect();
         Ok((size, vec_prim, index))
     }
-    pub fn one_button(&self, size: Vector2D<f32>, text: &str)
-                      -> Result<OneWidget, Box<dyn Error>> {
+    pub fn one_button(&self, size: Vector2D<f32>, text: &str) -> Result<OneWidget, Box<dyn Error>> {
         for style in &self.styles {
             if let Some(Property::Str(class)) = style.get(Self::CLASS) {
                 if class == Button::class_name() {
                     let theme_style = ThemeButtonStyle::new(style.clone())?;
-                    let (size, vec_prim_rc, text)
-                        = self.theme.for_button(size, text, theme_style);
+                    let (size, vec_prim_rc, text) = self.theme.for_button(size, text, theme_style);
                     return Self::one_widget(size, vec_prim_rc, text);
                 }
             }
@@ -277,14 +318,17 @@ impl StyleMaster {
         debug!("{:?}", self.styles);
         Err(format!("{} {}", Self::COULD_NOT_FIND_STYLE, Button::class_name()).into())
     }
-    pub fn one_textbox(&self, size: Vector2D<f32>, text: &str)
-                       -> Result<OneWidget, Box<dyn Error>> {
+    pub fn one_textbox(
+        &self,
+        size: Vector2D<f32>,
+        text: &str,
+    ) -> Result<OneWidget, Box<dyn Error>> {
         for style in &self.styles {
             if let Some(Property::Str(class)) = style.get(Self::CLASS) {
                 if class == TextBox::class_name() {
                     let theme_style = ThemeTextBoxStyle::new(style.clone())?;
-                    let (size, vec_prim_rc, text)
-                        = self.theme.for_text_box(size, text, theme_style);
+                    let (size, vec_prim_rc, text) =
+                        self.theme.for_text_box(size, text, theme_style);
                     return Self::one_widget(size, vec_prim_rc, text);
                 }
             }
@@ -292,14 +336,17 @@ impl StyleMaster {
         debug!("{:?}", self.styles);
         Err(format!("{} {}", Self::COULD_NOT_FIND_STYLE, TextBox::class_name()).into())
     }
-    pub fn one_image(&self, size: Vector2D<f32>, path: Box<Path>)
-                     -> Result<OneWidget, Box<dyn Error>> {
+    pub fn one_image(
+        &self,
+        size: Vector2D<f32>,
+        path: Box<Path>,
+    ) -> Result<OneWidget, Box<dyn Error>> {
         for style in &self.styles {
             if let Some(Property::Str(class)) = style.get(Self::CLASS) {
                 if class == Image::class_name() {
                     let theme_style = ThemeImageStyle::new(style.clone())?;
-                    let (size, vec_prim_rc, text)
-                        = self.theme.for_image(size, path, theme_style)?;
+                    let (size, vec_prim_rc, text) =
+                        self.theme.for_image(size, path, theme_style)?;
                     return Self::one_widget(size, vec_prim_rc, text);
                 }
             }

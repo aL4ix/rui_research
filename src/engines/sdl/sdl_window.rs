@@ -13,8 +13,10 @@ pub struct SDLWindow {
 }
 
 impl SDLWindow {
-    pub fn new(window_builder: WindowBuilder, sdl_window: sdl2::video::Window)
-               -> Result<SDLWindow, Box<dyn Error>> {
+    pub fn new(
+        window_builder: WindowBuilder,
+        sdl_window: sdl2::video::Window,
+    ) -> Result<SDLWindow, Box<dyn Error>> {
         let canvas = sdl_window.into_canvas().build()?;
         Ok(SDLWindow {
             window_builder,

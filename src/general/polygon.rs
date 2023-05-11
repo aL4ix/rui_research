@@ -65,32 +65,28 @@ impl Polygon {
     }
 
     pub fn new_square(size: Vector2D<f32>, radius: f32, color: Color) -> Polygon {
-        Self::new_square_with_colors(size, radius, (color.clone(), color.clone(),
-                                                    color.clone(), color))
+        Self::new_square_with_colors(
+            size,
+            radius,
+            (color.clone(), color.clone(), color.clone(), color),
+        )
     }
 
-    pub fn new_square_with_colors(size: Vector2D<f32>, _radius: f32,
-                                  colors: (Color, Color, Color, Color)) -> Polygon {
-        let top_left = Self::new_vertex(
-            Vector2D::new(0.0, 0.0),
-            colors.0,
-            Default::default(),
-        );
-        let bottom_left = Self::new_vertex(
-            Vector2D::new(0.0, size.y()),
-            colors.1,
-            Default::default(),
-        );
+    pub fn new_square_with_colors(
+        size: Vector2D<f32>,
+        _radius: f32,
+        colors: (Color, Color, Color, Color),
+    ) -> Polygon {
+        let top_left = Self::new_vertex(Vector2D::new(0.0, 0.0), colors.0, Default::default());
+        let bottom_left =
+            Self::new_vertex(Vector2D::new(0.0, size.y()), colors.1, Default::default());
         let bottom_right = Self::new_vertex(
             Vector2D::new(size.x(), size.y()),
             colors.2,
             Default::default(),
         );
-        let top_right = Self::new_vertex(
-            Vector2D::new(size.x(), 0.0),
-            colors.3,
-            Default::default(),
-        );
+        let top_right =
+            Self::new_vertex(Vector2D::new(size.x(), 0.0), colors.3, Default::default());
         Polygon {
             vers: vec![top_left, bottom_left, bottom_right, top_right],
             inds: vec![0, 1, 2, 2, 3, 0],
@@ -129,13 +125,14 @@ impl Polygon {
             inds.push(start + 1);
         }
 
-        Polygon {
-            vers,
-            inds,
-        }
+        Polygon { vers, inds }
     }
 
-    fn new_vertex(position: Vector2D<f32>, color: Color, tex_coord: Vector2D<f32>) -> sys::SDL_Vertex {
+    fn new_vertex(
+        position: Vector2D<f32>,
+        color: Color,
+        tex_coord: Vector2D<f32>,
+    ) -> sys::SDL_Vertex {
         sys::SDL_Vertex {
             position: sys::SDL_FPoint {
                 x: position.x(),

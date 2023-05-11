@@ -6,10 +6,7 @@ pub struct Vector2D<T> {
 
 impl<T: Copy + Default> Vector2D<T> {
     pub fn new(x: T, y: T) -> Vector2D<T> {
-        Vector2D {
-            x,
-            y,
-        }
+        Vector2D { x, y }
     }
     pub fn x(&self) -> T {
         self.x

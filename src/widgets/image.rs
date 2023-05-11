@@ -4,10 +4,10 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
-use crate::widgets::{CommonWidget, Primitive, Widget};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
+use crate::widgets::{CommonWidget, Primitive, Widget};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -17,7 +17,11 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn from_bmp(id: usize, path: Box<Path>, style: &StyleMaster) -> Result<Image, Box<dyn Error>> {
+    pub fn from_bmp(
+        id: usize,
+        path: Box<Path>,
+        style: &StyleMaster,
+    ) -> Result<Image, Box<dyn Error>> {
         let (size, primitives, bitmap_index) = style.one_image(Vector2D::default(), path)?;
         Ok(Image {
             common: CommonWidget::new(id, Self::class_name(), primitives, size),

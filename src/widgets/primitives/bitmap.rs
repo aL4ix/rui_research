@@ -4,8 +4,8 @@ use std::sync::{Arc, Mutex};
 
 use crate::general::{Geometry, Vector2D};
 use crate::texture::{RAMSoftTexture, SoftTexture};
-use crate::widgets::Primitive;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::Primitive;
 
 #[derive(Debug)]
 pub struct Bitmap {

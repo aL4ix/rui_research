@@ -6,10 +6,10 @@ use std::ptr;
 use emscripten_main_loop::MainLoopEvent;
 use emscripten_main_loop::MainLoopEvent::{Continue, Terminate};
 use log::debug;
-use sdl2::{EventPump, init, sys, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::render::{Canvas, Texture};
+use sdl2::{init, sys, EventPump, VideoSubsystem};
 
 pub use sdl_window::SDLWindow;
 
@@ -51,15 +51,22 @@ impl SDLEngine {
         };
         Ok(sdl_engine)
     }
-    pub fn add_window_builder(&mut self, window_specs: WindowBuilder) -> Result<(), Box<dyn Error>> {
+    pub fn add_window_builder(
+        &mut self,
+        window_specs: WindowBuilder,
+    ) -> Result<(), Box<dyn Error>> {
         let sdl_window = self.sdl_video.window("Title1", 800, 600).build()?;
         let id = sdl_window.id();
         debug!("Created window {}", id);
-        self.windows.insert(id, SDLWindow::new(window_specs, sdl_window)?);
+        self.windows
+            .insert(id, SDLWindow::new(window_specs, sdl_window)?);
         Ok(())
     }
     #[allow(dead_code)]
-    pub fn set_user_event_handler(&mut self, user_event_handler: Option<fn(&Event) -> MainLoopStatus>) {
+    pub fn set_user_event_handler(
+        &mut self,
+        user_event_handler: Option<fn(&Event) -> MainLoopStatus>,
+    ) {
         self.user_event_handler = user_event_handler;
     }
     pub fn main_loop(self) {
@@ -80,10 +87,26 @@ impl SDLEngine {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => return MainLoopStatus::Terminate,
-                Event::KeyDown { window_id, keycode: Some(key), .. } =>
-                    self.windows.get_mut(&window_id).expect("").event_key_down(key),
-                Event::MouseButtonDown { window_id, mouse_btn, x, y, .. } =>
-                    self.windows.get_mut(&window_id).expect("").event_mouse_button_down(mouse_btn, x, y),
+                Event::KeyDown {
+                    window_id,
+                    keycode: Some(key),
+                    ..
+                } => self
+                    .windows
+                    .get_mut(&window_id)
+                    .expect("")
+                    .event_key_down(key),
+                Event::MouseButtonDown {
+                    window_id,
+                    mouse_btn,
+                    x,
+                    y,
+                    ..
+                } => self
+                    .windows
+                    .get_mut(&window_id)
+                    .expect("")
+                    .event_mouse_button_down(mouse_btn, x, y),
                 _ => {}
             }
         }
@@ -133,7 +156,10 @@ pub fn render_geometry<C: sdl2::render::RenderTarget>(
             sys::SDL_RenderGeometry(sdl_renderer, tex_ptr, vers_ptr, vers_num, inds_ptr, ind_num)
         };
         if ret == -1 {
-            return Err(format!("Failed at SDL_RenderGeometry {}", sdl2::get_error()));
+            return Err(format!(
+                "Failed at SDL_RenderGeometry {}",
+                sdl2::get_error()
+            ));
         }
     }
 

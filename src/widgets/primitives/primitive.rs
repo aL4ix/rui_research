@@ -1,5 +1,5 @@
+use mopa::{mopafy, Any};
 use std::fmt::Debug;
-use mopa::{Any, mopafy};
 
 use crate::general::{Geometry, Vector2D};
 

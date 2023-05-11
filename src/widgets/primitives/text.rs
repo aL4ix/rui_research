@@ -6,8 +6,8 @@ use log::debug;
 
 use crate::general::{Color, Geometry, Size2D, Vector2D};
 use crate::texture::{AlphaSoftTexture, SoftTexture};
-use crate::widgets::Primitive;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::Primitive;
 
 #[derive(Debug)]
 pub struct Text {
@@ -45,10 +45,13 @@ impl Text {
             size,
         }
     }
-    fn get_tex_geometry_and_size(text: &str, font_size: f32, font: FontArc, color: Color)
-                                 -> (Arc<Mutex<AlphaSoftTexture>>, Geometry, Vector2D<f32>) {
-        let (raw_data, width, height) = Self::text_to_alpha_data(text,
-                                                                 font_size, font);
+    fn get_tex_geometry_and_size(
+        text: &str,
+        font_size: f32,
+        font: FontArc,
+        color: Color,
+    ) -> (Arc<Mutex<AlphaSoftTexture>>, Geometry, Vector2D<f32>) {
+        let (raw_data, width, height) = Self::text_to_alpha_data(text, font_size, font);
         let tex = AlphaSoftTexture::new(raw_data, width, height, color);
         let poly = tex.poly().clone();
         let tex = Arc::new(Mutex::new(tex));
@@ -116,9 +119,12 @@ impl Text {
 
 impl PrivatePrimitiveMethods for Text {
     fn update_geometry(&mut self) {
-        let (tex, geometry, size) =
-            Text::get_tex_geometry_and_size(&self.text, self.font_size, self.font.clone(),
-                                            self.color.clone());
+        let (tex, geometry, size) = Text::get_tex_geometry_and_size(
+            &self.text,
+            self.font_size,
+            self.font.clone(),
+            self.color.clone(),
+        );
         self.tex = tex;
         self.geometry = geometry;
         self.size = size;

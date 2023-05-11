@@ -3,11 +3,11 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
-use crate::widgets::{CommonWidget, Widget};
 use crate::widgets::events::MouseButtonDownCallback;
-use crate::widgets::primitives::{Primitive, Text};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::primitives::{Primitive, Text};
 use crate::widgets::themes::StyleMaster;
+use crate::widgets::{CommonWidget, Widget};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -31,7 +31,6 @@ impl Button {
         self.set_needs_update(true);
     }
 }
-
 
 impl Primitive for Button {
     fn id(&self) -> usize {

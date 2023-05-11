@@ -3,11 +3,11 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
-use crate::widgets::{CommonWidget, Primitive, Widget};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Text;
 use crate::widgets::themes::StyleMaster;
+use crate::widgets::{CommonWidget, Primitive, Widget};
 
 #[derive(Debug)]
 pub struct TextBox {

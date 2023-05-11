@@ -35,7 +35,7 @@ impl Debug for MouseButtonDown {
 impl Default for MouseButtonDown {
     fn default() -> Self {
         MouseButtonDown {
-            callback: Arc::new(Self::empty_callback)
+            callback: Arc::new(Self::empty_callback),
         }
     }
 }

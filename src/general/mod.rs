@@ -7,9 +7,9 @@ pub use textured_polygon::TexturedPolygon;
 pub use vector2d::Vector2D;
 
 mod color;
-mod vector2d;
-mod rect;
-mod polygon;
-mod textured_polygon;
 mod geometry;
+mod polygon;
+mod rect;
 mod size2d;
+mod textured_polygon;
+mod vector2d;

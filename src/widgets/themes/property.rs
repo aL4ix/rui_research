@@ -1,6 +1,6 @@
-use glyph_brush::ab_glyph::FontArc;
 use crate::general::{Color, Vector2D};
 use crate::widgets::themes::style::ApplyTo;
+use glyph_brush::ab_glyph::FontArc;
 
 #[derive(Debug, Clone)]
 pub enum Property {
@@ -54,7 +54,7 @@ impl From<&Option<(f32, f32)>> for Property {
     fn from(value: &Option<(f32, f32)>) -> Self {
         match value {
             None => Property::None,
-            Some(vec2d) => Property::Vec2D(Vector2D::new(vec2d.0, vec2d.1))
+            Some(vec2d) => Property::Vec2D(Vector2D::new(vec2d.0, vec2d.1)),
         }
     }
 }
@@ -71,7 +71,7 @@ impl TryInto<f32> for Property {
     fn try_into(self) -> Result<f32, Self::Error> {
         match self {
             Property::Float(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -82,7 +82,7 @@ impl TryInto<FontArc> for Property {
     fn try_into(self) -> Result<FontArc, Self::Error> {
         match self {
             Property::Font(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -93,7 +93,7 @@ impl TryInto<String> for Property {
     fn try_into(self) -> Result<String, Self::Error> {
         match self {
             Property::Str(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -104,7 +104,7 @@ impl TryInto<Color> for Property {
     fn try_into(self) -> Result<Color, Self::Error> {
         match self {
             Property::Col(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -115,7 +115,7 @@ impl TryInto<usize> for Property {
     fn try_into(self) -> Result<usize, Self::Error> {
         match self {
             Property::Usize(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -126,7 +126,7 @@ impl TryInto<Vector2D<f32>> for Property {
     fn try_into(self) -> Result<Vector2D<f32>, Self::Error> {
         match self {
             Property::Vec2D(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -137,7 +137,7 @@ impl TryInto<ApplyTo> for Property {
     fn try_into(self) -> Result<ApplyTo, Self::Error> {
         match self {
             Property::ApplyTo(value) => Ok(value),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }
@@ -149,7 +149,7 @@ impl TryInto<Option<Vector2D<f32>>> for Property {
         match self {
             Property::None => Ok(None),
             Property::Vec2D(value) => Ok(Some(value)),
-            _ => Err("Couldn't convert Property".to_string())
+            _ => Err("Couldn't convert Property".to_string()),
         }
     }
 }

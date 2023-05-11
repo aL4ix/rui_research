@@ -7,8 +7,8 @@ use log::info;
 use crate::engines::sdl::SDLEngine;
 use crate::general::Vector2D;
 use crate::utils::SDLLoggerPipe;
-use crate::widgets::{Button, Image, Primitive, TextBox, Widget};
 use crate::widgets::themes::{SimpleTheme, StyleMaster};
+use crate::widgets::{Button, Image, Primitive, TextBox, Widget};
 use crate::window::WindowBuilder;
 
 /*
@@ -43,9 +43,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // std::env::set_var("RUST_LOG", "info");
     env_logger::builder()
         .format_timestamp(None)
-        .format(|buf, record| {
-            writeln!(buf, "{}: {}", record.target(), record.args())
-        })
+        .format(|buf, record| writeln!(buf, "{}: {}", record.target(), record.args()))
         .target(Target::Pipe(Box::new(SDLLoggerPipe))) // TODO Doesn't work with emscripten
         .init();
 

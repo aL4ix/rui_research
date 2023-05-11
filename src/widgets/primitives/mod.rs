@@ -1,9 +1,9 @@
-mod text;
 mod bitmap;
-mod shape;
 mod primitive;
+mod shape;
+mod text;
 
-pub use text::Text;
 pub use bitmap::Bitmap;
-pub use shape::Shape;
 pub use primitive::*;
+pub use shape::Shape;
+pub use text::Text;

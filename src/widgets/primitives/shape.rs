@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 
 use crate::general::{Color, Geometry, Polygon, TexturedPolygon, Vector2D};
-use crate::widgets::Primitive;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::Primitive;
 
 #[derive(Debug)]
 pub struct Shape {
@@ -45,10 +45,7 @@ impl Shape {
     pub fn geometry_out_of_poly(poly: Polygon) -> Geometry {
         Geometry {
             class: "Shape".to_string(),
-            polygons: vec![TexturedPolygon {
-                poly,
-                tex: None,
-            }],
+            polygons: vec![TexturedPolygon { poly, tex: None }],
         }
     }
 }

@@ -16,8 +16,11 @@ use crate::texture::TextureManager;
 /// gets rendered it creates the actual texture and then after than it will never change.
 pub trait SoftTexture: Send {
     fn id(&self) -> usize;
-    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Rc<RefCell<Texture>>, Box<dyn Error>>;
+    fn render(
+        &mut self,
+        tex_creator: &TextureCreator<WindowContext>,
+        tex_man: &mut TextureManager,
+    ) -> Result<Rc<RefCell<Texture>>, Box<dyn Error>>;
     fn class(&self) -> &str;
     fn width(&self) -> u32;
     fn height(&self) -> u32;
@@ -28,8 +31,11 @@ pub trait SoftTexture: Send {
         let width = format!("{:?}", self.width());
         let height = format!("{:?}", self.height());
         let poly = format!("{:?}", self.poly());
-        write!(f, "SoftTexture {{ id: {}, class: {}, width: {}, height: {}, poly: {} }}",
-               id, class, width, height, poly)
+        write!(
+            f,
+            "SoftTexture {{ id: {}, class: {}, width: {}, height: {}, poly: {} }}",
+            id, class, width, height, poly
+        )
     }
 }
 

@@ -48,25 +48,28 @@ impl SoftTexture for RAMSoftTexture {
     fn id(&self) -> usize {
         self.id
     }
-    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
+    fn render(
+        &mut self,
+        tex_creator: &TextureCreator<WindowContext>,
+        tex_man: &mut TextureManager,
+    ) -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if self.tex.is_none() {
             debug!("{}", self.class());
-            let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
-                                               self.height, self.pixel_format)?;
+            let (rc_tex, id) =
+                tex_man.reserve(tex_creator, self.width, self.height, self.pixel_format)?;
             {
                 let mut guard = rc_tex.borrow_mut();
                 guard.update(None, &self.raw_data, self.pitch as usize)?;
             }
             self.id = id;
-            self.poly = Polygon::new_rect_for_texture(Rect::new(0, 0, self.width, self.height),
-                                                      255);
+            self.poly =
+                Polygon::new_rect_for_texture(Rect::new(0, 0, self.width, self.height), 255);
             self.tex = Some(rc_tex);
             self.raw_data = vec![]; // Removing raw_data since it could be large
         }
         match &self.tex {
             None => Err(Box::from("No texture was rendered/created!")),
-            Some(tex) => Ok(tex.clone())
+            Some(tex) => Ok(tex.clone()),
         }
     }
     fn class(&self) -> &str {

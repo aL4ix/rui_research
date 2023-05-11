@@ -37,7 +37,10 @@ impl WindowBuilder {
             while self.widgets.contains_key(&self.widget_global_id) {
                 self.widget_global_id += 1;
             }
-            debug!("Setting id={} automatically to {:?}", self.widget_global_id, widget);
+            debug!(
+                "Setting id={} automatically to {:?}",
+                self.widget_global_id, widget
+            );
             widget.set_id(self.widget_global_id);
             self.widget_global_id += 1;
         }
@@ -48,9 +51,9 @@ impl WindowBuilder {
         self.geometries.clear();
 
         #[cfg(not(target_family = "wasm"))]
-            let functional_iter = self.widgets.par_iter_mut();
+        let functional_iter = self.widgets.par_iter_mut();
         #[cfg(target_family = "wasm")]
-            let functional_iter = self.widgets.iter_mut();
+        let functional_iter = self.widgets.iter_mut();
 
         self.geometries = functional_iter
             .map(|w| (*w.0, w.1.build_geometry()))
@@ -77,7 +80,9 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
-        let found = self.widgets.iter_mut()
+        let found = self
+            .widgets
+            .iter_mut()
             .rev()
             .find(|(_, w)| w.accepts_mouse(x, y));
         if let Some((_, widget)) = found {

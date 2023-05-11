@@ -70,29 +70,40 @@ impl SoftTexture for AlphaSoftTexture {
     fn id(&self) -> usize {
         self.id
     }
-    fn render(&mut self, tex_creator: &TextureCreator<WindowContext>, tex_man: &mut TextureManager)
-              -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
+    fn render(
+        &mut self,
+        tex_creator: &TextureCreator<WindowContext>,
+        tex_man: &mut TextureManager,
+    ) -> Result<Rc<RefCell<Texture>>, Box<dyn Error>> {
         if self.tex.is_none() {
             debug!("{}", self.class());
-            let (rc_tex, id) = tex_man.reserve(tex_creator, self.width,
-                                               self.height, PixelFormatEnum::RGBA32)?;
+            let (rc_tex, id) = tex_man.reserve(
+                tex_creator,
+                self.width,
+                self.height,
+                PixelFormatEnum::RGBA32,
+            )?;
             {
                 let mut tex = rc_tex.borrow_mut();
                 tex.set_blend_mode(BlendMode::Blend);
-                Self::update_texture_from_alpha(&Rect::new(0, 0, self.width, self.height),
-                                                &mut tex,
-                                                &self.raw_data,
-                                                &self.color)?;
+                Self::update_texture_from_alpha(
+                    &Rect::new(0, 0, self.width, self.height),
+                    &mut tex,
+                    &self.raw_data,
+                    &self.color,
+                )?;
             }
             self.id = id;
-            self.poly = Polygon::new_rect_for_texture(Rect::new(0, 0, self.width, self.height),
-                                                      self.color.a());
+            self.poly = Polygon::new_rect_for_texture(
+                Rect::new(0, 0, self.width, self.height),
+                self.color.a(),
+            );
             self.tex = Some(rc_tex);
             self.raw_data = vec![]; // freeing raw_data from RAM since it could be large
         }
         match &self.tex {
             None => Err(Box::from("No texture was rendered/created!")),
-            Some(tex) => Ok(tex.clone())
+            Some(tex) => Ok(tex.clone()),
         }
     }
     fn class(&self) -> &str {

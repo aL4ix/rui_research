@@ -30,6 +30,6 @@ impl Color {
 
 impl From<&(u8, u8, u8, u8)> for Color {
     fn from(v: &(u8, u8, u8, u8)) -> Self {
-            Color::new(v.0, v.1, v.2, v.3)
+        Color::new(v.0, v.1, v.2, v.3)
     }
 }

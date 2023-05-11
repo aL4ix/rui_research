@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
-use crate::widgets::{Primitive, Widget};
 use crate::widgets::events::{Event, MouseButtonDown, MouseButtonDownCallback};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
+use crate::widgets::{Primitive, Widget};
 
 #[derive(Debug)]
 pub struct CommonWidget {
@@ -20,7 +20,12 @@ pub struct CommonWidget {
 }
 
 impl CommonWidget {
-    pub fn new(id: usize, class: &str, mut primitives: Vec<Box<dyn Primitive>>, size: Vector2D<f32>) -> CommonWidget {
+    pub fn new(
+        id: usize,
+        class: &str,
+        mut primitives: Vec<Box<dyn Primitive>>,
+        size: Vector2D<f32>,
+    ) -> CommonWidget {
         let geometry = Geometry::new_from_primitives(class, &mut primitives);
         CommonWidget {
             id,
@@ -106,7 +111,7 @@ impl Widget for CommonWidget {
     }
     fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback) {
         self.event_mouse_button_down = MouseButtonDown {
-            callback: Arc::new(callback)
+            callback: Arc::new(callback),
         }
     }
 }
