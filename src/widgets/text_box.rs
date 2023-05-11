@@ -1,5 +1,6 @@
 use std::error::Error;
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::{CommonWidget, Primitive, Widget};
@@ -7,7 +8,6 @@ use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Text;
 use crate::widgets::themes::StyleMaster;
-use crate::window::Root;
 
 #[derive(Debug)]
 pub struct TextBox {
@@ -93,8 +93,8 @@ impl Widget for TextBox {
     fn class_name() -> &'static str {
         "TextBox"
     }
-    fn event_mouse_button_down(&mut self, root: &mut dyn Root, x: i32, y: i32) {
-        self.common.event_mouse_button_down(root, x, y)
+    fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
+        self.common.event_mouse_button_down()
     }
     fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback) {
         self.common.set_event_mouse_button_down(callback)

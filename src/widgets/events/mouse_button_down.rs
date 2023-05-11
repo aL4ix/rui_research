@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
 
 use crate::widgets::events::Event;
 use crate::window::Root;
@@ -6,7 +7,7 @@ use crate::window::Root;
 pub type MouseButtonDownCallback = fn(this: &mut dyn Root, x: i32, y: i32);
 
 pub struct MouseButtonDown {
-    pub callback: MouseButtonDownCallback,
+    pub callback: Arc<MouseButtonDownCallback>,
 }
 
 impl MouseButtonDown {
@@ -16,6 +17,12 @@ impl MouseButtonDown {
 impl Event for MouseButtonDown {
     fn class(&self) -> &str {
         "MouseButtonDown"
+    }
+
+    type Callback = MouseButtonDownCallback;
+
+    fn clone_callback(&self) -> Arc<Self::Callback> {
+        Arc::clone(&self.callback)
     }
 }
 
@@ -28,7 +35,7 @@ impl Debug for MouseButtonDown {
 impl Default for MouseButtonDown {
     fn default() -> Self {
         MouseButtonDown {
-            callback: Self::empty_callback
+            callback: Arc::new(Self::empty_callback)
         }
     }
 }

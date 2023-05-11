@@ -1,5 +1,6 @@
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
+use std::ops::Deref;
 
 use log::debug;
 #[cfg(not(target_family = "wasm"))]
@@ -76,23 +77,12 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
-        let second_mut_ref: &mut dyn Root;
-        unsafe {
-            /*
-            This second_mut_ref will be used as a Root trait object, which only exposes
-            get_widget_by_id(), which is implemented here in this very file, and what it does is it
-            goes, takes self.widgets, searches and bring back a &mut to only one of its widgets.
-            After that then the user is able to do anything to that widget, so self is not
-            being modified per se, instead one of the elements inside self.widgets will be modified,
-            that's why I think it is safe to create a second mutable reference.
-             */
-            second_mut_ref = &mut *(self as *mut Self);
-        }
         let found = self.widgets.iter_mut()
             .rev()
             .find(|(_, w)| w.accepts_mouse(x, y));
         if let Some((_, widget)) = found {
-            widget.event_mouse_button_down(second_mut_ref, x, y)
+            let event_callback = widget.event_mouse_button_down();
+            (event_callback.deref())(self, x, y)
         }
     }
 }
