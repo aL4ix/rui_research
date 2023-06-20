@@ -40,6 +40,6 @@
 1. Install framegraph
    > cargo install flamegraph
 2. Install framegraph's Linux requirements
-   > sudo apt install linux-tools-common linux-tools-generic linux-tools-`uname -r`
+   > sudo apt install linux-tools-common linux-tools-generic linux-tools-\`uname -r`
 3. Run it
    > ./run_profiler.sh
