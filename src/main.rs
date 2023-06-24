@@ -63,7 +63,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
     image.set_position(Vector2D::new(0.0, 100.0));
-    // TODO what to do with errors in widget constructors
+    // TODO what to do with errors in widget constructors, first organize all errors in all the traits
     window_builder.add_widget(0, Box::new(image));
 
     let text_box = TextBox::new(0, "RUI", &style)?;
