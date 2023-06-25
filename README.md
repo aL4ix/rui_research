@@ -1,8 +1,40 @@
+# About this
+
+## Vision
+\<Insert Name Here\> The Little GUI is an rust-written open-source cross-platform multi-paradigm convergent GUI library that
+tries to take back the fun and beauty of creating UI applications by moving the approach a
+little more retro.
+
+* It avoids using web technologies to render the UI, although it can render to many platforms: 
+Web, Linux, Windows, Android.
+* It avoids parsing strings to make it faster, also it renders the UI by building the polygons in parallel.
+* It uses less memory by not having to load a browser to run the application.
+* It is multi-paradigm by having both declarative and imperative approaches. Also inspired by web, it declares the style 
+separate to the contents.
+* It will (not yet) handle fractional-scaling automatically.
+* It is small because it only handles GUI stuff and assets, for handling other stuff please check other libraries e.g. 
+SDL.
+
+Currently, It is implemented with SDL but in the future it might have native web and TUI implementations.
+
+## Motivation
+Many years ago, my friend and I were developing a NES emulator, and we were never able to create a GUI for it, mostly 
+because there was no open-source cross-platform library that will not take ownership of the main thread and will work 
+easily with SDL. There are workarounds around this, but we never dedicated too much time to make them work.
+
+Also, as part of learning the beautiful rust language, I challenged myself to put such knowledge in practice and here we are.  
+
+
+# System dependencies
+1. Rust
+2. SDL >2.0.18
+
+
 # How to run it
 
 ## Linux
 
-### Ubuntu:
+### Ubuntu
 1. Install Rust
    1. With rustup: https://www.rust-lang.org/tools/install
    2. Or distro packages
@@ -20,13 +52,13 @@
 3. Run it
    > cargo run
 
-## Windows:
+## Windows
 1. Install Rust: https://www.rust-lang.org/tools/install 
 2. Install SDL2: https://wiki.libsdl.org/SDL2/Installation
 3. Run it
    > cargo run
 
-## Web:
+## Web
 1. Install Rust: https://www.rust-lang.org/tools/install
 2. Install target
    > rustup target add wasm32-unknown-emscripten
@@ -35,8 +67,11 @@
 5. Run it
    > ./build_wasm32.sh
 6. Open a browser at http://localhost:8000
+
+## Android
+1.
  
-## Performance:
+## Performance
 1. Install framegraph
    > cargo install flamegraph
 2. Install framegraph's Linux requirements
