@@ -84,7 +84,10 @@ Also, as part of learning the beautiful rust language, I challenged myself to pu
 
 
 # How to debug with vscodium
-1. Install rustup
-2. Install vscodium
-3. Install rust-analyzer extension
-4. Install CodeLLDB extension
+1. Install rustup: https://www.rust-lang.org/tools/install
+2. Install vscodium: https://vscodium.com/
+3. Open vscodium
+4. Install rust-analyzer extension
+5. Install CodeLLDB extension
+6. Add a breakpoint in the code with F9
+7. Press F5
