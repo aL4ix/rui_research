@@ -69,7 +69,10 @@ Also, as part of learning the beautiful rust language, I challenged myself to pu
 6. Open a browser at http://localhost:8000
 
 ## Android
-1.
+1. Setup Android environment
+2. Setup configuration section in the build_android.py file
+3. Run it
+   > ./build_android.py
  
 ## Performance
 1. Install framegraph
@@ -78,3 +81,10 @@ Also, as part of learning the beautiful rust language, I challenged myself to pu
    > sudo apt install linux-tools-common linux-tools-generic linux-tools-\`uname -r`
 3. Run it
    > ./run_profiler.sh
+
+
+# How to debug with vscodium
+1. Install rustup
+2. Install vscodium
+3. Install rust-analyzer extension
+4. Install CodeLLDB extension

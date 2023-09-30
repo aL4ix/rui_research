@@ -93,7 +93,7 @@ linker = "{ndk_abs_path}/toolchains/llvm/prebuilt/linux-x86_64/bin/i686-linux-an
 
 
 def build_android():
-    print('Staring build_android()')
+    print('Starting build_android()')
     original_cwd = getcwd()
     check_path_exists(f'../{RUST_SDL2_REPO}', 'Rust-SDL2 repo')
     android_sdk_abs_path = expanduser(ANDROID_SDK_PATH)
