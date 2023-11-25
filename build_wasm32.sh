@@ -10,7 +10,7 @@ if [ ! -d target/deploy ]; then
 fi
 
 source "$EMSDK_PATH/emsdk_env.sh" &&
-  cargo build --bin rui_research --target=wasm32-unknown-emscripten --release &&
+  cargo build --bin widget_gallery --target=wasm32-unknown-emscripten --release &&
   echo &&
   echo &&
   echo =========================================================================== &&

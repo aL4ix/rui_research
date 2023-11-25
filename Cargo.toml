@@ -2,14 +2,12 @@
 name = "rui_research"
 version = "0.1.0"
 edition = "2021"
+default-run = "widget_gallery"
 
-[lib]
-name = "main"
-crate-type = ["cdylib"]
-
-[[bin]]
-name = "rui_research"
-path = "src/bin.rs"
+# Uncomment these to generate android build
+#[lib]
+#name = "main"
+#crate-type = ["cdylib"]
 
 [dependencies]
 sdl2 = { path = "../rust-sdl2-2.0.18", features = ["unsafe_textures"] }

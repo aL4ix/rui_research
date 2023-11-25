@@ -7,8 +7,8 @@ use log::info;
 use crate::engines::sdl::SDLEngine;
 use crate::general::Vector2D;
 use crate::utils::SDLLoggerPipe;
-use crate::widgets::themes::{SimpleTheme, StyleMaster};
 use crate::widgets::{Button, Image, Primitive, TextBox, Widget};
+use crate::widgets::themes::{SimpleTheme, StyleMaster};
 use crate::window::WindowBuilder;
 
 /*
@@ -34,10 +34,6 @@ Loop {
 }
  */
 
-/*
-In reality the main() for the binary is inside bin.rs and for the library is in lib.rs, but both
-end up calling this main()
- */
 pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     std::env::set_var("RUST_BACKTRACE", "full");
     // std::env::set_var("RUST_LOG", "info");
@@ -60,6 +56,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
 
     // Single-threaded
     let style = StyleMaster::new(Box::new(SimpleTheme))?;
+    // Can we have a global theme instead of sending it to each widget?
     let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
     image.set_position(Vector2D::new(0.0, 100.0));

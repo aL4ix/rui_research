@@ -77,7 +77,7 @@ impl Theme for SimpleTheme {
                 color: (255, 0, 0, 255),
                 background_color: (0, 0, 255, 255),
                 font: "Nouveau_IBM".to_string(),
-                font_size: 100.0,
+                font_size: 50.0,
                 ..Default::default()
             }),
             Box::new(ImageStyle {

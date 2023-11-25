@@ -79,7 +79,7 @@ impl Geometry {
     }
     pub fn translate(&mut self, position: &Vector2D<f32>) {
         for tex_poly in &mut self.polygons {
-            for mut ver in &mut tex_poly.poly.vers {
+            for ver in &mut tex_poly.poly.vers {
                 ver.position.x += position.x();
                 ver.position.y += position.y();
             }
