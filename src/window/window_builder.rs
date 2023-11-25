@@ -19,6 +19,8 @@ pub struct WindowBuilder {
     geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
     widget_global_id: usize,
+    width: u32,
+    height: u32,
 }
 
 impl WindowBuilder {
@@ -30,6 +32,8 @@ impl WindowBuilder {
             geometries: Default::default(),
             tex_man: TextureManager::new(),
             widget_global_id: 1, // Starting id
+            width: 1024,
+            height: 768,
         })
     }
     pub fn add_widget(&mut self, render_id: usize, mut widget: Box<dyn Widget>) {
@@ -89,6 +93,12 @@ impl WindowBuilder {
             let event_callback = widget.event_mouse_button_down();
             (event_callback.deref())(self, x, y)
         }
+    }
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+    pub fn height(&self) -> u32 {
+        self.height
     }
 }
 

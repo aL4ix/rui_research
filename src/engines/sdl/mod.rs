@@ -56,7 +56,8 @@ impl SDLEngine {
         &mut self,
         window_specs: WindowBuilder,
     ) -> Result<(), Box<dyn Error>> {
-        let sdl_window = self.sdl_video.window("Title1", 800, 600).build()?;
+        let sdl_window = self.sdl_video.window("Title1", window_specs.width(),
+                                               window_specs.height()).build()?;
         let id = sdl_window.id();
         debug!("Created window {}", id);
         self.windows

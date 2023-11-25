@@ -74,7 +74,7 @@ impl Theme for SimpleTheme {
                 ..Default::default()
             }),
             Box::new(TextBoxStyle {
-                color: (255, 0, 0, 255),
+                color: (255, 255, 255, 255),
                 background_color: (0, 0, 255, 255),
                 font: "Nouveau_IBM".to_string(),
                 font_size: 50.0,
