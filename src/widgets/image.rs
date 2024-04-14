@@ -34,12 +34,10 @@ impl Primitive for Image {
     fn class_name() -> &'static str {
         "Image"
     }
-
     // TODO change to macro
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-
     fn id(&self) -> usize {
         self.common.id()
     }

@@ -49,12 +49,10 @@ impl Primitive for CommonWidget {
     fn class_name() -> &'static str {
         "CommonWidget"
     }
-
     // TODO change to macro
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-
     fn id(&self) -> usize {
         self.id
     }

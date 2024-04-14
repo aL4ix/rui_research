@@ -1,12 +1,12 @@
+use std::any::Any;
 use std::error::Error;
 use std::sync::Arc;
-
-use mopa::{mopafy, Any};
 
 use crate::general::{Rect, Vector2D};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::Primitive;
 use crate::window::Root;
+use crate::utils::Downcast;
 
 pub trait Widget: Primitive + Any {
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback>;
@@ -26,7 +26,7 @@ pub trait Widget: Primitive + Any {
         Self: Sized,
     {
         if let Some(widget) = root.get_widget_by_id(id) {
-            return if let Some(button) = widget.downcast_mut::<Self>() {
+            return if let Some(button) = (**widget).downcast_mut::<Self>() {
                 Ok(button)
             } else {
                 Err(Box::from(format!("Not a {}", Self::class_name())))
@@ -35,5 +35,3 @@ pub trait Widget: Primitive + Any {
         Err(Box::from("Not found"))
     }
 }
-
-mopafy!(Widget);

@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
+use crate::utils::Downcast;
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Text;
@@ -26,7 +27,7 @@ impl TextBox {
     }
     pub fn set_text(&mut self, text: &str) {
         let primitive = self.common.get_primitive_by_index_mut(self.text_index);
-        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("downcast_mut");
+        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("text_box.set_text() downcast_mut");
         text_pri.set_text(text);
         self.set_needs_update(true);
     }
@@ -36,12 +37,10 @@ impl Primitive for TextBox {
     fn class_name() -> &'static str {
         "TextBox"
     }
-
     // TODO change to macro
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-
     fn id(&self) -> usize {
         self.common.id()
     }

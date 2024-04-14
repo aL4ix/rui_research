@@ -1,4 +1,4 @@
-use mopa::{mopafy, Any};
+use std::any::Any;
 use std::fmt::Debug;
 
 use crate::general::{Geometry, Vector2D};
@@ -51,5 +51,3 @@ pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods + Any {
         }
     }
 }
-
-mopafy!(Primitive);

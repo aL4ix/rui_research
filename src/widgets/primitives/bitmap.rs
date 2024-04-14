@@ -74,12 +74,10 @@ impl Primitive for Bitmap {
     {
         "Bitmap"
     }
-
     // TODO change to macro
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-
     fn id(&self) -> usize {
         self.id
     }
