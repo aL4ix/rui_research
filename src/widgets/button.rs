@@ -36,6 +36,12 @@ impl Primitive for Button {
     fn class_name() -> &'static str {
         "Button"
     }
+
+    // TODO change to macro
+    fn class(&self) -> &'static str {
+        Self::class_name()
+    }
+
     fn id(&self) -> usize {
         self.common.id()
     }

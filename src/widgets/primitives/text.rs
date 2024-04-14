@@ -159,6 +159,12 @@ impl Primitive for Text {
     {
         "Text"
     }
+
+    // TODO change to macro
+    fn class(&self) -> &'static str {
+        Self::class_name()
+    }
+
     fn id(&self) -> usize {
         self.id
     }
