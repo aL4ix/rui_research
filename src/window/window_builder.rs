@@ -50,7 +50,7 @@ impl WindowBuilder {
         #[cfg(not(target_family = "wasm"))]
         let functional_iter = binding.par_iter_mut();
         #[cfg(target_family = "wasm")]
-        let functional_iter = self.get_widgets_to_render().iter_mut();
+        let functional_iter = binding.iter_mut();
 
         self.geometries = functional_iter
             .map(|w| (*w.0, w.1.lock().unwrap().build_geometry()))
