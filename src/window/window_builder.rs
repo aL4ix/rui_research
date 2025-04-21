@@ -1,9 +1,10 @@
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
 use std::ops::Deref;
+use std::sync::{Arc, Mutex};
 
 #[cfg(not(target_family = "wasm"))]
-use rayon::prelude::*;
+// use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 use sdl2::render::WindowCanvas;
@@ -33,8 +34,9 @@ impl WindowBuilder {
             height: 768,
         })
     }
-    pub fn add_widget(&mut self, render_id: usize, widget: DynWidget, wid: usize) {
-        self.widget_man.insert(wid, widget);
+    pub fn add_widget<T: Widget>(&mut self, render_id: usize, widget: T, wid: usize) {
+        let dw = Arc::new(Mutex::new(widget));
+        self.widget_man.insert(wid, dw);
         self.rid_and_wid.insert(render_id, wid);
     }
     fn get_widgets_to_render(&self) -> BTreeMap<usize, DynWidget> {
@@ -48,7 +50,8 @@ impl WindowBuilder {
 
         let mut binding = self.get_widgets_to_render();
         #[cfg(not(target_family = "wasm"))]
-        let functional_iter = binding.par_iter_mut();
+        // let functional_iter = binding.par_iter_mut();
+        let functional_iter = binding.iter_mut();
         #[cfg(target_family = "wasm")]
         let functional_iter = binding.iter_mut();
 
