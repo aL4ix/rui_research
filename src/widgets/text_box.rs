@@ -27,7 +27,7 @@ impl TextBox {
     }
     pub fn set_text(&mut self, text: &str) {
         let primitive = self.common.get_primitive_by_index_mut(self.text_index);
-        let text_pri: &mut Text = primitive.downcast_mut::<Text>().expect("text_box.set_text() downcast_mut");
+        let text_pri: &mut Text = (**primitive).downcast_mut::<Text>().expect("text_box.set_text() downcast_mut");
         text_pri.set_text(text);
         self.set_needs_update(true);
     }

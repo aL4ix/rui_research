@@ -1,4 +1,4 @@
-pub use root::Root;
+pub use root::*;
 pub use window_builder::WindowBuilder;
 pub use window_trait::Window;
 

@@ -1,5 +1,6 @@
 use std::io::Write;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use env_logger::Target;
 use log::info;
@@ -61,19 +62,25 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
     image.set_position(Vector2D::new(0.0, 100.0));
     // TODO what to do with errors in widget constructors, first organize all errors in all the traits
-    window_builder.add_widget(0, Box::new(image));
+    window_builder.add_widget(0, Arc::new(Mutex::new(image)), 1);
 
     let text_box = TextBox::new(0, "RUI", &style)?;
-    window_builder.add_widget(2, Box::new(text_box));
+    window_builder.add_widget(2, Arc::new(Mutex::new(text_box)), 2);
 
     let mut button = Button::new(0, "button", &style)?;
     button.set_event_mouse_button_down(|root, x, y| {
+        // Image 1
+        // Textbox 2
+        // Button 3
         info!("Clicked! {} {}", x, y);
-        // let tx = TextBox::get_by_id(root, 2).expect("Nel");
+        
         let btn = Button::get_by_id(root, 3).expect("Nel");
-        btn.set_text(&format!("Clicked {} {}", x, y));
+        btn.lock().unwrap().set_text(&format!("Clicked {} {}", x, y));
+
+        let tx = TextBox::get_by_id(root, 2).expect("Nel");
+        tx.lock().unwrap().set_text("Mickey es gason");
     });
-    window_builder.add_widget(5, Box::new(button));
+    window_builder.add_widget(5, Arc::new(Mutex::new(button)), 3);
 
     sdl_engine.add_window_builder(window_builder)?;
     // let mut w2 = WindowBuilder::new()?;
