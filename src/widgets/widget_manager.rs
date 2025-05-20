@@ -5,8 +5,9 @@ use std::sync::{Arc, Mutex};
 
 use super::Widget;
 
-pub type DynWidget = Arc<Mutex<dyn Widget + 'static>>;
-pub type WidgetT<T> = Arc<Mutex<T>>;
+pub type InternalT<T> = Mutex<Box<T>>;
+pub type WidgetT<T> = Arc<InternalT<T>>;
+pub type DynWidget = WidgetT<dyn Widget>;
 
 pub trait WidgetEnum: Clone + Copy {
     fn to_isize(self) -> isize;
@@ -31,7 +32,7 @@ impl DowncastableWidget {
         None
     }
     fn downcast_dyn_widget<T: Widget>(widget: DynWidget) -> WidgetT<T> where Self: Sized {
-        let new_arc = unsafe { Arc::from_raw(Arc::into_raw(widget) as *const Mutex<T>) };
+        let new_arc = unsafe { Arc::from_raw(Arc::into_raw(widget) as *const InternalT<T>) };
         new_arc
     }
 }
@@ -44,7 +45,7 @@ pub struct WidgetManager {
 impl WidgetManager {
     pub fn insert(&mut self, wid: usize, widget: DynWidget) {
         let dw = DowncastableWidget {
-            type_id: widget.clone().lock().unwrap().type_id(),
+            type_id: widget.clone().lock().expect("widget_manager:insert").type_id(),
             dyn_widget: widget,
         };
         self.widgets.insert(wid, dw);
@@ -52,5 +53,9 @@ impl WidgetManager {
 
     pub fn get(&self, wid: usize) -> Option<DowncastableWidget> {
         self.widgets.get(&wid).cloned()
+    }
+    
+    pub fn remove(&mut self, wid: usize) -> DynWidget {
+        self.widgets.remove(&wid).expect("widget_manager:WidgetManager:remove").dyn_wid()
     }
 }

@@ -7,15 +7,34 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'rui_research'",
+            "name": "Debug unit tests in library 'rui_research'",
             "cargo": {
                 "args": [
-                    "build",
-                    "--bin=rui_research",
+                    "test",
+                    "--no-run",
+                    "--lib",
                     "--package=rui_research"
                 ],
                 "filter": {
                     "name": "rui_research",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'blackboard'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=blackboard",
+                    "--package=rui_research"
+                ],
+                "filter": {
+                    "name": "blackboard",
                     "kind": "bin"
                 }
             },
@@ -25,16 +44,53 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'rui_research'",
+            "name": "Debug unit tests in executable 'blackboard'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=rui_research",
+                    "--bin=blackboard",
                     "--package=rui_research"
                 ],
                 "filter": {
-                    "name": "rui_research",
+                    "name": "blackboard",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'widget_gallery'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=widget_gallery",
+                    "--package=rui_research"
+                ],
+                "filter": {
+                    "name": "widget_gallery",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'widget_gallery'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=widget_gallery",
+                    "--package=rui_research"
+                ],
+                "filter": {
+                    "name": "widget_gallery",
                     "kind": "bin"
                 }
             },

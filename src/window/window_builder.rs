@@ -3,8 +3,9 @@ use std::error::Error;
 use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
+use log::debug;
 #[cfg(not(target_family = "wasm"))]
-// use rayon::prelude::*;
+use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
 use sdl2::mouse::MouseButton;
 use sdl2::render::WindowCanvas;
@@ -21,6 +22,7 @@ pub struct WindowBuilder {
     tex_man: TextureManager,
     width: u32,
     height: u32,
+    borrowed: BTreeMap<usize, DynWidget>,
 }
 
 impl WindowBuilder {
@@ -32,10 +34,11 @@ impl WindowBuilder {
             tex_man: TextureManager::new(),
             width: 1024,
             height: 768,
+            borrowed: Default::default()
         })
     }
     pub fn add_widget<T: Widget>(&mut self, render_id: usize, widget: T, wid: usize) {
-        let dw = Arc::new(Mutex::new(widget));
+        let dw: DynWidget = Arc::new(Mutex::new(Box::new(widget)));
         self.widget_man.insert(wid, dw);
         self.rid_and_wid.insert(render_id, wid);
     }
@@ -56,7 +59,7 @@ impl WindowBuilder {
         let functional_iter = binding.iter_mut();
 
         self.geometries = functional_iter
-            .map(|w| (*w.0, w.1.lock().unwrap().build_geometry()))
+            .map(|w| (*w.0, w.1.lock().expect("window_builder:WindowBuilder:build_geometry").build_geometry()))
             .collect();
 
         // Delete not needed widgets
@@ -74,9 +77,9 @@ impl WindowBuilder {
     pub fn event_key_down(&mut self, key: Keycode) {
         let result = TextBox::get_by_id(self, 2);
         if let Ok(text) = result {
-            text.lock().unwrap().set_text(&key.to_string())
+            text.lock().expect("window_builder:WindowBuilder:event_key_down").set_text(&key.to_string())
         } else {
-            panic!("key_down {:?}", result)
+            debug!("key_down {:?}", result)
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
@@ -85,10 +88,26 @@ impl WindowBuilder {
         let found = binding
             .iter_mut()
             .rev()
-            .find(|(_, w)| w.lock().unwrap().accepts_mouse(x, y));
+            .find(|(_, w)| w.lock().expect("window_builder:event_mouse_button_down").accepts_mouse(x, y));
         if let Some((_, widget)) = found {
-            let event_callback = widget.lock().unwrap().event_mouse_button_down();
-            (event_callback.deref())(self, x, y)
+            let event_callback = widget.lock().expect("window_builder:event_mouse_button_down").event_mouse_button_down();
+            (event_callback.deref())(self, x, y);
+        }
+        drop(binding);
+        // self.re_own_widgets();
+    }
+    fn re_own_widgets(&mut self) {
+        for (rid, wid) in self.rid_and_wid.clone() {
+            let widget = self.widget_man.remove(wid);
+            self.rid_and_wid.remove(&rid);
+            let count = Arc::strong_count(&widget);
+            println!("{}", count);
+            if count > 1 {
+                continue;
+            }
+            let a = Arc::try_unwrap(widget).expect("msg1");
+            let b = a.into_inner().expect("msg2");
+            println!("{}" ,b.class());
         }
     }
     pub fn width(&self) -> u32 {

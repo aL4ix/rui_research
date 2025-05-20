@@ -55,7 +55,7 @@ impl TextureManager {
         }
         for id in garbage {
             debug!("Killing tex: {}", id);
-            let tex = self.textures.remove(&id).unwrap();
+            let tex = self.textures.remove(&id).expect("texture_manager:TextureManager:garbage_collect");
             // According to rust-sdl2's Texture doc, tex.destroy() is only unsafe because you cannot destroy a
             // tex when its parent doesn't exist, so before destroying it we are checking if parent exists.
             // Note _tex_creator is moved, which means it disallows multi-threaded usages.

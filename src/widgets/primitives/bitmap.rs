@@ -41,7 +41,7 @@ impl Bitmap {
 
 impl PrivatePrimitiveMethods for Bitmap {
     fn update_geometry(&mut self) {
-        let poly = self.arc_tex.lock().unwrap().poly().clone(); // Should we save poly instead?
+        let poly = self.arc_tex.lock().expect("bitmap:PrivatePrimitiveMethods:update_geometry").poly().clone(); // Should we save poly instead?
         self.geometry = Geometry::new_for_texture("Bitmap", self.arc_tex.clone(), poly);
     }
     fn needs_update(&self) -> bool {

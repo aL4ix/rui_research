@@ -64,7 +64,7 @@ impl Geometry {
         for tex_poly in &mut self.polygons {
             // info!("{:?}", tex_poly);
             if let Some(arc_tex) = &mut tex_poly.tex {
-                let mut guard = arc_tex.lock().unwrap();
+                let mut guard = arc_tex.lock().expect("geometry:Geometry:render");
                 // info!("{:?}", guard);
                 let rendered_tex = guard.render(tex_creator, tex_man)?;
                 let guard = rendered_tex.borrow();

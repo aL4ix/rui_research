@@ -1,6 +1,8 @@
 use std::any::Any;
 use std::sync::Arc;
 
+use log::debug;
+
 use crate::general::{Rect, Vector2D};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::Primitive;
@@ -29,7 +31,10 @@ pub trait Widget: Primitive + Any {
         if let Some(dw) = option_dw {
             let option_wt = dw.wid_t::<Self>();
             match option_wt {
-                Some(wt) => return Ok(wt),
+                Some(wt) => {
+                    debug!("Could convert widget wid={} to {}", wid, Self::class_name());
+                    return Ok(wt)
+                },
                 None => {
                     return Err(String::from(format!(
                         "get_by_id(): Not a {}",
