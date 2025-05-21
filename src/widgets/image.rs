@@ -18,13 +18,13 @@ pub struct Image {
 
 impl Image {
     pub fn from_bmp(
-        id: usize,
+        nid: usize,
         path: Box<Path>,
         style: &StyleMaster,
     ) -> Result<Image, Box<dyn Error>> {
         let (size, primitives, bitmap_index) = style.one_image(Vector2D::default(), path)?;
         Ok(Image {
-            common: CommonWidget::new(id, Self::class_name(), primitives, size),
+            common: CommonWidget::new(nid, Self::class_name(), primitives, size),
             bitmap_index,
         })
     }
@@ -38,11 +38,11 @@ impl Primitive for Image {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn id(&self) -> usize {
-        self.common.id()
+    fn nid(&self) -> usize {
+        self.common.nid()
     }
-    fn set_id(&mut self, id: usize) {
-        self.common.set_id(id)
+    fn set_nid(&mut self, id: usize) {
+        self.common.set_nid(id)
     }
     fn x(&self) -> f32 {
         self.common.x()

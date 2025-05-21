@@ -8,7 +8,7 @@ use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::Primitive;
 use crate::window::Root;
 
-use super::WidgetT;
+use super::BorrowedWidgetT;
 
 pub trait Widget: Primitive + Any {
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback>;
@@ -23,10 +23,11 @@ pub trait Widget: Primitive + Any {
         self.get_rect()
             .contains_point(Vector2D::<f32>::new(x as f32, y as f32))
     }
-    fn get_by_id(root: &mut dyn Root, wid: usize) -> Result<WidgetT<Self>, String>
+    fn get_by_id(root: &mut dyn Root, wid: usize) -> Result<BorrowedWidgetT<Self>, String>
     where
         Self: Sized,
     {
+        debug!("Widget:get_by_id wid={}", wid);
         let option_dw = root.get_down_widget_by_id(wid);
         if let Some(dw) = option_dw {
             let option_wt = dw.wid_t::<Self>();
@@ -43,6 +44,6 @@ pub trait Widget: Primitive + Any {
                 }
             }
         }
-        Err(String::from("Not found: get_by_id()"))
+        Err(String::from("Not found: widget:Widget:get_by_id()"))
     }
 }

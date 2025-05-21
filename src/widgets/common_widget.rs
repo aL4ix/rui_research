@@ -7,7 +7,7 @@ use crate::widgets::{Primitive, Widget};
 
 #[derive(Debug)]
 pub struct CommonWidget {
-    id: usize,
+    nid: usize,
     position: Vector2D<f32>,
     size: Vector2D<f32>,
     geometry: Geometry,
@@ -21,14 +21,14 @@ pub struct CommonWidget {
 
 impl CommonWidget {
     pub fn new(
-        id: usize,
+        nid: usize,
         class: &str,
         mut primitives: Vec<Box<dyn Primitive>>,
         size: Vector2D<f32>,
     ) -> CommonWidget {
         let geometry = Geometry::new_from_primitives(class, &mut primitives);
         CommonWidget {
-            id,
+            nid,
             position: Default::default(),
             size,
             geometry,
@@ -53,11 +53,11 @@ impl Primitive for CommonWidget {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn id(&self) -> usize {
-        self.id
+    fn nid(&self) -> usize {
+        self.nid
     }
-    fn set_id(&mut self, id: usize) {
-        self.id = id
+    fn set_nid(&mut self, nid: usize) {
+        self.nid = nid
     }
     fn x(&self) -> f32 {
         self.position.x()

@@ -78,10 +78,10 @@ impl Primitive for Bitmap {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn id(&self) -> usize {
+    fn nid(&self) -> usize {
         self.id
     }
-    fn set_id(&mut self, id: usize) {
+    fn set_nid(&mut self, id: usize) {
         self.id = id;
     }
     fn x(&self) -> f32 {

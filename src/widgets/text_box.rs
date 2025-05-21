@@ -17,9 +17,9 @@ pub struct TextBox {
 }
 
 impl TextBox {
-    pub fn new(id: usize, text: &str, style: &StyleMaster) -> Result<TextBox, Box<dyn Error>> {
+    pub fn new(nid: usize, text: &str, style: &StyleMaster) -> Result<TextBox, Box<dyn Error>> {
         let (size, primitives, text_index) = style.one_textbox(Vector2D::default(), text)?;
-        let common_widget = CommonWidget::new(id, Self::class_name(), primitives, size);
+        let common_widget = CommonWidget::new(nid, Self::class_name(), primitives, size);
         Ok(TextBox {
             common: common_widget,
             text_index,
@@ -41,11 +41,11 @@ impl Primitive for TextBox {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn id(&self) -> usize {
-        self.common.id()
+    fn nid(&self) -> usize {
+        self.common.nid()
     }
-    fn set_id(&mut self, id: usize) {
-        self.common.set_id(id)
+    fn set_nid(&mut self, id: usize) {
+        self.common.set_nid(id)
     }
     fn x(&self) -> f32 {
         self.common.x()

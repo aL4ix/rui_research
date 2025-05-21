@@ -1,7 +1,7 @@
 
-use crate::widgets::{DowncastableWidget, DynWidget};
+use crate::widgets::{DowncastableBorrowedWidget, BorrowedDynWidget};
 
 pub trait Root {
-    fn get_widget_by_id_dyn(&mut self, wid: usize) -> Option<DynWidget>;
-    fn get_down_widget_by_id(&mut self, wid: usize) -> Option<DowncastableWidget>;
+    // fn get_widget_by_id_dyn(&mut self, wid: usize) -> Option<BorrowedDynWidget>;
+    fn get_down_widget_by_id(&mut self, wid: usize) -> Option<DowncastableBorrowedWidget>;
 }

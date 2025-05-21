@@ -18,10 +18,10 @@ pub struct Button {
 }
 
 impl Button {
-    pub fn new(id: usize, text: &str, style: &StyleMaster) -> Result<Button, Box<dyn Error>> {
+    pub fn new(nid: usize, text: &str, style: &StyleMaster) -> Result<Button, Box<dyn Error>> {
         let (size, primitives, text_index) = style.one_button(Vector2D::default(), text)?;
         Ok(Button {
-            common: CommonWidget::new(id, Self::class_name(), primitives, size),
+            common: CommonWidget::new(nid, Self::class_name(), primitives, size),
             text_index,
         })
     }
@@ -41,11 +41,11 @@ impl Primitive for Button {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn id(&self) -> usize {
-        self.common.id()
+    fn nid(&self) -> usize {
+        self.common.nid()
     }
-    fn set_id(&mut self, id: usize) {
-        self.common.set_id(id)
+    fn set_nid(&mut self, id: usize) {
+        self.common.set_nid(id)
     }
     fn x(&self) -> f32 {
         self.common.x()
