@@ -1,8 +1,9 @@
 use std::collections::btree_map::BTreeMap;
 use std::error::Error;
 use std::ops::Deref;
+use std::sync::{Arc, Mutex};
 
-use log::debug;
+use log::{debug, info};
 #[cfg(not(target_family = "wasm"))]
 use rayon::prelude::*;
 use sdl2::keyboard::Keycode;
@@ -15,50 +16,44 @@ use crate::widgets::*;
 use crate::window::Root;
 
 pub struct WindowBuilder {
-    rid_and_wid: BTreeMap<usize, usize>,
-    widget_man: WidgetManager,
+    wid_and_rid: BTreeMap<usize, usize>,
+    widgets: BTreeMap<usize, OwnedDynWidget>,
     geometries: BTreeMap<usize, Geometry>,
     tex_man: TextureManager,
     width: u32,
     height: u32,
+    borrowed: BTreeMap<usize, DowncastableBorrowedWidget>,
 }
 
 impl WindowBuilder {
     pub fn new() -> Result<WindowBuilder, Box<(dyn Error)>> {
         Ok(WindowBuilder {
-            rid_and_wid: Default::default(),
-            widget_man: Default::default(),
+            wid_and_rid: Default::default(),
+            widgets: Default::default(),
             geometries: Default::default(),
             tex_man: TextureManager::new(),
             width: 1024,
             height: 768,
+            borrowed: Default::default(),
         })
     }
     pub fn add_widget<T: Widget>(&mut self, render_id: usize, widget: T, wid: usize) {
-        self.widget_man.insert(wid, Box::new(widget));
-        self.rid_and_wid.insert(render_id, wid);
-    }
-    fn bor_widgets_to_render(&mut self) -> BTreeMap<usize, BorrowedDynWidget> {
-        debug!("bor_widgets_to_render");
-        let widgets_to_render: BTreeMap<usize, BorrowedDynWidget> = self.rid_and_wid.iter()
-        .map(|(rid, wid)| (*rid, self.widget_man.down_borrow(*wid).expect("window_builder:WindowBuilder:get_widgets_to_render").bor_dyn_wid())).collect();
-        debug!("END bor_widgets_to_render");
-        return widgets_to_render;
+        self.widgets.insert(wid, Box::new(widget));
+        self.wid_and_rid.insert(wid, render_id);
     }
     pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
         // Check if new widgets are needed based on DSL
-        self.widget_man.ret_borrows();
+        self.wid_ret_borrows();
         self.geometries.clear();
 
-        let binding = &mut self.rid_and_wid;       
+        let binding = &mut self.widgets;       
         #[cfg(not(target_family = "wasm"))]
-        // let functional_iter = binding.par_iter_mut();
-        let functional_iter = binding.iter_mut();
+        let functional_iter = binding.par_iter_mut();
         #[cfg(target_family = "wasm")]
         let functional_iter = binding.iter_mut();
 
         self.geometries = functional_iter
-            .map(|(rid, wid)| (*rid, self.widget_man.mut_ref(*wid).expect("window_builder:WindowBuilder:build_geometry").build_geometry()))
+            .map(|(wid, widget)| (*wid, widget.build_geometry()))
             .collect();
 
         // Delete not needed widgets
@@ -82,17 +77,14 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
-        let mut binding = self
-            .bor_widgets_to_render();
-        let found = binding
+        let found = self.widgets
             .iter_mut()
             .rev()
-            .find(|(_, w)| w.lock().expect("window_builder:event_mouse_button_down").accepts_mouse(x, y));
+            .find(|(_, w)| w.accepts_mouse(x, y));
         if let Some((_, widget)) = found {
-            let event_callback = widget.lock().expect("window_builder:event_mouse_button_down").event_mouse_button_down();
+            let event_callback = widget.event_mouse_button_down();
             (event_callback.deref())(self, x, y);
         }
-        drop(binding);
     }
     pub fn width(&self) -> u32 {
         self.width
@@ -100,14 +92,48 @@ impl WindowBuilder {
     pub fn height(&self) -> u32 {
         self.height
     }
+    fn wid_down_borrow(&mut self, wid: usize) -> Option<DowncastableBorrowedWidget> {
+        info!("down_borrow wid={}", wid);
+
+        if let Some(borrowed) = self.borrowed.get(&wid) {
+            info!("down_borrow strong_count={}", borrowed.get_borrowed_strong_count());
+            return Some(borrowed.clone());
+        }
+
+        let opt_widget = self.widgets.remove(&wid);
+        if let Some(widget) = opt_widget {
+            let type_id = widget.type_id();
+            let dyn_widget = Arc::new(Mutex::new(widget));
+            let borrowed = DowncastableBorrowedWidget::new(type_id, dyn_widget);
+            self.borrowed.insert(wid, borrowed.clone());
+            return Some(borrowed);
+        }
+        info!("down_borrow {:?}", self.widgets.keys());
+        None
+    }
+    fn wid_ret_borrows(&mut self) {
+        if self.borrowed.len() > 0 {
+            info!("ret_borrows len={}", self.borrowed.len());
+        }
+        
+        for wid in self.borrowed.keys().cloned().collect::<Vec<_>>() {
+            let down_borrow = self.borrowed.remove(&wid).expect("window_builder:WindowBuilder:ret_borrows remove");
+            let dyn_wid = down_borrow.own_dyn_wid();
+            let count = Arc::strong_count(&dyn_wid);
+            info!("wid={} count={}", wid, count);
+            if count > 1 {
+                panic!("Expected wid={} to have strong_count of 1, found {}", wid, count);
+            }
+            let mutex = Arc::try_unwrap(dyn_wid).expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
+            let widget = mutex.into_inner().expect("window_builder:WindowBuilder:ret_borrows into_inner");
+            debug!("{}" ,widget.class());
+            self.widgets.insert(wid, widget);
+        }
+    }
 }
 
 impl Root for WindowBuilder {
-    // fn get_widget_by_id_dyn(&mut self, wid: usize) -> Option<BorrowedDynWidget> {
-    //     self.widget_man.borrow(wid).map(|f| f.dyn_wid())
-    // }
-    
     fn get_down_widget_by_id(&mut self, wid: usize) -> Option<DowncastableBorrowedWidget> {
-        self.widget_man.down_borrow(wid)
+        self.wid_down_borrow(wid)
     }
 }
