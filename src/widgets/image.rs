@@ -44,8 +44,8 @@ impl Primitive for Image {
     fn nid(&self) -> usize {
         self.common.nid()
     }
-    fn set_nid(&mut self, id: usize) {
-        self.common.set_nid(id)
+    fn set_nid(&mut self, nid: usize) {
+        self.common.set_nid(nid)
     }
     fn x(&self) -> f32 {
         self.common.x()

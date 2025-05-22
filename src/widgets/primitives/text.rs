@@ -166,8 +166,8 @@ impl Primitive for Text {
     fn nid(&self) -> usize {
         self.nid
     }
-    fn set_nid(&mut self, id: usize) {
-        self.nid = id;
+    fn set_nid(&mut self, nid: usize) {
+        self.nid = nid;
     }
     fn x(&self) -> f32 {
         self.position.x()
