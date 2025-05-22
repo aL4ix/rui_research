@@ -4,13 +4,13 @@ pub use downcastable_borrowed_widget::*;
 pub use image::Image;
 pub use primitives::Primitive;
 pub use text_box::TextBox;
-pub use widget::Widget;
+pub use widget::*;
 pub use widget_enum::*;
 
 mod button;
 mod common_widget;
 mod downcastable_borrowed_widget;
-mod events;
+pub mod events;
 mod image;
 mod primitives;
 mod text_box;

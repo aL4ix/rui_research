@@ -6,7 +6,7 @@ use crate::widgets::Primitive;
 
 #[derive(Debug)]
 pub struct Shape {
-    id: usize,
+    nid: usize,
     poly: Polygon,
     needs_update: bool,
     geometry: Geometry,
@@ -18,10 +18,10 @@ pub struct Shape {
 
 impl Shape {
     /// An *id* of zero means it will be set to an automatic value when adding it to a window
-    fn new(id: usize, size: Vector2D<f32>, poly: Polygon) -> Shape {
+    fn new(nid: usize, size: Vector2D<f32>, poly: Polygon) -> Shape {
         let position = Default::default();
         Shape {
-            id,
+            nid,
             poly: poly.clone(),
             needs_update: false,
             geometry: Self::geometry_out_of_poly(poly),
@@ -89,10 +89,10 @@ impl Primitive for Shape {
         Self::class_name()
     }
     fn nid(&self) -> usize {
-        self.id
+        self.nid
     }
     fn set_nid(&mut self, id: usize) {
-        self.id = id;
+        self.nid = id;
     }
     fn x(&self) -> f32 {
         self.position.x()

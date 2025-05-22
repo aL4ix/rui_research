@@ -7,8 +7,9 @@ use log::info;
 use crate::engines::sdl::SDLEngine;
 use crate::general::Vector2D;
 use crate::utils::SDLLoggerPipe;
+use crate::widgets::events::HasEvents;
 use crate::widgets::themes::{SimpleTheme, StyleMaster};
-use crate::widgets::{Button, Image, Primitive, TextBox, Widget, WidgetEnum};
+use crate::widgets::{Button, Image, Primitive, TextBox, Widget, WidgetEnum, WidgetId};
 use crate::window::WindowBuilder;
 
 /*
@@ -43,8 +44,8 @@ pub enum GalleryWalkWidgetEnum {
 }
 
 impl WidgetEnum for GalleryWalkWidgetEnum {
-    fn to_wid(self) -> usize {
-        self as usize
+    fn to_wid(self) -> WidgetId {
+        self as WidgetId
     }
 }
 
@@ -74,6 +75,12 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
     image.set_position(Vector2D::new(0.0, 100.0));
+    image.set_event_key_down(|root, keycode| {
+        TextBox::get_by_id(root, GalleryWalkWidgetEnum::TEXTBOX)
+            .expect("widget_gallery:main:image.set_event_key_down")
+            .borrow_mut()
+            .set_text(&keycode.to_string());
+    });
     // TODO what to do with errors in widget constructors, first organize all errors in all the traits
     window_builder.add_widget(0, image, GalleryWalkWidgetEnum::IMAGE);
 
@@ -82,15 +89,14 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
 
     let mut button = Button::new(0, "button", &style)?;
     button.set_event_mouse_button_down(|root, x, y| {
-        // Image 9
-        // Textbox 8
-        // Button 7
         info!("Clicked! {} {}", x, y);
 
-        let btn = Button::get_by_id(root, GalleryWalkWidgetEnum::BUTTON).expect("Nel");
+        let btn = Button::get_by_id(root, GalleryWalkWidgetEnum::BUTTON)
+            .expect("widget_gallery:main:button.set_event_key_down");
         btn.borrow_mut().set_text(&format!("Clicked {} {}", x, y));
 
-        let tx = TextBox::get_by_id(root, GalleryWalkWidgetEnum::TEXTBOX).expect("Nel");
+        let tx = TextBox::get_by_id(root, GalleryWalkWidgetEnum::TEXTBOX)
+            .expect("widget_gallery:main:button.set_event_key_down");
         tx.borrow_mut().set_text("Mickey es gason");
     });
     window_builder.add_widget(5, button, GalleryWalkWidgetEnum::BUTTON);

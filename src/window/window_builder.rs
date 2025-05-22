@@ -14,18 +14,18 @@ use sdl2::render::WindowCanvas;
 
 use crate::general::Geometry;
 use crate::texture::TextureManager;
-use crate::widget_gallery::GalleryWalkWidgetEnum;
 use crate::widgets::*;
 use crate::window::Root;
 
 pub struct WindowBuilder {
-    wid_and_rid: BTreeMap<usize, isize>,
+    wid_and_rid: BTreeMap<WidgetId, isize>,
     widgets: BTreeMap<isize, OwnedDynWidget>, // rid, owned_widget
     geometries: BTreeMap<isize, Geometry>,    // rid, geometry
     tex_man: TextureManager,
     width: u32,
     height: u32,
-    borrowed: HashMap<usize, DowncastableBorrowedWidget>, // wid, borrowed_widget
+    borrowed: HashMap<WidgetId, DowncastableBorrowedWidget>,
+    focused_wid: Option<WidgetId>,
 }
 
 impl WindowBuilder {
@@ -38,6 +38,7 @@ impl WindowBuilder {
             width: 1024,
             height: 768,
             borrowed: Default::default(),
+            focused_wid: None,
         })
     }
     pub fn add_widget<W: Widget, WENUM: WidgetEnum>(
@@ -77,11 +78,20 @@ impl WindowBuilder {
         Ok(())
     }
     pub fn event_key_down(&mut self, key: Keycode) {
-        let result = TextBox::get_by_id(self, GalleryWalkWidgetEnum::TEXTBOX);
-        if let Ok(text) = result {
-            text.borrow_mut().set_text(&key.to_string())
+        debug!("event_key_down({:?})", key);
+        if let Some(wid) = self.focused_wid {
+            if let Some(rid) = self.wid_and_rid.get(&wid) {
+                let widget = self
+                    .widgets
+                    .get(&rid)
+                    .expect("window_builder:WindowBuilder:event_key_down");
+                let event_callback = widget.event_key_down();
+                (event_callback.deref())(self, key);
+            } else {
+                self.focused_wid = None;
+            }
         } else {
-            debug!("key_down {:?}", result)
+            debug!("event_key_down None")
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
@@ -89,8 +99,15 @@ impl WindowBuilder {
             .widgets
             .iter_mut()
             .rev()
-            .find(|(_, w)| w.accepts_mouse(x, y));
-        if let Some((_, widget)) = found {
+            .find(|(_, w)| w.are_coordinates_inside(x, y));
+
+        if let Some((rid, widget)) = found {
+            self.focused_wid = self
+                .wid_and_rid
+                .iter()
+                .find(|(_, internal_rid)| *internal_rid == rid)
+                .map(|(wid, _)| *wid);
+            debug!("{:?}", self.focused_wid);
             let event_callback = widget.event_mouse_button_down();
             (event_callback.deref())(self, x, y);
         }
@@ -101,7 +118,7 @@ impl WindowBuilder {
     pub fn height(&self) -> u32 {
         self.height
     }
-    fn wid_down_borrow(&mut self, wid: usize) -> Option<DowncastableBorrowedWidget> {
+    fn wid_down_borrow(&mut self, wid: WidgetId) -> Option<DowncastableBorrowedWidget> {
         info!("down_borrow wid={}", wid);
 
         if let Some(borrowed) = self.borrowed.get(&wid) {
@@ -134,8 +151,8 @@ impl WindowBuilder {
                 .borrowed
                 .remove(&wid)
                 .expect("window_builder:WindowBuilder:ret_borrows remove");
-            let dyn_wid = down_borrow.own_dyn_wid();
-            let count = Rc::strong_count(&dyn_wid);
+            let dyn_widget = down_borrow.own_dyn_widget();
+            let count = Rc::strong_count(&dyn_widget);
             info!("wid={} count={}", wid, count);
             if count > 1 {
                 panic!(
@@ -143,7 +160,7 @@ impl WindowBuilder {
                     wid, count
                 );
             }
-            let mutex = Rc::try_unwrap(dyn_wid)
+            let mutex = Rc::try_unwrap(dyn_widget)
                 .expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
             let widget = mutex.into_inner();
             debug!("{}", widget.class());
@@ -157,7 +174,7 @@ impl WindowBuilder {
 }
 
 impl Root for WindowBuilder {
-    fn get_down_widget_by_id(&mut self, wid: usize) -> Option<DowncastableBorrowedWidget> {
+    fn get_down_widget_by_id(&mut self, wid: WidgetId) -> Option<DowncastableBorrowedWidget> {
         self.wid_down_borrow(wid)
     }
 }

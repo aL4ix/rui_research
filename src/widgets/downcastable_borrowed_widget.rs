@@ -26,10 +26,10 @@ impl DowncastableBorrowedWidget {
             borrowed_dyn_widget,
         }
     }
-    pub fn bor_dyn_wid(&self) -> BorrowedDynWidget {
+    pub fn bor_dyn_widget(&self) -> BorrowedDynWidget {
         self.borrowed_dyn_widget.clone()
     }
-    pub fn wid_t<T: Widget>(&self) -> Option<BorrowedWidgetT<T>> {
+    pub fn widget_t<T: Widget>(&self) -> Option<BorrowedWidgetT<T>> {
         let ti = TypeId::of::<T>();
         if ti == self.type_id {
             let arc = Self::downcast_dyn_widget(self.borrowed_dyn_widget.clone());
@@ -45,7 +45,7 @@ impl DowncastableBorrowedWidget {
             unsafe { Rc::from_raw(Rc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) };
         new_arc
     }
-    pub fn own_dyn_wid(self) -> BorrowedDynWidget {
+    pub fn own_dyn_widget(self) -> BorrowedDynWidget {
         return self.borrowed_dyn_widget;
     }
     pub fn get_borrowed_strong_count(&self) -> usize {

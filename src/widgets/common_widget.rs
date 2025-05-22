@@ -3,7 +3,10 @@ use std::sync::Arc;
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::{Event, MouseButtonDown, MouseButtonDownCallback};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::{Primitive, Widget};
+use crate::widgets::Primitive;
+
+use super::events::{HasEvents, KeyDown, KeyDownCallback};
+use super::Widget;
 
 #[derive(Debug)]
 pub struct CommonWidget {
@@ -15,6 +18,7 @@ pub struct CommonWidget {
     needs_translation: bool,
     translated_geometry: Geometry,
     event_mouse_button_down: MouseButtonDown,
+    event_key_down: KeyDown,
     primitives: Vec<Box<dyn Primitive>>,
     class: String,
 }
@@ -36,6 +40,7 @@ impl CommonWidget {
             needs_translation: true,
             translated_geometry: Default::default(),
             event_mouse_button_down: Default::default(),
+            event_key_down: Default::default(),
             primitives,
             class: class.to_string(),
         }
@@ -111,7 +116,7 @@ impl PrivatePrimitiveMethods for CommonWidget {
     }
 }
 
-impl Widget for CommonWidget {
+impl HasEvents for CommonWidget {
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
         self.event_mouse_button_down.clone_callback()
     }
@@ -120,4 +125,14 @@ impl Widget for CommonWidget {
             callback: Arc::new(callback),
         }
     }
+    fn event_key_down(&self) -> Arc<KeyDownCallback> {
+        self.event_key_down.clone_callback()
+    }
+    fn set_event_key_down(&mut self, callback: KeyDownCallback) {
+        self.event_key_down = KeyDown {
+            callback: Arc::new(callback),
+        }
+    }
 }
+
+impl Widget for CommonWidget {}

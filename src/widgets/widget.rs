@@ -1,25 +1,22 @@
-use std::any::Any;
-use std::sync::Arc;
-
 use log::debug;
 
 use crate::general::{Rect, Vector2D};
-use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::Primitive;
 use crate::window::Root;
 
+use super::events::HasEvents;
 use super::{BorrowedWidgetT, WidgetEnum};
 
-pub trait Widget: Primitive + Any {
-    fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback>;
-    fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback);
+pub type WidgetId = usize;
+
+pub trait Widget: Primitive + HasEvents {
     fn get_rect(&self) -> Rect<f32> {
         // Maybe upgrade to Primitive?
         let (w, h) = self.size().unpack();
         let (x, y) = self.position().unpack();
         Rect::new(x, y, w, h)
     }
-    fn accepts_mouse(&self, x: i32, y: i32) -> bool {
+    fn are_coordinates_inside(&self, x: i32, y: i32) -> bool {
         self.get_rect()
             .contains_point(Vector2D::<f32>::new(x as f32, y as f32))
     }
@@ -34,7 +31,7 @@ pub trait Widget: Primitive + Any {
         debug!("Widget:get_by_id wid={}", wid);
         let option_dw = root.get_down_widget_by_id(wid);
         if let Some(dw) = option_dw {
-            let option_wt = dw.wid_t::<Self>();
+            let option_wt = dw.widget_t::<Self>();
             match option_wt {
                 Some(wt) => {
                     debug!("Could convert widget wid={} to {}", wid, Self::class_name());

@@ -1,5 +1,5 @@
-use crate::widgets::DowncastableBorrowedWidget;
+use crate::widgets::{DowncastableBorrowedWidget, WidgetId};
 
 pub trait Root {
-    fn get_down_widget_by_id(&mut self, wid: usize) -> Option<DowncastableBorrowedWidget>;
+    fn get_down_widget_by_id(&mut self, wid: WidgetId) -> Option<DowncastableBorrowedWidget>;
 }

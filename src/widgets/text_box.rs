@@ -8,7 +8,10 @@ use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Text;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive, Widget};
+use crate::widgets::{CommonWidget, Primitive};
+
+use super::events::HasEvents;
+use super::Widget;
 
 #[derive(Debug)]
 pub struct TextBox {
@@ -99,11 +102,19 @@ impl PrivatePrimitiveMethods for TextBox {
     }
 }
 
-impl Widget for TextBox {
+impl HasEvents for TextBox {
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback> {
         self.common.event_mouse_button_down()
     }
     fn set_event_mouse_button_down(&mut self, callback: MouseButtonDownCallback) {
         self.common.set_event_mouse_button_down(callback)
     }
+    fn event_key_down(&self) -> Arc<super::events::KeyDownCallback> {
+        self.common.event_key_down()
+    }
+    fn set_event_key_down(&mut self, callback: super::events::KeyDownCallback) {
+        self.common.set_event_key_down(callback);
+    }
 }
+
+impl Widget for TextBox {}

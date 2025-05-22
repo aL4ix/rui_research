@@ -1,16 +1,16 @@
 use rui_research::engines::sdl::SDLEngine;
 use rui_research::general::Vector2D;
 use rui_research::widgets::themes::{SimpleTheme, StyleMaster};
-use rui_research::widgets::{Primitive, TextBox, WidgetEnum};
+use rui_research::widgets::{Primitive, TextBox, WidgetEnum, WidgetId};
 use rui_research::window::WindowBuilder;
 
 #[derive(Clone, Copy, Debug)]
 struct BlackboardEnums {
-    id: usize,
+    id: WidgetId,
 }
 
 impl WidgetEnum for BlackboardEnums {
-    fn to_wid(self) -> usize {
+    fn to_wid(self) -> WidgetId {
         self.id
     }
 }
@@ -26,7 +26,7 @@ Phrase 3";
     for line in string.lines() {
         let mut text2 = TextBox::new(0, line, &style)?;
         text2.set_position(Vector2D::new(0., 50. * i as f32));
-        let wenum = BlackboardEnums { id: i as usize };
+        let wenum = BlackboardEnums { id: i as WidgetId };
         window_builder.add_widget(i, text2, wenum);
         i += 1;
     }

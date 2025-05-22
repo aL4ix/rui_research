@@ -9,7 +9,7 @@ use crate::widgets::Primitive;
 
 #[derive(Debug)]
 pub struct Bitmap {
-    id: usize,
+    nid: usize,
     arc_tex: Arc<Mutex<dyn SoftTexture>>,
     geometry: Geometry,
     needs_update: bool,
@@ -21,13 +21,13 @@ pub struct Bitmap {
 
 impl Bitmap {
     /// An *id* of zero means it will be set to an automatic value when adding it to a window
-    pub fn from_bmp(id: usize, path: Box<Path>) -> Result<Bitmap, String> {
+    pub fn from_bmp(nid: usize, path: Box<Path>) -> Result<Bitmap, String> {
         let tex = RAMSoftTexture::from_bmp(path)?;
         let size = Vector2D::new(tex.width() as f32, tex.height() as f32);
         let poly = tex.poly().clone();
         let arc_tex = Arc::new(Mutex::new(tex));
         Ok(Bitmap {
-            id,
+            nid,
             arc_tex: arc_tex.clone(),
             geometry: Geometry::new_for_texture("Bitmap", arc_tex, poly),
             needs_update: false,
@@ -84,10 +84,10 @@ impl Primitive for Bitmap {
         Self::class_name()
     }
     fn nid(&self) -> usize {
-        self.id
+        self.nid
     }
     fn set_nid(&mut self, id: usize) {
-        self.id = id;
+        self.nid = id;
     }
     fn x(&self) -> f32 {
         self.position.x()

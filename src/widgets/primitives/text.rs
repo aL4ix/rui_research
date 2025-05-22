@@ -11,7 +11,7 @@ use crate::widgets::Primitive;
 
 #[derive(Debug)]
 pub struct Text {
-    id: usize,
+    nid: usize,
     tex: Arc<Mutex<AlphaSoftTexture>>,
     geometry: Geometry,
     needs_update: bool,
@@ -27,11 +27,11 @@ pub struct Text {
 
 impl Text {
     /// An *id* of zero means it will be set to an automatic value when adding it to a window
-    pub fn new(id: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> Text {
+    pub fn new(nid: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> Text {
         let (arc_tex, geometry, size) =
             Self::get_tex_geometry_and_size(text, font_size, font.clone(), color.clone());
         Text {
-            id,
+            nid,
             tex: arc_tex,
             geometry,
             needs_update: false,
@@ -164,10 +164,10 @@ impl Primitive for Text {
         Self::class_name()
     }
     fn nid(&self) -> usize {
-        self.id
+        self.nid
     }
     fn set_nid(&mut self, id: usize) {
-        self.id = id;
+        self.nid = id;
     }
     fn x(&self) -> f32 {
         self.position.x()
