@@ -1,8 +1,9 @@
+use std::cell::RefCell;
 use std::collections::btree_map::BTreeMap;
 use std::collections::HashMap;
 use std::error::Error;
 use std::ops::Deref;
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 use log::{debug, info};
 #[cfg(not(target_family = "wasm"))]
@@ -72,7 +73,7 @@ impl WindowBuilder {
     pub fn event_key_down(&mut self, key: Keycode) {
         let result = TextBox::get_by_id(self, 8);
         if let Ok(text) = result {
-            text.lock().expect("window_builder:WindowBuilder:event_key_down").set_text(&key.to_string())
+            text.borrow_mut().set_text(&key.to_string())
         } else {
             debug!("key_down {:?}", result)
         }
@@ -105,7 +106,7 @@ impl WindowBuilder {
         let opt_widget = self.widgets.remove(&rid);
         if let Some(widget) = opt_widget {
             let type_id = widget.type_id();
-            let dyn_widget = Arc::new(Mutex::new(widget));
+            let dyn_widget = Rc::new(RefCell::new(widget));
             let borrowed = DowncastableBorrowedWidget::new(type_id, dyn_widget);
             self.borrowed.insert(wid, borrowed.clone());
             return Some(borrowed);
@@ -121,13 +122,13 @@ impl WindowBuilder {
         for wid in self.borrowed.keys().cloned().collect::<Vec<_>>() {
             let down_borrow = self.borrowed.remove(&wid).expect("window_builder:WindowBuilder:ret_borrows remove");
             let dyn_wid = down_borrow.own_dyn_wid();
-            let count = Arc::strong_count(&dyn_wid);
+            let count = Rc::strong_count(&dyn_wid);
             info!("wid={} count={}", wid, count);
             if count > 1 {
                 panic!("Expected wid={} to have strong_count of 1, found {}", wid, count);
             }
-            let mutex = Arc::try_unwrap(dyn_wid).expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
-            let widget = mutex.into_inner().expect("window_builder:WindowBuilder:ret_borrows into_inner");
+            let mutex = Rc::try_unwrap(dyn_wid).expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
+            let widget = mutex.into_inner();
             debug!("{}" ,widget.class());
             let rid = self.wid_and_rid.get(&wid).expect("window_builder:WindowBuilder:ret_borrows wid to rid");
             self.widgets.insert(*rid, widget);

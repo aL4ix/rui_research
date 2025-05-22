@@ -1,11 +1,12 @@
 
 use std::any::TypeId;
-use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 use super::Widget;
 
-pub type BorrowedInternalWidgetT<T> = Mutex<Box<T>>;
-pub type BorrowedWidgetT<T> = Arc<BorrowedInternalWidgetT<T>>;
+pub type BorrowedInternalWidgetT<T> = RefCell<Box<T>>;
+pub type BorrowedWidgetT<T> = Rc<BorrowedInternalWidgetT<T>>;
 pub type BorrowedDynWidget = BorrowedWidgetT<dyn Widget>;
 pub type OwnedDynWidget = Box<dyn Widget>;
 pub type MutRefDynWidget<'a> = &'a mut Box<dyn Widget>;
@@ -39,13 +40,13 @@ impl DowncastableBorrowedWidget {
         None
     }
     fn downcast_dyn_widget<T: Widget>(widget: BorrowedDynWidget) -> BorrowedWidgetT<T> where Self: Sized {
-        let new_arc = unsafe { Arc::from_raw(Arc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) };
+        let new_arc = unsafe { Rc::from_raw(Rc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) };
         new_arc
     }
     pub fn own_dyn_wid(self) -> BorrowedDynWidget {
         return self.borrowed_dyn_widget;
     }
     pub fn get_borrowed_strong_count(&self) -> usize {
-        Arc::strong_count(&self.borrowed_dyn_widget)
+        Rc::strong_count(&self.borrowed_dyn_widget)
     }
 }

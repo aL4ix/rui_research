@@ -74,12 +74,10 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
         info!("Clicked! {} {}", x, y);
 
         let btn = Button::get_by_id(root, 7).expect("Nel");
-        btn.lock()
-            .expect("widget_gallery:main:set_event_mouse_button_down")
-            .set_text(&format!("Clicked {} {}", x, y));
+        btn.borrow_mut().set_text(&format!("Clicked {} {}", x, y));
 
         let tx = TextBox::get_by_id(root, 8).expect("Nel");
-        tx.lock().expect("widget_gallery:main:set_event_mouse_button_down").set_text("Mickey es gason");
+        tx.borrow_mut().set_text("Mickey es gason");
     });
     window_builder.add_widget(5, button, 7);
 
