@@ -70,7 +70,7 @@ impl WindowBuilder {
         Ok(())
     }
     pub fn event_key_down(&mut self, key: Keycode) {
-        let result = TextBox::get_by_id(self, 2);
+        let result = TextBox::get_by_id(self, 8);
         if let Ok(text) = result {
             text.lock().expect("window_builder:WindowBuilder:event_key_down").set_text(&key.to_string())
         } else {
