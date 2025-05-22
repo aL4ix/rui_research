@@ -8,7 +8,7 @@ use crate::engines::sdl::SDLEngine;
 use crate::general::Vector2D;
 use crate::utils::SDLLoggerPipe;
 use crate::widgets::themes::{SimpleTheme, StyleMaster};
-use crate::widgets::{Button, Image, Primitive, TextBox, Widget};
+use crate::widgets::{Button, Image, Primitive, TextBox, Widget, WidgetEnum};
 use crate::window::WindowBuilder;
 
 /*
@@ -33,6 +33,20 @@ Loop {
         render all resources and manipulate GPU textures
 }
  */
+
+#[repr(usize)]
+#[derive(Clone, Copy, Debug)]
+pub enum GalleryWalkWidgetEnum {
+    IMAGE,
+    TEXTBOX,
+    BUTTON,
+}
+
+impl WidgetEnum for GalleryWalkWidgetEnum {
+    fn to_wid(self) -> usize {
+        self as usize
+    }
+}
 
 pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     std::env::set_var("RUST_BACKTRACE", "full");
@@ -61,10 +75,10 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
     image.set_position(Vector2D::new(0.0, 100.0));
     // TODO what to do with errors in widget constructors, first organize all errors in all the traits
-    window_builder.add_widget(0, image, 9);
+    window_builder.add_widget(0, image, GalleryWalkWidgetEnum::IMAGE);
 
     let text_box = TextBox::new(0, "RUI", &style)?;
-    window_builder.add_widget(2, text_box, 8);
+    window_builder.add_widget(2, text_box, GalleryWalkWidgetEnum::TEXTBOX);
 
     let mut button = Button::new(0, "button", &style)?;
     button.set_event_mouse_button_down(|root, x, y| {
@@ -73,13 +87,13 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
         // Button 7
         info!("Clicked! {} {}", x, y);
 
-        let btn = Button::get_by_id(root, 7).expect("Nel");
+        let btn = Button::get_by_id(root, GalleryWalkWidgetEnum::BUTTON).expect("Nel");
         btn.borrow_mut().set_text(&format!("Clicked {} {}", x, y));
 
-        let tx = TextBox::get_by_id(root, 8).expect("Nel");
+        let tx = TextBox::get_by_id(root, GalleryWalkWidgetEnum::TEXTBOX).expect("Nel");
         tx.borrow_mut().set_text("Mickey es gason");
     });
-    window_builder.add_widget(5, button, 7);
+    window_builder.add_widget(5, button, GalleryWalkWidgetEnum::BUTTON);
 
     sdl_engine.add_window_builder(window_builder)?;
     // let mut w2 = WindowBuilder::new()?;

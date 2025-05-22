@@ -10,7 +10,6 @@ use crate::widgets::primitives::{Primitive, Text};
 use crate::widgets::themes::StyleMaster;
 use crate::widgets::{CommonWidget, Widget};
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Button {
     common: CommonWidget,

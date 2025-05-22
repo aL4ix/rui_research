@@ -26,7 +26,6 @@ pub struct SDLEngine {
     user_event_handler: Option<fn(&Event) -> MainLoopStatus>,
 }
 
-#[allow(dead_code)]
 #[derive(PartialEq, Eq)]
 pub enum MainLoopStatus {
     Continue,
@@ -56,15 +55,16 @@ impl SDLEngine {
         &mut self,
         window_specs: WindowBuilder,
     ) -> Result<(), Box<dyn Error>> {
-        let sdl_window = self.sdl_video.window("Title1", window_specs.width(),
-                                               window_specs.height()).build()?;
+        let sdl_window = self
+            .sdl_video
+            .window("Title1", window_specs.width(), window_specs.height())
+            .build()?;
         let id = sdl_window.id();
         debug!("Created window {}", id);
         self.windows
             .insert(id, SDLWindow::new(window_specs, sdl_window)?);
         Ok(())
     }
-    #[allow(dead_code)]
     pub fn set_user_event_handler(
         &mut self,
         user_event_handler: Option<fn(&Event) -> MainLoopStatus>,

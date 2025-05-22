@@ -1,4 +1,3 @@
-
 use std::any::TypeId;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -11,18 +10,17 @@ pub type BorrowedDynWidget = BorrowedWidgetT<dyn Widget>;
 pub type OwnedDynWidget = Box<dyn Widget>;
 pub type MutRefDynWidget<'a> = &'a mut Box<dyn Widget>;
 
-pub trait WidgetEnum: Clone + Copy {
-    fn to_isize(self) -> isize;
-}
-
 #[derive(Clone, Debug)]
 pub struct DowncastableBorrowedWidget {
     type_id: TypeId,
-    borrowed_dyn_widget: BorrowedDynWidget
+    borrowed_dyn_widget: BorrowedDynWidget,
 }
 
 impl DowncastableBorrowedWidget {
-    pub fn new(type_id: TypeId, borrowed_dyn_widget: BorrowedDynWidget) -> DowncastableBorrowedWidget {
+    pub fn new(
+        type_id: TypeId,
+        borrowed_dyn_widget: BorrowedDynWidget,
+    ) -> DowncastableBorrowedWidget {
         DowncastableBorrowedWidget {
             type_id,
             borrowed_dyn_widget,
@@ -39,8 +37,12 @@ impl DowncastableBorrowedWidget {
         }
         None
     }
-    fn downcast_dyn_widget<T: Widget>(widget: BorrowedDynWidget) -> BorrowedWidgetT<T> where Self: Sized {
-        let new_arc = unsafe { Rc::from_raw(Rc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) };
+    fn downcast_dyn_widget<T: Widget>(widget: BorrowedDynWidget) -> BorrowedWidgetT<T>
+    where
+        Self: Sized,
+    {
+        let new_arc =
+            unsafe { Rc::from_raw(Rc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) };
         new_arc
     }
     pub fn own_dyn_wid(self) -> BorrowedDynWidget {

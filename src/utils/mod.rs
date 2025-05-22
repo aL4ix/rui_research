@@ -1,7 +1,7 @@
 pub use assets::Assets;
-pub use sdl_logger_pipe::SDLLoggerPipe;
 pub use downcast::Downcast;
+pub use sdl_logger_pipe::SDLLoggerPipe;
 
 mod assets;
-mod sdl_logger_pipe;
 mod downcast;
+mod sdl_logger_pipe;

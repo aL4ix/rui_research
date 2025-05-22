@@ -1,4 +1,3 @@
-
 use crate::widgets::DowncastableBorrowedWidget;
 
 pub trait Root {

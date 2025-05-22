@@ -14,13 +14,14 @@ use sdl2::render::WindowCanvas;
 
 use crate::general::Geometry;
 use crate::texture::TextureManager;
+use crate::widget_gallery::GalleryWalkWidgetEnum;
 use crate::widgets::*;
 use crate::window::Root;
 
 pub struct WindowBuilder {
     wid_and_rid: BTreeMap<usize, isize>,
     widgets: BTreeMap<isize, OwnedDynWidget>, // rid, owned_widget
-    geometries: BTreeMap<isize, Geometry>, // rid, geometry
+    geometries: BTreeMap<isize, Geometry>,    // rid, geometry
     tex_man: TextureManager,
     width: u32,
     height: u32,
@@ -39,16 +40,21 @@ impl WindowBuilder {
             borrowed: Default::default(),
         })
     }
-    pub fn add_widget<T: Widget>(&mut self, render_id: isize, widget: T, wid: usize) {
+    pub fn add_widget<W: Widget, WENUM: WidgetEnum>(
+        &mut self,
+        render_id: isize,
+        widget: W,
+        wenum: WENUM,
+    ) {
         self.widgets.insert(render_id, Box::new(widget));
-        self.wid_and_rid.insert(wid, render_id);
+        self.wid_and_rid.insert(wenum.to_wid(), render_id);
     }
     pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
         // Check if new widgets are needed based on DSL
         self.wid_ret_borrows();
         self.geometries.clear();
 
-        let binding = &mut self.widgets;       
+        let binding = &mut self.widgets;
         #[cfg(not(target_family = "wasm"))]
         let functional_iter = binding.par_iter_mut();
         #[cfg(target_family = "wasm")]
@@ -71,7 +77,7 @@ impl WindowBuilder {
         Ok(())
     }
     pub fn event_key_down(&mut self, key: Keycode) {
-        let result = TextBox::get_by_id(self, 8);
+        let result = TextBox::get_by_id(self, GalleryWalkWidgetEnum::TEXTBOX);
         if let Ok(text) = result {
             text.borrow_mut().set_text(&key.to_string())
         } else {
@@ -79,7 +85,8 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
-        let found = self.widgets
+        let found = self
+            .widgets
             .iter_mut()
             .rev()
             .find(|(_, w)| w.accepts_mouse(x, y));
@@ -98,7 +105,10 @@ impl WindowBuilder {
         info!("down_borrow wid={}", wid);
 
         if let Some(borrowed) = self.borrowed.get(&wid) {
-            info!("down_borrow strong_count={}", borrowed.get_borrowed_strong_count());
+            info!(
+                "down_borrow strong_count={}",
+                borrowed.get_borrowed_strong_count()
+            );
             return Some(borrowed.clone());
         }
 
@@ -118,19 +128,29 @@ impl WindowBuilder {
         if self.borrowed.len() > 0 {
             info!("ret_borrows len={}", self.borrowed.len());
         }
-        
+
         for wid in self.borrowed.keys().cloned().collect::<Vec<_>>() {
-            let down_borrow = self.borrowed.remove(&wid).expect("window_builder:WindowBuilder:ret_borrows remove");
+            let down_borrow = self
+                .borrowed
+                .remove(&wid)
+                .expect("window_builder:WindowBuilder:ret_borrows remove");
             let dyn_wid = down_borrow.own_dyn_wid();
             let count = Rc::strong_count(&dyn_wid);
             info!("wid={} count={}", wid, count);
             if count > 1 {
-                panic!("Expected wid={} to have strong_count of 1, found {}", wid, count);
+                panic!(
+                    "Expected wid={} to have strong_count of 1, found {}",
+                    wid, count
+                );
             }
-            let mutex = Rc::try_unwrap(dyn_wid).expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
+            let mutex = Rc::try_unwrap(dyn_wid)
+                .expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
             let widget = mutex.into_inner();
-            debug!("{}" ,widget.class());
-            let rid = self.wid_and_rid.get(&wid).expect("window_builder:WindowBuilder:ret_borrows wid to rid");
+            debug!("{}", widget.class());
+            let rid = self
+                .wid_and_rid
+                .get(&wid)
+                .expect("window_builder:WindowBuilder:ret_borrows wid to rid");
             self.widgets.insert(*rid, widget);
         }
     }

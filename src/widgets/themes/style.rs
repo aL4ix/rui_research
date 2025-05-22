@@ -20,7 +20,6 @@ pub trait Style: Debug {
     fn to_properties_map(&self) -> PropertiesMap;
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum ApplyTo {
     Id(usize),

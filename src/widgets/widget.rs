@@ -8,7 +8,7 @@ use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::Primitive;
 use crate::window::Root;
 
-use super::BorrowedWidgetT;
+use super::{BorrowedWidgetT, WidgetEnum};
 
 pub trait Widget: Primitive + Any {
     fn event_mouse_button_down(&self) -> Arc<MouseButtonDownCallback>;
@@ -23,10 +23,14 @@ pub trait Widget: Primitive + Any {
         self.get_rect()
             .contains_point(Vector2D::<f32>::new(x as f32, y as f32))
     }
-    fn get_by_id(root: &mut dyn Root, wid: usize) -> Result<BorrowedWidgetT<Self>, String>
+    fn get_by_id<WENUM: WidgetEnum>(
+        root: &mut dyn Root,
+        wenum: WENUM,
+    ) -> Result<BorrowedWidgetT<Self>, String>
     where
         Self: Sized,
     {
+        let wid = wenum.to_wid();
         debug!("Widget:get_by_id wid={}", wid);
         let option_dw = root.get_down_widget_by_id(wid);
         if let Some(dw) = option_dw {
@@ -34,8 +38,8 @@ pub trait Widget: Primitive + Any {
             match option_wt {
                 Some(wt) => {
                     debug!("Could convert widget wid={} to {}", wid, Self::class_name());
-                    return Ok(wt)
-                },
+                    return Ok(wt);
+                }
                 None => {
                     return Err(String::from(format!(
                         "get_by_id(): Not a {}",
@@ -44,6 +48,9 @@ pub trait Widget: Primitive + Any {
                 }
             }
         }
-        Err(String::from("Not found: widget:Widget:get_by_id()"))
+        Err(String::from(format!(
+            "Not found: widget:Widget:get_by_id({})",
+            wid
+        )))
     }
 }

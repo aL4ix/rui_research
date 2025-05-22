@@ -41,7 +41,9 @@ impl CommonWidget {
         }
     }
     pub fn get_primitive_by_index_mut(&mut self, index: usize) -> &mut Box<dyn Primitive> {
-        self.primitives.get_mut(index).expect("common_widget:CommonWidget:get_primitive_by_index_mut")
+        self.primitives
+            .get_mut(index)
+            .expect("common_widget:CommonWidget:get_primitive_by_index_mut")
     }
 }
 
