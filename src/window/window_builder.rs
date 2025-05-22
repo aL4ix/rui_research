@@ -1,4 +1,5 @@
 use std::collections::btree_map::BTreeMap;
+use std::collections::HashMap;
 use std::error::Error;
 use std::ops::Deref;
 use std::sync::{Arc, Mutex};
@@ -16,13 +17,13 @@ use crate::widgets::*;
 use crate::window::Root;
 
 pub struct WindowBuilder {
-    wid_and_rid: BTreeMap<usize, usize>,
-    widgets: BTreeMap<usize, OwnedDynWidget>,
-    geometries: BTreeMap<usize, Geometry>,
+    wid_and_rid: BTreeMap<usize, isize>,
+    widgets: BTreeMap<isize, OwnedDynWidget>, // rid, owned_widget
+    geometries: BTreeMap<isize, Geometry>, // rid, geometry
     tex_man: TextureManager,
     width: u32,
     height: u32,
-    borrowed: BTreeMap<usize, DowncastableBorrowedWidget>,
+    borrowed: HashMap<usize, DowncastableBorrowedWidget>, // wid, borrowed_widget
 }
 
 impl WindowBuilder {
@@ -37,8 +38,8 @@ impl WindowBuilder {
             borrowed: Default::default(),
         })
     }
-    pub fn add_widget<T: Widget>(&mut self, render_id: usize, widget: T, wid: usize) {
-        self.widgets.insert(wid, Box::new(widget));
+    pub fn add_widget<T: Widget>(&mut self, render_id: isize, widget: T, wid: usize) {
+        self.widgets.insert(render_id, Box::new(widget));
         self.wid_and_rid.insert(wid, render_id);
     }
     pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
@@ -53,7 +54,7 @@ impl WindowBuilder {
         let functional_iter = binding.iter_mut();
 
         self.geometries = functional_iter
-            .map(|(wid, widget)| (*wid, widget.build_geometry()))
+            .map(|(rid, widget)| (*rid, widget.build_geometry()))
             .collect();
 
         // Delete not needed widgets
@@ -100,7 +101,8 @@ impl WindowBuilder {
             return Some(borrowed.clone());
         }
 
-        let opt_widget = self.widgets.remove(&wid);
+        let rid = self.wid_and_rid.get(&wid)?;
+        let opt_widget = self.widgets.remove(&rid);
         if let Some(widget) = opt_widget {
             let type_id = widget.type_id();
             let dyn_widget = Arc::new(Mutex::new(widget));
@@ -127,7 +129,8 @@ impl WindowBuilder {
             let mutex = Arc::try_unwrap(dyn_wid).expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
             let widget = mutex.into_inner().expect("window_builder:WindowBuilder:ret_borrows into_inner");
             debug!("{}" ,widget.class());
-            self.widgets.insert(wid, widget);
+            let rid = self.wid_and_rid.get(&wid).expect("window_builder:WindowBuilder:ret_borrows wid to rid");
+            self.widgets.insert(*rid, widget);
         }
     }
 }

@@ -15,7 +15,7 @@ Phrase 3";
     for line in string.lines() {
         let mut text2 = TextBox::new(0, line, &style)?;
         text2.set_position(Vector2D::new(0., 50. * i as f32));
-        window_builder.add_widget(i, text2, i);
+        window_builder.add_widget(i, text2, i as usize);
         i += 1;
     }
 
