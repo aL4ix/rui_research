@@ -17,7 +17,6 @@ pub struct Shape {
 }
 
 impl Shape {
-    /// An *id* of zero means it will be set to an automatic value when adding it to a window
     fn new(nid: usize, size: Vector2D<f32>, poly: Polygon) -> Shape {
         let position = Default::default();
         Shape {
@@ -31,13 +30,11 @@ impl Shape {
             size,
         }
     }
-    /// An *id* of zero means it will be set to an automatic value when adding it to a window
     pub fn new_square(id: usize, size: Vector2D<f32>, radius: i32, color: Color) -> Shape {
         let poly = Polygon::new_square(size.clone(), radius as f32, color);
         Self::new(id, size, poly)
     }
     #[allow(dead_code)]
-    /// An *id* of zero means it will be set to an automatic value when adding it to a window
     pub fn new_reg_poly(id: usize, size: Vector2D<f32>, sides: u32, rotate: f32) -> Shape {
         let poly = Polygon::new_reg_poly(size.clone(), sides, rotate);
         Self::new(id, size, poly)

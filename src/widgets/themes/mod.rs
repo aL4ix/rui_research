@@ -5,4 +5,4 @@ pub use style::StyleMaster;
 mod property;
 mod simple_theme;
 mod style;
-mod theme;
+mod primitive_generator_for_widgets;

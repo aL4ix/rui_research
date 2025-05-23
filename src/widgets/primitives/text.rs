@@ -26,7 +26,6 @@ pub struct Text {
 }
 
 impl Text {
-    /// An *id* of zero means it will be set to an automatic value when adding it to a window
     pub fn new(nid: usize, text: &str, font_size: f32, font: FontArc, color: Color) -> Text {
         let (arc_tex, geometry, size) =
             Self::get_tex_geometry_and_size(text, font_size, font.clone(), color.clone());

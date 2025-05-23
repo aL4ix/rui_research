@@ -10,19 +10,19 @@ use crate::widgets::themes::style::{
     ButtonStyle, ImageStyle, Style, TextBoxStyle, ThemeButtonStyle, ThemeImageStyle,
     ThemeTextBoxStyle,
 };
-use crate::widgets::themes::theme::{PrimitiveOrOneRef, Theme};
+use crate::widgets::themes::primitive_generator_for_widgets::{PrimitiveOrOneRef, PrimitiveGeneratorForWidgets};
 use crate::widgets::Primitive;
 
 pub struct SimpleTheme;
 
-impl Theme for SimpleTheme {
+impl PrimitiveGeneratorForWidgets for SimpleTheme {
     fn for_button(
         &self,
         _size: Vector2D<f32>,
         text: &str,
         style: ThemeButtonStyle,
     ) -> (Vector2D<f32>, Vec<PrimitiveOrOneRef<Text>>, Rc<Text>) {
-        debug!("{:?}", style);
+        debug!("for_button {:?}", style);
         let text_pri = Text::new(0, text, style.font_size, style.font, style.color);
         let text_size = text_pri.size().clone();
         let shape = Shape::new_square(0, text_size.clone(), 0, style.background_color);
@@ -40,7 +40,7 @@ impl Theme for SimpleTheme {
         text: &str,
         style: ThemeTextBoxStyle,
     ) -> (Vector2D<f32>, Vec<PrimitiveOrOneRef<Text>>, Rc<Text>) {
-        debug!("{:?}", style);
+        debug!("for_text_box {:?}", style);
         let text_pri = Text::new(1, text, style.font_size, style.font, style.color);
         let text_size = text_pri.size().clone();
         let text_rc = Rc::new(text_pri);
@@ -51,8 +51,9 @@ impl Theme for SimpleTheme {
         &self,
         _size: Vector2D<f32>,
         path: Box<Path>,
-        _style: ThemeImageStyle,
+        style: ThemeImageStyle,
     ) -> Result<(Vector2D<f32>, Vec<PrimitiveOrOneRef<Bitmap>>, Rc<Bitmap>), Box<dyn Error>> {
+        debug!("for_image {:?}", style);
         let bitmap = Bitmap::from_bmp(0, path)?;
         let size = bitmap.size().clone();
         let bitmap_rc = Rc::new(bitmap);

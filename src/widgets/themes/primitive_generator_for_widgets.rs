@@ -22,7 +22,7 @@ pub enum PrimitiveOrOneRef<T> {
 
 type SizePrimsAndRef<T> = (Vector2D<f32>, Vec<PrimitiveOrOneRef<T>>, Rc<T>);
 
-pub trait Theme {
+pub trait PrimitiveGeneratorForWidgets {
     fn for_button(
         &self,
         size: Vector2D<f32>,

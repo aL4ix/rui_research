@@ -24,7 +24,7 @@ pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods + Any {
         Self: Sized;
     fn class(&self) -> &'static str;
     fn nid(&self) -> usize;
-    fn set_nid(&mut self, id: usize);
+    fn set_nid(&mut self, nid: usize);
     fn x(&self) -> f32;
     fn y(&self) -> f32;
     fn position(&self) -> &Vector2D<f32>;

@@ -9,7 +9,7 @@ use log::debug;
 
 use crate::general::{Color, Vector2D};
 use crate::utils::Assets;
-use crate::widgets::themes::theme::{PrimitiveOrOneRef, Theme};
+use crate::widgets::themes::primitive_generator_for_widgets::{PrimitiveOrOneRef, PrimitiveGeneratorForWidgets};
 use crate::widgets::themes::Property;
 use crate::widgets::Primitive;
 use crate::widgets::*;
@@ -233,7 +233,7 @@ impl ThemeStyle for ThemeImageStyle {
 pub struct StyleMaster {
     _fonts: HashMap<String, FontArc>,
     styles: Vec<PropertiesMap>,
-    theme: Box<dyn Theme>,
+    theme: Box<dyn PrimitiveGeneratorForWidgets>,
 }
 
 type OneWidget = (Vector2D<f32>, Vec<Box<dyn Primitive>>, usize);
@@ -243,7 +243,7 @@ impl StyleMaster {
     const CLASS: &'static str = "class";
     const COULD_NOT_FIND_STYLE: &'static str = "Couldn't find style for";
 
-    pub fn new(theme: Box<dyn Theme>) -> Result<StyleMaster, Box<dyn Error>> {
+    pub fn new(theme: Box<dyn PrimitiveGeneratorForWidgets>) -> Result<StyleMaster, Box<dyn Error>> {
         let dyn_styles = theme.style();
         let mut fonts = HashMap::new();
         let mut styles = Vec::with_capacity(dyn_styles.len());

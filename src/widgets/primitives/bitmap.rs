@@ -20,7 +20,6 @@ pub struct Bitmap {
 }
 
 impl Bitmap {
-    /// An *id* of zero means it will be set to an automatic value when adding it to a window
     pub fn from_bmp(nid: usize, path: Box<Path>) -> Result<Bitmap, String> {
         let tex = RAMSoftTexture::from_bmp(path)?;
         let size = Vector2D::new(tex.width() as f32, tex.height() as f32);
