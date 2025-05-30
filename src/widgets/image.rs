@@ -1,3 +1,4 @@
+use std::any::TypeId;
 use std::error::Error;
 use std::fmt::Debug;
 use std::path::Path;
@@ -10,25 +11,27 @@ use crate::widgets::themes::StyleMaster;
 use crate::widgets::{CommonWidget, Primitive};
 
 use super::events::HasEvents;
-use super::Widget;
+use super::{PrimitiveManagerForThemes, StyleForImage, ThemeForImage, Widget};
 
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Image {
     common: CommonWidget,
-    bitmap_index: usize,
 }
 
 impl Image {
     pub fn from_bmp(
         nid: usize,
         path: Box<Path>,
-        style: &StyleMaster,
+        style_master: Arc<StyleMaster>,
     ) -> Result<Image, Box<dyn Error>> {
-        let (size, primitives, bitmap_index) = style.one_image(Vector2D::default(), path)?;
+        let theme: &dyn ThemeForImage =
+            style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
+        let style: Box<StyleForImage> = style_master.expect_style_for_widget_t(Self::class_name());
+        let mut prim_man = PrimitiveManagerForThemes::new();
+        let size = theme.new(path, None, style, &mut prim_man);
         Ok(Image {
-            common: CommonWidget::new(nid, Self::class_name(), primitives, size),
-            bitmap_index,
+            common: CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man),
         })
     }
 }
@@ -65,7 +68,7 @@ impl Primitive for Image {
     fn height(&self) -> f32 {
         self.common.height()
     }
-    fn size(&self) -> &Vector2D<f32> {
+    fn size(&mut self) -> &Vector2D<f32> {
         self.common.size()
     }
 }

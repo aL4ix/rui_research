@@ -186,7 +186,11 @@ impl Primitive for Text {
     fn height(&self) -> f32 {
         self.size.y()
     }
-    fn size(&self) -> &Vector2D<f32> {
+    fn size(&mut self) -> &Vector2D<f32> {
+        if self.needs_update {
+            self.size =
+                Text::get_texture_bounds(&self.text, self.font_size, self.font.clone()).into();
+        }
         &self.size
     }
 }

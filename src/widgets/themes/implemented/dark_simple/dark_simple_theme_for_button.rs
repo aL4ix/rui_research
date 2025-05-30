@@ -1,0 +1,84 @@
+use std::fmt::Debug;
+
+use crate::{
+    general::Vector2D,
+    utils::Downcast,
+    widgets::{
+        primitives::{Shape, Text},
+        themes::{
+            style::StyleForButton, PrimEnum, PrimId, PrimitiveManagerForThemes, ThemeForButton,
+            ThemeForWidget,
+        },
+        Primitive,
+    },
+};
+
+#[repr(usize)]
+#[derive(Clone, Copy, Debug)]
+enum ButtonPrimEnum {
+    TEXT,
+    SQUARE,
+}
+
+impl PrimEnum for ButtonPrimEnum {
+    fn to_prim_id(self) -> PrimId {
+        self as PrimId
+    }
+}
+
+pub struct DarkSimpleThemeForButton;
+
+impl ThemeForButton for DarkSimpleThemeForButton {
+    fn new(
+        &self,
+        text: &str,
+        size_for_clipping: Option<Vector2D<f32>>,
+        style: Box<StyleForButton>,
+        prim_man: &mut PrimitiveManagerForThemes,
+    ) -> Vector2D<f32> {
+        assert!(
+            size_for_clipping.is_none(),
+            "theme_for_button:ThemeForButton:new size_for_clipping not supported yet."
+        );
+        let mut text_prim = Text::new(0, text, style.font_size, style.font, style.color);
+        let text_size = text_prim.size().clone();
+        prim_man.insert(ButtonPrimEnum::TEXT, text_prim, 1);
+        prim_man.insert(
+            ButtonPrimEnum::SQUARE,
+            Shape::new_square(0, text_size.clone(), 0, style.background_color),
+            0,
+        );
+        text_size
+    }
+    fn set_text(
+        &self,
+        text: &str,
+        size_for_clipping: Option<Vector2D<f32>>,
+        style: Box<StyleForButton>,
+        prim_man: &mut PrimitiveManagerForThemes,
+    ) -> Vector2D<f32> {
+        assert!(
+            size_for_clipping.is_none(),
+            "theme_for_button:ThemeForButton:new"
+        );
+        let prim_text = prim_man
+            .get_mut(ButtonPrimEnum::TEXT)
+            .expect("DarkSimpleThemeForButton:set_text get_mut");
+        let text_prim = (**prim_text)
+            .downcast_mut::<Text>()
+            .expect("DarkSimpleThemeForButton:set_text downcast_mut");
+        text_prim.set_text(text);
+        let text_size = text_prim.size().clone();
+        prim_man
+            .remove(ButtonPrimEnum::SQUARE)
+            .expect("DarkSimpleThemeForButton:set_text remove");
+        prim_man.insert(
+            ButtonPrimEnum::SQUARE,
+            Shape::new_square(0, text_size.clone(), 0, style.background_color),
+            0,
+        );
+        text_size
+    }
+}
+
+impl ThemeForWidget for DarkSimpleThemeForButton {}

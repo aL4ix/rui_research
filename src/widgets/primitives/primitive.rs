@@ -31,7 +31,7 @@ pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods + Any {
     fn set_position(&mut self, position: Vector2D<f32>);
     fn width(&self) -> f32;
     fn height(&self) -> f32;
-    fn size(&self) -> &Vector2D<f32>;
+    fn size(&mut self) -> &Vector2D<f32>;
     fn translate_geometry(&mut self) -> Geometry {
         let mut geometry = self.clone_geometry();
         geometry.translate(self.position());

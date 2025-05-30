@@ -6,7 +6,8 @@ use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::Primitive;
 
 use super::events::{HasEvents, KeyDown, KeyDownCallback};
-use super::Widget;
+use super::themes::StyleMaster;
+use super::{PrimitiveManagerForThemes, Widget};
 
 #[derive(Debug)]
 pub struct CommonWidget {
@@ -19,18 +20,20 @@ pub struct CommonWidget {
     translated_geometry: Geometry,
     event_mouse_button_down: MouseButtonDown,
     event_key_down: KeyDown,
-    primitives: Vec<Box<dyn Primitive>>,
     class: String,
+    style_master: Arc<StyleMaster>,
+    prim_man: PrimitiveManagerForThemes,
 }
 
 impl CommonWidget {
     pub fn new(
         nid: usize,
         class: &str,
-        mut primitives: Vec<Box<dyn Primitive>>,
         size: Vector2D<f32>,
+        style_master: Arc<StyleMaster>,
+        mut prim_man: PrimitiveManagerForThemes,
     ) -> CommonWidget {
-        let geometry = Geometry::new_from_primitives(class, &mut primitives);
+        let geometry = Geometry::new_from_prim_man(class, &mut prim_man);
         CommonWidget {
             nid,
             position: Default::default(),
@@ -41,14 +44,19 @@ impl CommonWidget {
             translated_geometry: Default::default(),
             event_mouse_button_down: Default::default(),
             event_key_down: Default::default(),
-            primitives,
             class: class.to_string(),
+            style_master,
+            prim_man,
         }
     }
-    pub fn get_primitive_by_index_mut(&mut self, index: usize) -> &mut Box<dyn Primitive> {
-        self.primitives
-            .get_mut(index)
-            .expect("common_widget:CommonWidget:get_primitive_by_index_mut")
+    pub fn style_master(&self) -> Arc<StyleMaster> {
+        self.style_master.clone()
+    }
+    pub fn prim_man(&mut self) -> &mut PrimitiveManagerForThemes {
+        &mut self.prim_man
+    }
+    pub fn set_size(&mut self, size: Vector2D<f32>) {
+        self.size = size;
     }
 }
 
@@ -84,14 +92,14 @@ impl Primitive for CommonWidget {
     fn height(&self) -> f32 {
         self.size.y()
     }
-    fn size(&self) -> &Vector2D<f32> {
+    fn size(&mut self) -> &Vector2D<f32> {
         &self.size
     }
 }
 
 impl PrivatePrimitiveMethods for CommonWidget {
     fn update_geometry(&mut self) {
-        self.geometry = Geometry::new_from_primitives(&self.class, &mut self.primitives);
+        self.geometry = Geometry::new_from_prim_man(&self.class, &mut self.prim_man);
     }
     fn needs_update(&self) -> bool {
         self.needs_update

@@ -30,18 +30,18 @@ impl Shape {
             size,
         }
     }
-    pub fn new_square(id: usize, size: Vector2D<f32>, radius: i32, color: Color) -> Shape {
+    pub fn new_square(nid: usize, size: Vector2D<f32>, radius: i32, color: Color) -> Shape {
         let poly = Polygon::new_square(size.clone(), radius as f32, color);
-        Self::new(id, size, poly)
+        Self::new(nid, size, poly)
     }
     #[allow(dead_code)]
-    pub fn new_reg_poly(id: usize, size: Vector2D<f32>, sides: u32, rotate: f32) -> Shape {
+    pub fn new_reg_poly(nid: usize, size: Vector2D<f32>, sides: u32, rotate: f32) -> Shape {
         let poly = Polygon::new_reg_poly(size.clone(), sides, rotate);
-        Self::new(id, size, poly)
+        Self::new(nid, size, poly)
     }
     pub fn geometry_out_of_poly(poly: Polygon) -> Geometry {
         Geometry {
-            class: "Shape".to_string(),
+            _class: "Shape".to_string(),
             polygons: vec![TexturedPolygon { poly, tex: None }],
         }
     }
@@ -109,7 +109,7 @@ impl Primitive for Shape {
     fn height(&self) -> f32 {
         self.size.y()
     }
-    fn size(&self) -> &Vector2D<f32> {
+    fn size(&mut self) -> &Vector2D<f32> {
         &self.size
     }
 }

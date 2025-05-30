@@ -1,8 +1,13 @@
+pub use implemented::*;
+pub use primitive_manager_for_themes::*;
 pub use property::Property;
-pub use simple_theme::SimpleTheme;
-pub use style::StyleMaster;
+pub use style::*;
+pub use theme_engine::*;
+pub use theme_per_widget::*;
 
+mod implemented;
+mod primitive_manager_for_themes;
 mod property;
-mod simple_theme;
 mod style;
-mod primitive_generator_for_widgets;
+mod theme_engine;
+mod theme_per_widget;

@@ -8,8 +8,10 @@ use crate::engines::sdl::SDLEngine;
 use crate::general::Vector2D;
 use crate::utils::SDLLoggerPipe;
 use crate::widgets::events::HasEvents;
-use crate::widgets::themes::{SimpleTheme, StyleMaster};
-use crate::widgets::{Button, Image, Primitive, TextBox, Widget, WidgetEnum, WidgetId};
+use crate::widgets::themes::StyleMaster;
+use crate::widgets::{
+    Button, DarkSimpleTheme, Image, Primitive, TextBox, Widget, WidgetEnum, WidgetId,
+};
 use crate::window::WindowBuilder;
 
 /*
@@ -37,13 +39,14 @@ Loop {
 
 #[repr(usize)]
 #[derive(Clone, Copy, Debug)]
-pub enum GalleryWalkWidgetEnum {
+pub enum WidgetGalleryEnum {
     IMAGE,
     TEXTBOX,
     BUTTON,
+    TEXTBOX2,
 }
 
-impl WidgetEnum for GalleryWalkWidgetEnum {
+impl WidgetEnum for WidgetGalleryEnum {
     fn to_wid(self) -> WidgetId {
         self as WidgetId
     }
@@ -70,43 +73,43 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // let image = rx.iter().next().unwrap();
 
     // Single-threaded
-    let style = StyleMaster::new(Box::new(SimpleTheme))?;
+    let style_master = StyleMaster::new(Box::new(DarkSimpleTheme))?;
     // Can we have a global theme instead of sending it to each widget?
     let mut window_builder = WindowBuilder::new()?;
-    let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), &style)?;
+    let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), style_master.clone())?;
     image.set_position(Vector2D::new(0.0, 100.0));
     image.set_event_key_down(|root, keycode| {
-        TextBox::get_by_id(root, GalleryWalkWidgetEnum::TEXTBOX)
+        TextBox::get_by_id(root, WidgetGalleryEnum::TEXTBOX)
             .expect("widget_gallery:main:image.set_event_key_down")
             .borrow_mut()
             .set_text(&keycode.to_string());
     });
     // TODO what to do with errors in widget constructors, first organize all errors in all the traits
-    window_builder.add_widget(0, image, GalleryWalkWidgetEnum::IMAGE);
+    window_builder.add_widget(0, image, WidgetGalleryEnum::IMAGE);
 
-    let text_box = TextBox::new(0, "RUI", &style)?;
-    window_builder.add_widget(2, text_box, GalleryWalkWidgetEnum::TEXTBOX);
+    let text_box = TextBox::new(0, "RUI", style_master.clone())?;
+    window_builder.add_widget(2, text_box, WidgetGalleryEnum::TEXTBOX);
 
-    let mut button = Button::new(0, "button", &style)?;
+    let mut button = Button::new(0, "button", style_master.clone())?;
     button.set_event_mouse_button_down(|root, x, y| {
         info!("Clicked! {} {}", x, y);
 
-        let btn = Button::get_by_id(root, GalleryWalkWidgetEnum::BUTTON)
+        let btn = Button::get_by_id(root, WidgetGalleryEnum::BUTTON)
             .expect("widget_gallery:main:button.set_event_key_down");
         btn.borrow_mut().set_text(&format!("Clicked {} {}", x, y));
 
-        let tx = TextBox::get_by_id(root, GalleryWalkWidgetEnum::TEXTBOX)
+        let tx = TextBox::get_by_id(root, WidgetGalleryEnum::TEXTBOX)
             .expect("widget_gallery:main:button.set_event_key_down");
         tx.borrow_mut().set_text("Mickey es gason");
     });
-    window_builder.add_widget(5, button, GalleryWalkWidgetEnum::BUTTON);
+    window_builder.add_widget(5, button, WidgetGalleryEnum::BUTTON);
 
     sdl_engine.add_window_builder(window_builder)?;
+    
     // let mut w2 = WindowBuilder::new()?;
-    // let t2 = Text::new(0, "w2", 30.0, font, Color::new(255, 255, 255, 128));
-    // w2.add_widget(1, Box::new(t2));
+    // let t2 = TextBox::new(0, "w2", style_master)?;
+    // w2.add_widget(1, t2, WidgetGalleryEnum::TEXTBOX2);
     // sdl_engine.add_window_builder(w2)?;
-
     // sdl_engine.set_user_event_handler(Some(|event| {
     //     log::info!("{:?}", event);
     //     crate::engines::sdl::MainLoopStatus::Continue

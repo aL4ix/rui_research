@@ -10,13 +10,13 @@ use super::{BorrowedWidgetT, WidgetEnum};
 pub type WidgetId = usize;
 
 pub trait Widget: Primitive + HasEvents {
-    fn get_rect(&self) -> Rect<f32> {
+    fn get_rect(&mut self) -> Rect<f32> {
         // Maybe upgrade to Primitive?
         let (w, h) = self.size().unpack();
         let (x, y) = self.position().unpack();
         Rect::new(x, y, w, h)
     }
-    fn are_coordinates_inside(&self, x: i32, y: i32) -> bool {
+    fn will_accept_mouse_click_event(&mut self, x: i32, y: i32) -> bool {
         self.get_rect()
             .contains_point(Vector2D::<f32>::new(x as f32, y as f32))
     }

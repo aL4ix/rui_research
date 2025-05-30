@@ -106,7 +106,7 @@ impl Primitive for Bitmap {
     fn height(&self) -> f32 {
         self.size.y()
     }
-    fn size(&self) -> &Vector2D<f32> {
+    fn size(&mut self) -> &Vector2D<f32> {
         &self.size
     }
 }

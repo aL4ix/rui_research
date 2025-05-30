@@ -1,39 +1,46 @@
+use std::any::TypeId;
 use std::error::Error;
 use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
-use crate::utils::Downcast;
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::primitives::Text;
 use crate::widgets::themes::StyleMaster;
 use crate::widgets::{CommonWidget, Primitive};
 
 use super::events::HasEvents;
-use super::Widget;
+use super::{PrimitiveManagerForThemes, StyleForTextBox, ThemeForTextBox, Widget};
 
 #[derive(Debug)]
 pub struct TextBox {
     common: CommonWidget,
-    text_index: usize,
 }
 
 impl TextBox {
-    pub fn new(nid: usize, text: &str, style: &StyleMaster) -> Result<TextBox, Box<dyn Error>> {
-        let (size, primitives, text_index) = style.one_textbox(Vector2D::default(), text)?;
-        let common_widget = CommonWidget::new(nid, Self::class_name(), primitives, size);
+    pub fn new(
+        nid: usize,
+        text: &str,
+        style_master: Arc<StyleMaster>,
+    ) -> Result<TextBox, Box<dyn Error>> {
+        let theme: &dyn ThemeForTextBox =
+            style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
+        let style: Box<StyleForTextBox> =
+            style_master.expect_style_for_widget_t(Self::class_name());
+        let mut prim_man = PrimitiveManagerForThemes::new();
+        let size = theme.new(text, None, style, &mut prim_man);
+        let common_widget =
+            CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man);
         Ok(TextBox {
             common: common_widget,
-            text_index,
         })
     }
     pub fn set_text(&mut self, text: &str) {
-        let primitive = self.common.get_primitive_by_index_mut(self.text_index);
-        let text_pri: &mut Text = (**primitive)
-            .downcast_mut::<Text>()
-            .expect("text_box.set_text() downcast_mut");
-        text_pri.set_text(text);
+        let binding = self.common.style_master();
+        let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(TypeId::of::<Self>());
+        let style: Box<StyleForTextBox> = binding.expect_style_for_widget_t(Self::class_name());
+        let size = theme.set_text(text, None, style, &mut self.common.prim_man());
+        self.common.set_size(size);
         self.set_needs_update(true);
     }
 }
@@ -70,7 +77,7 @@ impl Primitive for TextBox {
     fn height(&self) -> f32 {
         self.common.height()
     }
-    fn size(&self) -> &Vector2D<f32> {
+    fn size(&mut self) -> &Vector2D<f32> {
         self.common.size()
     }
 }

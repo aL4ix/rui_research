@@ -4,6 +4,7 @@ pub use downcastable_borrowed_widget::*;
 pub use image::Image;
 pub use primitives::Primitive;
 pub use text_box::TextBox;
+pub use themes::*;
 pub use widget::*;
 pub use widget_enum::*;
 

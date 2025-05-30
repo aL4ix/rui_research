@@ -1,18 +1,19 @@
+use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Debug;
-use std::path::Path;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use glyph_brush::ab_glyph::FontArc;
 use log::debug;
 
 use crate::general::{Color, Vector2D};
 use crate::utils::Assets;
-use crate::widgets::themes::primitive_generator_for_widgets::{PrimitiveOrOneRef, PrimitiveGeneratorForWidgets};
 use crate::widgets::themes::Property;
 use crate::widgets::Primitive;
 use crate::widgets::*;
+
+use super::ThemeEngine;
 
 type PropertiesMap = HashMap<String, Property>;
 
@@ -115,14 +116,28 @@ impl Style for ImageStyle {
     }
 }
 
-trait ThemeStyle {
+pub trait StyleForWidget: Any {
     fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>>
     where
         Self: Sized;
 }
 
 #[derive(Debug)]
-pub struct ThemeButtonStyle {
+pub struct GenericStyle {
+    pub properties: PropertiesMap,
+}
+
+impl StyleForWidget for GenericStyle {
+    fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>>
+    where
+        Self: Sized,
+    {
+        Ok(GenericStyle { properties })
+    }
+}
+
+#[derive(Debug)]
+pub struct StyleForButton {
     pub color: Color,
     pub background_color: Color,
     pub size: Option<Vector2D<f32>>,
@@ -131,7 +146,7 @@ pub struct ThemeButtonStyle {
     pub extra: HashMap<String, Property>,
 }
 
-impl ThemeStyle for ThemeButtonStyle {
+impl StyleForWidget for StyleForButton {
     fn new(mut properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
         // TODO change to macro
         let color = properties
@@ -159,7 +174,7 @@ impl ThemeStyle for ThemeButtonStyle {
             .ok_or("No font_size")?
             .try_into()
             .map_err(|e| e + " into font_size")?;
-        Ok(ThemeButtonStyle {
+        Ok(StyleForButton {
             color,
             background_color,
             size,
@@ -171,7 +186,7 @@ impl ThemeStyle for ThemeButtonStyle {
 }
 
 #[derive(Debug)]
-pub struct ThemeTextBoxStyle {
+pub struct StyleForTextBox {
     pub color: Color,
     pub background_color: Color,
     pub size: Option<Vector2D<f32>>,
@@ -180,7 +195,7 @@ pub struct ThemeTextBoxStyle {
     pub extra: HashMap<String, Property>,
 }
 
-impl ThemeStyle for ThemeTextBoxStyle {
+impl StyleForWidget for StyleForTextBox {
     fn new(mut properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
         // TODO change to macro
         let color = properties
@@ -208,7 +223,7 @@ impl ThemeStyle for ThemeTextBoxStyle {
             .ok_or("No font_size")?
             .try_into()
             .map_err(|e| e + " into font_size")?;
-        Ok(ThemeTextBoxStyle {
+        Ok(StyleForTextBox {
             color,
             background_color,
             size,
@@ -220,31 +235,31 @@ impl ThemeStyle for ThemeTextBoxStyle {
 }
 
 #[derive(Debug)]
-pub struct ThemeImageStyle {
+pub struct StyleForImage {
     pub extra: HashMap<String, Property>,
 }
 
-impl ThemeStyle for ThemeImageStyle {
+impl StyleForWidget for StyleForImage {
     fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
-        Ok(ThemeImageStyle { extra: properties })
+        Ok(StyleForImage { extra: properties })
     }
 }
 
+#[derive(Debug)]
 pub struct StyleMaster {
     _fonts: HashMap<String, FontArc>,
     styles: Vec<PropertiesMap>,
-    theme: Box<dyn PrimitiveGeneratorForWidgets>,
+    theme_engine: Box<dyn ThemeEngine>,
 }
-
-type OneWidget = (Vector2D<f32>, Vec<Box<dyn Primitive>>, usize);
 
 impl StyleMaster {
     const FONT: &'static str = "font";
     const CLASS: &'static str = "class";
     const COULD_NOT_FIND_STYLE: &'static str = "Couldn't find style for";
+    const COULD_NOT_FIND_THEME: &'static str = "Couldn't find theme for";
 
-    pub fn new(theme: Box<dyn PrimitiveGeneratorForWidgets>) -> Result<StyleMaster, Box<dyn Error>> {
-        let dyn_styles = theme.style();
+    pub fn new(theme_engine: Box<dyn ThemeEngine>) -> Result<Arc<StyleMaster>, Box<dyn Error>> {
+        let dyn_styles = theme_engine.default_style();
         let mut fonts = HashMap::new();
         let mut styles = Vec::with_capacity(dyn_styles.len());
         for dyn_style in dyn_styles {
@@ -270,87 +285,62 @@ impl StyleMaster {
             }
             styles.push(map);
         }
-        Ok(StyleMaster {
+        Ok(Arc::new(StyleMaster {
             _fonts: fonts,
             styles,
-            theme,
-        })
+            theme_engine,
+        }))
     }
-    fn one_widget<T: Primitive + Debug>(
-        size: Vector2D<f32>,
-        vec_prim_rc: Vec<PrimitiveOrOneRef<T>>,
-        reference: Rc<T>,
-    ) -> Result<OneWidget, Box<dyn Error>> {
-        debug!("{:?}", vec_prim_rc);
-        let mut found = None;
-        for (index, e) in vec_prim_rc.iter().enumerate() {
-            if let PrimitiveOrOneRef::Ref(t) = e {
-                if Rc::ptr_eq(t, &reference) {
-                    found = Some(index);
-                    break;
-                }
+    pub fn theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> Option<&T> {
+        let opt_theme_widget = self.theme_engine.get_widget_theme_by_type(type_id);
+        if let Some(theme_widget) = opt_theme_widget {
+            let opt_theme_t: Option<&T> = (&*THEME_WIDGET_CAST_REGISTRY).cast_ref(theme_widget);
+            if let Some(theme_t) = opt_theme_t {
+                return Some(theme_t);
             }
         }
-        let index = found.ok_or("Couldn't find Ref")?;
-        drop(reference);
-        let vec_prim = vec_prim_rc
-            .into_iter()
-            .map(|e| match e {
-                PrimitiveOrOneRef::Ref(r) => Box::new(Rc::try_unwrap(r).expect(
-                    "This shouldn't fail, If so make sure the reference is dropped before.",
-                )),
-                PrimitiveOrOneRef::Prim(p) => p,
-            })
-            .collect();
-        Ok((size, vec_prim, index))
+        None
     }
-    pub fn one_button(&self, size: Vector2D<f32>, text: &str) -> Result<OneWidget, Box<dyn Error>> {
+    pub fn expect_theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> &T {
+        self.theme_for_widget_t(type_id).expect(&format!(
+            "{} {:?}!",
+            Self::COULD_NOT_FIND_THEME,
+            type_id
+        ))
+    }
+    pub fn dyn_get_style(&self, type_id: &str) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
+        let mut properties: PropertiesMap = Default::default();
         for style in &self.styles {
             if let Some(Property::Str(class)) = style.get(Self::CLASS) {
-                if class == Button::class_name() {
-                    let theme_style = ThemeButtonStyle::new(style.clone())?;
-                    let (size, vec_prim_rc, text) = self.theme.for_button(size, text, theme_style);
-                    return Self::one_widget(size, vec_prim_rc, text);
+                if class == type_id {
+                    properties.extend(style.into_iter().map(|(k, v)| (k.clone(), v.clone())));
                 }
             }
         }
-        debug!("{:?}", self.styles);
-        Err(format!("{} {}", Self::COULD_NOT_FIND_STYLE, Button::class_name()).into())
+        // TODO: Un-hardcode this
+        let style_for_widget: Box<dyn StyleForWidget> = match type_id {
+            "Button" => Box::new(StyleForButton::new(properties)?),
+            "Image" => Box::new(StyleForImage::new(properties)?),
+            "TextBox" => Box::new(StyleForTextBox::new(properties)?),
+            _ => Err::<Box<dyn StyleForWidget>, Box<dyn Error>>(Box::from(format!(
+                "Unsupported type {:?}",
+                type_id
+            )))?,
+        };
+        Ok(style_for_widget)
     }
-    pub fn one_textbox(
-        &self,
-        size: Vector2D<f32>,
-        text: &str,
-    ) -> Result<OneWidget, Box<dyn Error>> {
-        for style in &self.styles {
-            if let Some(Property::Str(class)) = style.get(Self::CLASS) {
-                if class == TextBox::class_name() {
-                    let theme_style = ThemeTextBoxStyle::new(style.clone())?;
-                    let (size, vec_prim_rc, text) =
-                        self.theme.for_text_box(size, text, theme_style);
-                    return Self::one_widget(size, vec_prim_rc, text);
-                }
-            }
-        }
-        debug!("{:?}", self.styles);
-        Err(format!("{} {}", Self::COULD_NOT_FIND_STYLE, TextBox::class_name()).into())
+    pub fn style_for_widget_t<T: StyleForWidget>(&self, type_id: &str) -> Option<Box<T>> {
+        let dyn_style_for_widget = self
+            .dyn_get_style(type_id)
+            .ok()
+            .expect("Failed to retrieve a style");
+        return (dyn_style_for_widget as Box<dyn Any>).downcast().ok();
     }
-    pub fn one_image(
-        &self,
-        size: Vector2D<f32>,
-        path: Box<Path>,
-    ) -> Result<OneWidget, Box<dyn Error>> {
-        for style in &self.styles {
-            if let Some(Property::Str(class)) = style.get(Self::CLASS) {
-                if class == Image::class_name() {
-                    let theme_style = ThemeImageStyle::new(style.clone())?;
-                    let (size, vec_prim_rc, text) =
-                        self.theme.for_image(size, path, theme_style)?;
-                    return Self::one_widget(size, vec_prim_rc, text);
-                }
-            }
-        }
-        debug!("{:?}", self.styles);
-        Err(format!("{} {}", Self::COULD_NOT_FIND_STYLE, Image::class_name()).into())
+    pub fn expect_style_for_widget_t<T: StyleForWidget>(&self, type_id: &str) -> Box<T> {
+        self.style_for_widget_t(type_id).expect(&format!(
+            "{} {}!",
+            Self::COULD_NOT_FIND_STYLE,
+            type_id
+        ))
     }
 }

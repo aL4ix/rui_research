@@ -95,11 +95,15 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
-        let found = self
-            .widgets
-            .iter_mut()
-            .rev()
-            .find(|(_, w)| w.are_coordinates_inside(x, y));
+        let it = self.widgets.iter_mut().rev();
+        // TODO: Cannot use find(), why?
+        let mut found = None;
+        for (rid, widget) in it {
+            if widget.will_accept_mouse_click_event(x, y) {
+                found = Some((rid, widget));
+                break;
+            }
+        }
 
         if let Some((rid, widget)) = found {
             self.focused_wid = self

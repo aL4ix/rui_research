@@ -8,20 +8,19 @@ use crate::engines::sdl::render_geometry;
 use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::texture::SoftTexture;
 use crate::texture::TextureManager;
-use crate::widgets::Primitive;
+use crate::widgets::PrimitiveManagerForThemes;
 
 /// It's a group of multiple polygons
 #[derive(Debug, Clone)]
 pub struct Geometry {
-    #[allow(dead_code)]
-    pub(crate) class: String,
+    pub(crate) _class: String,
     pub(crate) polygons: Vec<TexturedPolygon>,
 }
 
 impl Geometry {
     pub fn new_empty_with_class(class: &str) -> Geometry {
         Geometry {
-            class: class.to_string(),
+            _class: class.to_string(),
             polygons: vec![],
         }
     }
@@ -31,7 +30,7 @@ impl Geometry {
         poly: Polygon,
     ) -> Geometry {
         Geometry {
-            class: class.to_string(),
+            _class: class.to_string(),
             polygons: vec![TexturedPolygon {
                 poly,
                 tex: Some(tex),
@@ -45,9 +44,9 @@ impl Geometry {
         }
         result
     }
-    pub fn new_from_primitives(class: &str, primitives: &mut Vec<Box<dyn Primitive>>) -> Geometry {
-        let mut geometries = Vec::with_capacity(primitives.len());
-        for primitive in primitives {
+    pub fn new_from_prim_man(class: &str, prim_man: &mut PrimitiveManagerForThemes) -> Geometry {
+        let mut geometries = Vec::with_capacity(prim_man.len());
+        for (_, primitive) in prim_man.iter_mut() {
             if primitive.needs_update() {
                 primitive.update_geometry();
             }
@@ -90,7 +89,7 @@ impl Geometry {
 impl Default for Geometry {
     fn default() -> Self {
         Geometry {
-            class: "".to_string(),
+            _class: "".to_string(),
             polygons: vec![],
         }
     }
