@@ -7,10 +7,10 @@ use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive};
+use crate::widgets::{CommonWidget, Primitive, ThemeStyleForTextBox};
 
 use super::events::HasEvents;
-use super::{PrimitiveManagerForThemes, StyleForTextBox, ThemeForTextBox, Widget};
+use super::{PrimitiveManagerForThemes, ThemeForTextBox, Widget};
 
 #[derive(Debug)]
 pub struct TextBox {
@@ -25,7 +25,7 @@ impl TextBox {
     ) -> Result<TextBox, Box<dyn Error>> {
         let theme: &dyn ThemeForTextBox =
             style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
-        let style: Box<StyleForTextBox> =
+        let style: Box<ThemeStyleForTextBox> =
             style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitiveManagerForThemes::new();
         let size = theme.new(text, None, style, &mut prim_man);
@@ -38,7 +38,8 @@ impl TextBox {
     pub fn set_text(&mut self, text: &str) {
         let binding = self.common.style_master();
         let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(TypeId::of::<Self>());
-        let style: Box<StyleForTextBox> = binding.expect_style_for_widget_t(Self::class_name());
+        let style: Box<ThemeStyleForTextBox> =
+            binding.expect_style_for_widget_t(Self::class_name());
         let size = theme.set_text(text, None, style, &mut self.common.prim_man());
         self.common.set_size(size);
         self.set_needs_update(true);

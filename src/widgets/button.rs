@@ -8,7 +8,7 @@ use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Primitive;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, StyleForButton, ThemeForButton};
+use crate::widgets::{CommonWidget, ThemeForButton, ThemeStyleForButton};
 
 use super::events::HasEvents;
 use super::{PrimitiveManagerForThemes, Widget};
@@ -26,7 +26,8 @@ impl Button {
     ) -> Result<Button, Box<dyn Error>> {
         let theme: &dyn ThemeForButton =
             style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
-        let style: Box<StyleForButton> = style_master.expect_style_for_widget_t(Self::class_name());
+        let style: Box<ThemeStyleForButton> =
+            style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitiveManagerForThemes::new();
         let size = theme.new(text, None, style, &mut prim_man);
         Ok(Button {
@@ -36,7 +37,7 @@ impl Button {
     pub fn set_text(&mut self, text: &str) {
         let binding = self.common.style_master();
         let theme: &dyn ThemeForButton = binding.expect_theme_for_widget_t(TypeId::of::<Self>());
-        let style: Box<StyleForButton> = binding.expect_style_for_widget_t(Self::class_name());
+        let style: Box<ThemeStyleForButton> = binding.expect_style_for_widget_t(Self::class_name());
         let size = theme.set_text(text, None, style, &mut self.common.prim_man());
         self.common.set_size(size);
         self.set_needs_update(true);

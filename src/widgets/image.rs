@@ -8,12 +8,11 @@ use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive};
+use crate::widgets::{CommonWidget, Primitive, ThemeStyleForImage};
 
 use super::events::HasEvents;
-use super::{PrimitiveManagerForThemes, StyleForImage, ThemeForImage, Widget};
+use super::{PrimitiveManagerForThemes, ThemeForImage, Widget};
 
-#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Image {
     common: CommonWidget,
@@ -27,7 +26,8 @@ impl Image {
     ) -> Result<Image, Box<dyn Error>> {
         let theme: &dyn ThemeForImage =
             style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
-        let style: Box<StyleForImage> = style_master.expect_style_for_widget_t(Self::class_name());
+        let style: Box<ThemeStyleForImage> =
+            style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitiveManagerForThemes::new();
         let size = theme.new(path, None, style, &mut prim_man);
         Ok(Image {

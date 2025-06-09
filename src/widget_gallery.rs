@@ -76,7 +76,11 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     let style_master = StyleMaster::new(Box::new(DarkSimpleTheme))?;
     // Can we have a global theme instead of sending it to each widget?
     let mut window_builder = WindowBuilder::new()?;
-    let mut image = Image::from_bmp(0, Box::from(Path::new("assets/image.bmp")), style_master.clone())?;
+    let mut image = Image::from_bmp(
+        0,
+        Box::from(Path::new("assets/image.bmp")),
+        style_master.clone(),
+    )?;
     image.set_position(Vector2D::new(0.0, 100.0));
     image.set_event_key_down(|root, keycode| {
         TextBox::get_by_id(root, WidgetGalleryEnum::TEXTBOX)
@@ -105,7 +109,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     window_builder.add_widget(5, button, WidgetGalleryEnum::BUTTON);
 
     sdl_engine.add_window_builder(window_builder)?;
-    
+
     // let mut w2 = WindowBuilder::new()?;
     // let t2 = TextBox::new(0, "w2", style_master)?;
     // w2.add_widget(1, t2, WidgetGalleryEnum::TEXTBOX2);

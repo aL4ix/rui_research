@@ -1,6 +1,6 @@
 use crate::{
     general::Vector2D,
-    widgets::themes::{style::StyleForImage, PrimitiveManagerForThemes},
+    widgets::{themes::PrimitiveManagerForThemes, ThemeStyleForImage},
 };
 use std::path::Path;
 
@@ -11,7 +11,7 @@ pub trait ThemeForImage: ThemeForWidget {
         &self,
         path: Box<Path>,
         size_for_clipping: Option<Vector2D<f32>>,
-        style: Box<StyleForImage>,
+        style: Box<ThemeStyleForImage>,
         prim_man: &mut PrimitiveManagerForThemes,
     ) -> Vector2D<f32>;
 }

@@ -5,11 +5,8 @@ use crate::{
     utils::Downcast,
     widgets::{
         primitives::Text,
-        themes::{
-            style::StyleForTextBox, PrimEnum, PrimId, PrimitiveManagerForThemes, ThemeForTextBox,
-            ThemeForWidget,
-        },
-        Primitive,
+        themes::{PrimEnum, PrimId, PrimitiveManagerForThemes, ThemeForTextBox, ThemeForWidget},
+        Primitive, ThemeStyleForTextBox,
     },
 };
 
@@ -32,7 +29,7 @@ impl ThemeForTextBox for DarkSimpleThemeForTextBox {
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
-        style: Box<StyleForTextBox>,
+        style: Box<ThemeStyleForTextBox>,
         prim_man: &mut PrimitiveManagerForThemes,
     ) -> Vector2D<f32> {
         assert!(
@@ -48,7 +45,7 @@ impl ThemeForTextBox for DarkSimpleThemeForTextBox {
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
-        _style: Box<StyleForTextBox>,
+        _style: Box<ThemeStyleForTextBox>,
         prim_man: &mut PrimitiveManagerForThemes,
     ) -> Vector2D<f32> {
         assert!(

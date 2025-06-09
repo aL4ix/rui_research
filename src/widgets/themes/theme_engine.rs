@@ -1,8 +1,8 @@
 use std::{any::TypeId, fmt::Debug};
 
-use crate::widgets::{Button, Image, TextBox};
+use crate::widgets::{Button, Image, Style, TextBox};
 
-use super::{style::Style, ThemeForButton, ThemeForImage, ThemeForTextBox, ThemeForWidget};
+use super::{ThemeForButton, ThemeForImage, ThemeForTextBox, ThemeForWidget};
 
 pub trait ThemeEngine: Debug + Sync + Send {
     fn get_widget_theme_by_type(&self, type_id: TypeId) -> Option<&dyn ThemeForWidget> {

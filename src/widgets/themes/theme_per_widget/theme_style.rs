@@ -1,4 +1,4 @@
-use crate::widgets::themes::style::Style;
+use crate::widgets::Style;
 
 pub trait ThemeStyle {
     fn default_style() -> Vec<Box<dyn Style>>

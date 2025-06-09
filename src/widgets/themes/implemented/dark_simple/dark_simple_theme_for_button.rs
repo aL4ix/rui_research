@@ -5,11 +5,8 @@ use crate::{
     utils::Downcast,
     widgets::{
         primitives::{Shape, Text},
-        themes::{
-            style::StyleForButton, PrimEnum, PrimId, PrimitiveManagerForThemes, ThemeForButton,
-            ThemeForWidget,
-        },
-        Primitive,
+        themes::{PrimEnum, PrimId, PrimitiveManagerForThemes, ThemeForButton, ThemeForWidget},
+        Primitive, ThemeStyleForButton,
     },
 };
 
@@ -33,7 +30,7 @@ impl ThemeForButton for DarkSimpleThemeForButton {
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
-        style: Box<StyleForButton>,
+        style: Box<ThemeStyleForButton>,
         prim_man: &mut PrimitiveManagerForThemes,
     ) -> Vector2D<f32> {
         assert!(
@@ -54,7 +51,7 @@ impl ThemeForButton for DarkSimpleThemeForButton {
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
-        style: Box<StyleForButton>,
+        style: Box<ThemeStyleForButton>,
         prim_man: &mut PrimitiveManagerForThemes,
     ) -> Vector2D<f32> {
         assert!(

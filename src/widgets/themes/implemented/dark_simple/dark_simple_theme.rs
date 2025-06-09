@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 
 use crate::widgets::{
-    themes::{ThemeEngine, ThemeForImage, ThemeForTextBox, ThemeStyle},
-    ThemeForButton,
+    themes::{ThemeEngine, ThemeForImage, ThemeForTextBox},
+    Style, ThemeForButton, ThemeStyle,
 };
 
 use super::{
@@ -15,7 +15,7 @@ pub struct DarkSimpleTheme;
 impl DarkSimpleTheme {}
 
 impl ThemeEngine for DarkSimpleTheme {
-    fn default_style(&self) -> Vec<Box<dyn crate::widgets::themes::style::Style>> {
+    fn default_style(&self) -> Vec<Box<dyn Style>> {
         DarkSimpleStyle::default_style()
     }
     fn get_button_theme(&self) -> &dyn ThemeForButton {
