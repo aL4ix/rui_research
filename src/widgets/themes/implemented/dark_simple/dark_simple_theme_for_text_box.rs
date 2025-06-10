@@ -13,7 +13,7 @@ use crate::{
 #[repr(usize)]
 #[derive(Clone, Copy, Debug)]
 enum TextBoxPrimEnum {
-    TEXT,
+    Text,
 }
 
 impl PrimEnum for TextBoxPrimEnum {
@@ -25,7 +25,7 @@ impl PrimEnum for TextBoxPrimEnum {
 pub struct DarkSimpleThemeForTextBox;
 
 impl ThemeForTextBox for DarkSimpleThemeForTextBox {
-    fn new(
+    fn new_text_box(
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
@@ -38,7 +38,7 @@ impl ThemeForTextBox for DarkSimpleThemeForTextBox {
         );
         let mut text_prim = Text::new(0, text, style.font_size, style.font, style.color);
         let text_size = text_prim.size().clone();
-        prim_man.insert(TextBoxPrimEnum::TEXT, text_prim, 0);
+        prim_man.insert(TextBoxPrimEnum::Text, text_prim, 0);
         text_size
     }
     fn set_text(
@@ -53,7 +53,7 @@ impl ThemeForTextBox for DarkSimpleThemeForTextBox {
             "theme_for_button:ThemeForTextBox:new"
         );
         let prim_text = prim_man
-            .get_mut(TextBoxPrimEnum::TEXT)
+            .get_mut(TextBoxPrimEnum::Text)
             .expect("DarkSimpleThemeForTextBox:set_text get_mut");
         let text_prim = (**prim_text)
             .downcast_mut::<Text>()

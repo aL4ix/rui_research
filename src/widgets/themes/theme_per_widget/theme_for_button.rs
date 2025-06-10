@@ -6,7 +6,7 @@ use crate::{
 use super::ThemeForWidget;
 
 pub trait ThemeForButton: ThemeForWidget {
-    fn new(
+    fn new_button(
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,

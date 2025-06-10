@@ -67,7 +67,7 @@ impl StyleMaster {
     pub fn theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> Option<&T> {
         let opt_theme_widget = self.theme_engine.get_widget_theme_by_type(type_id);
         if let Some(theme_widget) = opt_theme_widget {
-            let opt_theme_t: Option<&T> = (&*THEME_WIDGET_CAST_REGISTRY).cast_ref(theme_widget);
+            let opt_theme_t: Option<&T> = THEME_WIDGET_CAST_REGISTRY.cast_ref(theme_widget);
             if let Some(theme_t) = opt_theme_t {
                 return Some(theme_t);
             }
@@ -75,11 +75,8 @@ impl StyleMaster {
         None
     }
     pub fn expect_theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> &T {
-        self.theme_for_widget_t(type_id).expect(&format!(
-            "{} {:?}!",
-            Self::COULD_NOT_FIND_THEME,
-            type_id
-        ))
+        self.theme_for_widget_t(type_id)
+            .unwrap_or_else(|| panic!("{} {:?}!", Self::COULD_NOT_FIND_THEME, type_id))
     }
     pub fn dyn_get_style(&self, type_id: &str) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
         let mut properties: PropertiesMap = Default::default();
@@ -89,7 +86,7 @@ impl StyleMaster {
                 debug!("One retrieved style for class: {}", class);
                 if class == type_id {
                     debug!("Found style");
-                    properties.extend(style.into_iter().map(|(k, v)| (k.clone(), v.clone())));
+                    properties.extend(style.iter().map(|(k, v)| (k.clone(), v.clone())));
                 }
             }
         }
@@ -117,15 +114,11 @@ impl StyleMaster {
     pub fn style_for_widget_t<T: StyleForWidget>(&self, type_id: &str) -> Option<Box<T>> {
         let dyn_style_for_widget = self
             .dyn_get_style(type_id)
-            .ok()
-            .expect(&format!("Failed to retrieve a style for {:?}", type_id));
-        return (dyn_style_for_widget as Box<dyn Any>).downcast().ok();
+            .unwrap_or_else(|_| panic!("Failed to retrieve a style for {:?}", type_id));
+        (dyn_style_for_widget as Box<dyn Any>).downcast().ok()
     }
     pub fn expect_style_for_widget_t<T: StyleForWidget>(&self, type_id: &str) -> Box<T> {
-        self.style_for_widget_t(type_id).expect(&format!(
-            "{} {}!",
-            Self::COULD_NOT_FIND_STYLE,
-            type_id
-        ))
+        self.style_for_widget_t(type_id)
+            .unwrap_or_else(|| panic!("{} {}!", Self::COULD_NOT_FIND_STYLE, type_id))
     }
 }

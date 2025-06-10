@@ -83,7 +83,7 @@ impl WindowBuilder {
             if let Some(rid) = self.wid_and_rid.get(&wid) {
                 let widget = self
                     .widgets
-                    .get(&rid)
+                    .get(rid)
                     .expect("window_builder:WindowBuilder:event_key_down");
                 let event_callback = widget.event_key_down();
                 (event_callback.deref())(self, key);
@@ -134,7 +134,7 @@ impl WindowBuilder {
         }
 
         let rid = self.wid_and_rid.get(&wid)?;
-        let opt_widget = self.widgets.remove(&rid);
+        let opt_widget = self.widgets.remove(rid);
         if let Some(widget) = opt_widget {
             let type_id = widget.type_id();
             let dyn_widget = Rc::new(RefCell::new(widget));
@@ -146,7 +146,7 @@ impl WindowBuilder {
         None
     }
     fn wid_ret_borrows(&mut self) {
-        if self.borrowed.len() > 0 {
+        if !self.borrowed.is_empty() {
             info!("ret_borrows len={}", self.borrowed.len());
         }
 

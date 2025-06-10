@@ -13,8 +13,8 @@ use crate::{
 #[repr(usize)]
 #[derive(Clone, Copy, Debug)]
 enum ButtonPrimEnum {
-    TEXT,
-    SQUARE,
+    Text,
+    Square,
 }
 
 impl PrimEnum for ButtonPrimEnum {
@@ -26,7 +26,7 @@ impl PrimEnum for ButtonPrimEnum {
 pub struct DarkSimpleThemeForButton;
 
 impl ThemeForButton for DarkSimpleThemeForButton {
-    fn new(
+    fn new_button(
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
@@ -39,9 +39,9 @@ impl ThemeForButton for DarkSimpleThemeForButton {
         );
         let mut text_prim = Text::new(0, text, style.font_size, style.font, style.color);
         let text_size = text_prim.size().clone();
-        prim_man.insert(ButtonPrimEnum::TEXT, text_prim, 1);
+        prim_man.insert(ButtonPrimEnum::Text, text_prim, 1);
         prim_man.insert(
-            ButtonPrimEnum::SQUARE,
+            ButtonPrimEnum::Square,
             Shape::new_square(0, text_size.clone(), 0, style.background_color),
             0,
         );
@@ -59,7 +59,7 @@ impl ThemeForButton for DarkSimpleThemeForButton {
             "theme_for_button:ThemeForButton:new"
         );
         let prim_text = prim_man
-            .get_mut(ButtonPrimEnum::TEXT)
+            .get_mut(ButtonPrimEnum::Text)
             .expect("DarkSimpleThemeForButton:set_text get_mut");
         let text_prim = (**prim_text)
             .downcast_mut::<Text>()
@@ -67,10 +67,10 @@ impl ThemeForButton for DarkSimpleThemeForButton {
         text_prim.set_text(text);
         let text_size = text_prim.size().clone();
         prim_man
-            .remove(ButtonPrimEnum::SQUARE)
+            .remove(ButtonPrimEnum::Square)
             .expect("DarkSimpleThemeForButton:set_text remove");
         prim_man.insert(
-            ButtonPrimEnum::SQUARE,
+            ButtonPrimEnum::Square,
             Shape::new_square(0, text_size.clone(), 0, style.background_color),
             0,
         );

@@ -41,12 +41,10 @@ impl DowncastableBorrowedWidget {
     where
         Self: Sized,
     {
-        let new_arc =
-            unsafe { Rc::from_raw(Rc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) };
-        new_arc
+        unsafe { Rc::from_raw(Rc::into_raw(widget) as *const BorrowedInternalWidgetT<T>) }
     }
     pub fn own_dyn_widget(self) -> BorrowedDynWidget {
-        return self.borrowed_dyn_widget;
+        self.borrowed_dyn_widget
     }
     pub fn get_borrowed_strong_count(&self) -> usize {
         Rc::strong_count(&self.borrowed_dyn_widget)

@@ -6,7 +6,7 @@ use crate::{
 use super::ThemeForWidget;
 
 pub trait ThemeForTextBox: ThemeForWidget {
-    fn new(
+    fn new_text_box(
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,

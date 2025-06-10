@@ -19,7 +19,7 @@ impl Style for GeneralStyle {
             (StyleEnum::Extra, self.extra.clone().into()),
         ];
         let mut prop_map: HashMap<StyleEnum, Property> = vec_for_map.into_iter().collect();
-        prop_map.extend(self.style.clone().into_iter());
+        prop_map.extend(self.style.clone());
         prop_map
     }
 }

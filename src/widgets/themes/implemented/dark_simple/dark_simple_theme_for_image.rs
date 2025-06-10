@@ -12,7 +12,7 @@ use crate::{
 #[repr(usize)]
 #[derive(Clone, Copy, Debug)]
 enum ImagePrimEnum {
-    IMAGE,
+    Image,
 }
 
 impl PrimEnum for ImagePrimEnum {
@@ -24,7 +24,7 @@ impl PrimEnum for ImagePrimEnum {
 pub struct DarkSimpleThemeForImage;
 
 impl ThemeForImage for DarkSimpleThemeForImage {
-    fn new(
+    fn new_image(
         &self,
         path: Box<Path>,
         size_for_clipping: Option<Vector2D<f32>>,
@@ -37,7 +37,7 @@ impl ThemeForImage for DarkSimpleThemeForImage {
         );
         let mut bitmap = Bitmap::from_bmp(0, path).expect(stringify!(ThemeForImage));
         let size = bitmap.size().clone();
-        prim_man.insert(ImagePrimEnum::IMAGE, bitmap, 0);
+        prim_man.insert(ImagePrimEnum::Image, bitmap, 0);
         size
     }
 }

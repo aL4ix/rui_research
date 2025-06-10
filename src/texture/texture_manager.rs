@@ -15,6 +15,7 @@ pub struct TextureManager {
 
 type RcTexAndId = (Rc<RefCell<Texture>>, usize);
 
+#[allow(clippy::new_without_default)]
 impl TextureManager {
     pub fn new() -> TextureManager {
         TextureManager {

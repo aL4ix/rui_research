@@ -28,7 +28,7 @@ impl TextBox {
         let style: Box<ThemeStyleForTextBox> =
             style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitiveManagerForThemes::new();
-        let size = theme.new(text, None, style, &mut prim_man);
+        let size = theme.new_text_box(text, None, style, &mut prim_man);
         let common_widget =
             CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man);
         Ok(TextBox {
@@ -40,7 +40,7 @@ impl TextBox {
         let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(TypeId::of::<Self>());
         let style: Box<ThemeStyleForTextBox> =
             binding.expect_style_for_widget_t(Self::class_name());
-        let size = theme.set_text(text, None, style, &mut self.common.prim_man());
+        let size = theme.set_text(text, None, style, self.common.prim_man());
         self.common.set_size(size);
         self.set_needs_update(true);
     }

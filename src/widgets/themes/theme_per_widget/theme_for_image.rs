@@ -7,7 +7,7 @@ use std::path::Path;
 use super::ThemeForWidget;
 
 pub trait ThemeForImage: ThemeForWidget {
-    fn new(
+    fn new_image(
         &self,
         path: Box<Path>,
         size_for_clipping: Option<Vector2D<f32>>,

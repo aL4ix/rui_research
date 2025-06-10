@@ -29,7 +29,7 @@ impl Image {
         let style: Box<ThemeStyleForImage> =
             style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitiveManagerForThemes::new();
-        let size = theme.new(path, None, style, &mut prim_man);
+        let size = theme.new_image(path, None, style, &mut prim_man);
         Ok(Image {
             common: CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man),
         })
