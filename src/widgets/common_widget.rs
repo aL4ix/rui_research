@@ -7,7 +7,7 @@ use crate::widgets::Primitive;
 
 use super::events::{HasEvents, KeyDown, KeyDownCallback};
 use super::themes::StyleMaster;
-use super::{PrimitiveManagerForThemes, Widget};
+use super::{PrimitivesManagerForThemes, Widget};
 
 #[derive(Debug)]
 pub struct CommonWidget {
@@ -22,7 +22,7 @@ pub struct CommonWidget {
     event_key_down: KeyDown,
     class: String,
     style_master: Arc<StyleMaster>,
-    prim_man: PrimitiveManagerForThemes,
+    prim_man: PrimitivesManagerForThemes,
 }
 
 impl CommonWidget {
@@ -31,7 +31,7 @@ impl CommonWidget {
         class: &str,
         size: Vector2D<f32>,
         style_master: Arc<StyleMaster>,
-        mut prim_man: PrimitiveManagerForThemes,
+        mut prim_man: PrimitivesManagerForThemes,
     ) -> CommonWidget {
         let geometry = Geometry::new_from_prim_man(class, &mut prim_man);
         CommonWidget {
@@ -52,7 +52,7 @@ impl CommonWidget {
     pub fn style_master(&self) -> Arc<StyleMaster> {
         self.style_master.clone()
     }
-    pub fn prim_man(&mut self) -> &mut PrimitiveManagerForThemes {
+    pub fn prim_man(&mut self) -> &mut PrimitivesManagerForThemes {
         &mut self.prim_man
     }
     pub fn set_size(&mut self, size: Vector2D<f32>) {

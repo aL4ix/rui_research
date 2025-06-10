@@ -11,7 +11,7 @@ use crate::widgets::themes::StyleMaster;
 use crate::widgets::{CommonWidget, Primitive, ThemeStyleForImage};
 
 use super::events::HasEvents;
-use super::{PrimitiveManagerForThemes, ThemeForImage, Widget};
+use super::{PrimitivesManagerForThemes, ThemeForImage, Widget};
 
 #[derive(Debug)]
 pub struct Image {
@@ -28,7 +28,7 @@ impl Image {
             style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
         let style: Box<ThemeStyleForImage> =
             style_master.expect_style_for_widget_t(Self::class_name());
-        let mut prim_man = PrimitiveManagerForThemes::new();
+        let mut prim_man = PrimitivesManagerForThemes::new();
         let size = theme.new_image(path, None, style, &mut prim_man);
         Ok(Image {
             common: CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man),

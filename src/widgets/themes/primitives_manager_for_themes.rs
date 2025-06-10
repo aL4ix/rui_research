@@ -15,15 +15,15 @@ type Prims = BTreeMap<isize, Box<dyn Primitive>>;
 type PrimManPidRid = HashMap<PrimId, isize>;
 
 #[derive(Debug, Default)]
-pub struct PrimitiveManagerForThemes {
+pub struct PrimitivesManagerForThemes {
     prims: Prims,
     pid_rid: PrimManPidRid,
 }
 
-impl PrimitiveManagerForThemes {
+impl PrimitivesManagerForThemes {
     const NOT_FOUND: &str = "Could not find prim_enum in pid_rid map:";
     pub fn new() -> Self {
-        PrimitiveManagerForThemes {
+        PrimitivesManagerForThemes {
             prims: Default::default(),
             pid_rid: Default::default(),
         }

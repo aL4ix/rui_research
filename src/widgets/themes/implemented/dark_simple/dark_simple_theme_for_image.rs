@@ -4,7 +4,7 @@ use crate::{
     general::Vector2D,
     widgets::{
         primitives::Bitmap,
-        themes::{PrimEnum, PrimId, PrimitiveManagerForThemes, ThemeForImage, ThemeForWidget},
+        themes::{PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForImage, ThemeForWidget},
         Primitive, ThemeStyleForImage,
     },
 };
@@ -29,7 +29,7 @@ impl ThemeForImage for DarkSimpleThemeForImage {
         path: Box<Path>,
         size_for_clipping: Option<Vector2D<f32>>,
         _style: Box<ThemeStyleForImage>,
-        prim_man: &mut PrimitiveManagerForThemes,
+        prim_man: &mut PrimitivesManagerForThemes,
     ) -> Vector2D<f32> {
         assert!(
             size_for_clipping.is_none(),

@@ -8,7 +8,7 @@ use crate::engines::sdl::render_geometry;
 use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::texture::SoftTexture;
 use crate::texture::TextureManager;
-use crate::widgets::PrimitiveManagerForThemes;
+use crate::widgets::PrimitivesManagerForThemes;
 
 /// It's a group of multiple polygons
 #[derive(Debug, Clone)]
@@ -44,7 +44,7 @@ impl Geometry {
         }
         result
     }
-    pub fn new_from_prim_man(class: &str, prim_man: &mut PrimitiveManagerForThemes) -> Geometry {
+    pub fn new_from_prim_man(class: &str, prim_man: &mut PrimitivesManagerForThemes) -> Geometry {
         let mut geometries = Vec::with_capacity(prim_man.len());
         for (_, primitive) in prim_man.iter_mut() {
             if primitive.needs_update() {
