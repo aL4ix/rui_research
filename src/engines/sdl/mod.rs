@@ -138,8 +138,8 @@ impl emscripten_main_loop::MainLoop for SDLEngine {
 pub fn render_geometry<C: sdl2::render::RenderTarget>(
     canvas: &mut Canvas<C>,
     texture: Option<&Texture>,
-    vertices: &Vec<sys::SDL_Vertex>,
-    indices: &Vec<i32>,
+    vertices: &[sys::SDL_Vertex],
+    indices: &[i32],
 ) -> Result<(), String> {
     if !vertices.is_empty() {
         let sdl_renderer = canvas.raw();
