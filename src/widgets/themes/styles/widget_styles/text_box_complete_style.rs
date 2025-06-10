@@ -5,8 +5,8 @@ use glyph_brush::ab_glyph::FontArc;
 use crate::{
     general::{self, Color, Vector2D},
     widgets::{
-        themes::property::ApplyTo, ExtraStyle, ExtraStyleMap, GeneralStyleVec, Primitive,
-        PropertiesMap, Style, StyleEnum, StyleExtractor, StyleForWidget, TextBox,
+        themes::property::ApplyTo, ExtraStyle, ExtraStyleMap, GeneralStyleVec, PropertiesMap,
+        Style, StyleEnum, StyleExtractor, StyleForWidget,
     },
 };
 
@@ -25,7 +25,6 @@ impl Style for TextBoxCompleteStyle {
     fn to_properties_map(&self) -> PropertiesMap {
         use StyleEnum::*;
         let vec_for_map: GeneralStyleVec = vec![
-            (Class, TextBox::class_name().to_string().into()),
             (ApplyTo, self.apply_to.clone().into()),
             (Color, general::Color::from(&self.color).into()),
             (

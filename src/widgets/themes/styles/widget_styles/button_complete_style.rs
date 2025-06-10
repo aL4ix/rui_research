@@ -9,7 +9,7 @@ use crate::{
 
 use crate::{
     general,
-    widgets::{themes::property::ApplyTo, Button, ExtraStyle, GeneralStyleVec, Primitive, Style},
+    widgets::{themes::property::ApplyTo, ExtraStyle, GeneralStyleVec, Style},
 };
 
 #[derive(Debug, Default)]
@@ -27,7 +27,6 @@ impl Style for ButtonCompleteStyle {
     fn to_properties_map(&self) -> PropertiesMap {
         use StyleEnum::*;
         let vec_for_map: GeneralStyleVec = vec![
-            (Class, Button::class_name().to_string().into()),
             (ApplyTo, self.apply_to.clone().into()),
             (Color, general::Color::from(&self.color).into()),
             (

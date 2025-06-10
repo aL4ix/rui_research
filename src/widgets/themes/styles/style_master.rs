@@ -11,8 +11,9 @@ use log::debug;
 use crate::{
     utils::Assets,
     widgets::{
-        PropertiesMap, Property, StyleEnum, StyleForWidget, ThemeEngine, ThemeForWidget,
-        ThemeStyleForButton, ThemeStyleForImage, ThemeStyleForTextBox, THEME_WIDGET_CAST_REGISTRY,
+        themes::property::ApplyTo, PropertiesMap, Property, StyleEnum, StyleForWidget, ThemeEngine,
+        ThemeForWidget, ThemeStyleForButton, ThemeStyleForImage, ThemeStyleForTextBox,
+        THEME_WIDGET_CAST_REGISTRY,
     },
 };
 
@@ -82,12 +83,27 @@ impl StyleMaster {
         let mut properties: PropertiesMap = Default::default();
         debug!("{:?}", self.styles);
         for style in &self.styles {
-            if let Some(Property::Str(class)) = style.get(&StyleEnum::Class) {
-                debug!("One retrieved style for class: {}", class);
-                if class == type_id {
-                    debug!("Found style");
-                    properties.extend(style.iter().map(|(k, v)| (k.clone(), v.clone())));
+            let property = style
+                .get(&StyleEnum::ApplyTo)
+                .unwrap_or_else(|| panic!("All styles must have an ApplyTo! {:?}", style));
+            if let Property::ApplyTo(apply_to) = property {
+                match apply_to {
+                    ApplyTo::Id(_id) => {
+                        panic!("Styles don't support ApplyTo::Id yet: {:?}", apply_to)
+                    }
+                    ApplyTo::Class(class) => {
+                        debug!("One retrieved style for class: {}", class);
+                        if class == type_id {
+                            debug!("Found style");
+                            properties.extend(style.iter().map(|(k, v)| (k.clone(), v.clone())));
+                        }
+                    }
+                    ApplyTo::Groups(_items) => {
+                        panic!("Styles don't support ApplyTo::Groups yet {:?}", apply_to)
+                    }
                 }
+            } else {
+                panic!("ApplyTo that is not an ApplyTo {:?}", property);
             }
         }
         debug!("Properties: {:?}", properties);

@@ -1,9 +1,9 @@
 use crate::general::Color;
-use crate::widgets::themes::property::ApplyTo;
+use crate::widgets::themes::property::ApplyTo::Class;
 use crate::widgets::ExtraStyleEnum::BackgroundColorGradient;
 use crate::widgets::{
-    ButtonCompleteStyle, GeneralStyle, Image, Primitive, Style, StyleEnum, TextBoxCompleteStyle,
-    ThemeStyle,
+    Button, ButtonCompleteStyle, GeneralStyle, Image, Primitive, Style, TextBox,
+    TextBoxCompleteStyle, ThemeStyle,
 };
 
 pub struct DarkSimpleStyle;
@@ -12,6 +12,7 @@ impl ThemeStyle for DarkSimpleStyle {
     fn default_style() -> Vec<Box<dyn Style>> {
         vec![
             Box::new(ButtonCompleteStyle {
+                apply_to: Class(Button::class_name().to_string()),
                 color: (255, 255, 255, 255),
                 background_color: (128, 128, 128, 255),
                 font: "Nouveau_IBM".to_string(),
@@ -20,6 +21,7 @@ impl ThemeStyle for DarkSimpleStyle {
                 ..Default::default()
             }),
             Box::new(TextBoxCompleteStyle {
+                apply_to: Class(TextBox::class_name().to_string()),
                 color: (255, 255, 255, 255),
                 background_color: (0, 0, 255, 255),
                 font: "Nouveau_IBM".to_string(),
@@ -27,8 +29,7 @@ impl ThemeStyle for DarkSimpleStyle {
                 ..Default::default()
             }),
             Box::new(GeneralStyle {
-                apply_to: ApplyTo::Class("Image".to_string()),
-                style: vec![(StyleEnum::Class, Image::class_name().to_string().into())],
+                apply_to: Class(Image::class_name().to_string()),
                 ..Default::default()
             }),
         ]
