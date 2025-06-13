@@ -18,3 +18,6 @@ mod text_box;
 pub mod themes;
 mod widget;
 mod widget_enum;
+
+mod custom_widget;
+pub use custom_widget::*;
