@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use log::info;
+
 use crate::{
     general::Vector2D,
     utils::Downcast,
@@ -52,6 +54,7 @@ impl ThemeForTextBox for DarkSimpleThemeForTextBox {
             size_for_clipping.is_none(),
             "theme_for_button:ThemeForTextBox:new"
         );
+        info!("DaskSimpleThemeForTextBox:set_text {}", text);
         let prim_text = prim_man
             .get_mut(TextBoxPrimEnum::Text)
             .expect("DarkSimpleThemeForTextBox:set_text get_mut");

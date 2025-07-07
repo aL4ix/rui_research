@@ -33,6 +33,12 @@ impl<T: Copy + Default> From<&(T, T)> for Vector2D<T> {
     }
 }
 
+impl<T: Copy + Default> From<(T, T)> for Vector2D<T> {
+    fn from(v: (T, T)) -> Self {
+        Vector2D::new(v.0, v.1)
+    }
+}
+
 impl From<Size2D> for Vector2D<f32> {
     fn from(v: Size2D) -> Self {
         Vector2D::new(v.width as f32, v.height as f32)

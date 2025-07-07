@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use log::info;
+
 use crate::{
     general::Vector2D,
     utils::Downcast,
@@ -58,6 +60,7 @@ impl ThemeForButton for DarkSimpleThemeForButton {
             size_for_clipping.is_none(),
             "theme_for_button:ThemeForButton:new"
         );
+        info!("DaskSimpleThemeForButton:set_text {}", text);
         let prim_text = prim_man
             .get_mut(ButtonPrimEnum::Text)
             .expect("DarkSimpleThemeForButton:set_text get_mut");

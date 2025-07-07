@@ -37,7 +37,7 @@ pub trait Widget: Primitive + HasEvents {
                     debug!("Could convert widget wid={} to {}", wid, Self::class_name());
                     return Ok(wt);
                 }
-                None => return Err(format!("get_by_id(): Not a {}", Self::class_name())),
+                None => return Err(format!("get_by_id(): Not a {}. Got a {}", Self::class_name(), dw.class())),
             }
         }
         Err(format!("Not found: widget:Widget:get_by_id({})", wid))

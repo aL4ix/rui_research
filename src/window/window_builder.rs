@@ -1,9 +1,8 @@
-use std::cell::RefCell;
 use std::collections::btree_map::BTreeMap;
 use std::collections::HashMap;
 use std::error::Error;
 use std::ops::Deref;
-use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use log::{debug, info};
 #[cfg(not(target_family = "wasm"))]
@@ -14,6 +13,7 @@ use sdl2::render::WindowCanvas;
 
 use crate::general::Geometry;
 use crate::texture::TextureManager;
+use crate::utils::Downcast;
 use crate::widgets::*;
 use crate::window::Root;
 
@@ -26,6 +26,7 @@ pub struct WindowBuilder {
     height: u32,
     borrowed: HashMap<WidgetId, DowncastableBorrowedWidget>,
     focused_wid: Option<WidgetId>,
+    wid_and_cwid: HashMap<WidgetId, WidgetId>, // wid, cwid
 }
 
 impl WindowBuilder {
@@ -39,6 +40,7 @@ impl WindowBuilder {
             height: 768,
             borrowed: Default::default(),
             focused_wid: None,
+            wid_and_cwid: Default::default(),
         })
     }
     pub fn add_widget<W: Widget, WENUM: WidgetEnum>(
@@ -47,12 +49,26 @@ impl WindowBuilder {
         widget: W,
         wenum: WENUM,
     ) {
+        let opt_custom_widget = widget.downcast_ref::<CustomWidget>();
+        if let Some(custom_widget) = opt_custom_widget {
+            for (_, child) in custom_widget.children() {
+                self.wid_and_cwid.insert(child.nid(), wenum.to_wid());
+            }
+        }
         self.widgets.insert(render_id, Box::new(widget));
         self.wid_and_rid.insert(wenum.to_wid(), render_id);
     }
     pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
         // Check if new widgets are needed based on DSL
-        self.wid_ret_borrows();
+        // TODO, make in parallel
+        self.return_borrowed_widgets();
+        for (_, cwid) in &self.wid_and_cwid {
+            let crid = self.wid_and_rid.get(&cwid).ok_or("build_geometry cwid not in wid_and_rid")?;
+            let widget = self.widgets.get_mut(crid).ok_or("build_geometry expected crid in widgets")?;
+            let cwidget = (**widget).downcast_mut::<CustomWidget>().ok_or("Could not downcast CustomWidget")?;
+            cwidget.return_borrowed_widgets();
+        }
+
         self.geometries.clear();
 
         let binding = &mut self.widgets;
@@ -111,9 +127,23 @@ impl WindowBuilder {
                 .iter()
                 .find(|(_, internal_rid)| *internal_rid == rid)
                 .map(|(wid, _)| *wid);
-            debug!("{:?}", self.focused_wid);
-            let event_callback = widget.event_mouse_button_down();
-            (event_callback.deref())(self, x, y);
+            debug!("event_mouse_button_down Focused_wid: {:?}", self.focused_wid);
+            let option_custom = (widget.as_mut() as &mut dyn Widget).downcast_mut::<CustomWidget>();
+            if let Some(custom) = option_custom {
+                println!("Click to Custom {}", custom.class());
+                let wcid = custom.widget_that_accepts_click(x, y);
+                for (tcwid, child) in custom.children() {
+                    if *tcwid == wcid {
+                        let event_callback = child.event_mouse_button_down();
+                        (event_callback.deref())(self, x, y);
+                        break;
+                    }
+                }
+            } else {
+                println!("Click to Normal {}", widget.class());
+                let event_callback = widget.event_mouse_button_down();
+                (event_callback.deref())(self, x, y);
+            }
         }
     }
     pub fn width(&self) -> u32 {
@@ -133,45 +163,58 @@ impl WindowBuilder {
             return Some(borrowed.clone());
         }
 
-        let rid = self.wid_and_rid.get(&wid)?;
-        let opt_widget = self.widgets.remove(rid);
-        if let Some(widget) = opt_widget {
+        if let Some(rid) = self.wid_and_rid.get(&wid) {
+            let opt_widget = self.widgets.remove(rid);
+            let widget = opt_widget?;
+            let _class = widget.class();
             let type_id = widget.type_id();
-            let dyn_widget = Rc::new(RefCell::new(widget));
-            let borrowed = DowncastableBorrowedWidget::new(type_id, dyn_widget);
-            self.borrowed.insert(wid, borrowed.clone());
-            return Some(borrowed);
+            println!("WindowsBuilder type_id: {:?}", type_id);
+            let dyn_widget = Arc::new(Mutex::new(widget));
+            let downcastable = DowncastableBorrowedWidget::new(type_id, dyn_widget, _class);
+            self.borrowed.insert(wid, downcastable.clone());
+            return Some(downcastable)
         }
-        info!("down_borrow {:?}", self.widgets.keys());
+
+        info!("down_borrow widget.keys {:?}", self.widgets.keys());
+        info!("down_borrow wid_container {:?}", self.wid_and_cwid);
+        if let Some(cwid) = self.wid_and_cwid.get(&wid) {
+            let crid = self.wid_and_rid.get(cwid)?;
+            let cwidget = self.widgets.get_mut(crid)?;
+            let class = cwidget.class();
+            let container = (**cwidget).downcast_mut::<CustomWidget>().expect(&format!("Wanted CustomWidget found {}", class));
+            return container.get_down_widget_by_id(wid)
+        }
+
         None
     }
-    fn wid_ret_borrows(&mut self) {
+    fn return_borrowed_widgets(&mut self) {
         if !self.borrowed.is_empty() {
-            info!("ret_borrows len={}", self.borrowed.len());
+            info!("return_borrowed_widgets len={}", self.borrowed.len());
         }
 
         for wid in self.borrowed.keys().cloned().collect::<Vec<_>>() {
             let down_borrow = self
                 .borrowed
                 .remove(&wid)
-                .expect("window_builder:WindowBuilder:ret_borrows remove");
+                .expect("window_builder:WindowBuilder:return_borrowed_widgets remove");
             let dyn_widget = down_borrow.own_dyn_widget();
-            let count = Rc::strong_count(&dyn_widget);
+            let count = Arc::strong_count(&dyn_widget);
             info!("wid={} count={}", wid, count);
             if count > 1 {
                 panic!(
-                    "Expected wid={} to have strong_count of 1, found {}",
+                    "Expected wid={} to have strong_count of 1, found {}. 
+                    Note to the dev, don't leave dangling pointers after leaving an event.",
                     wid, count
                 );
             }
-            let mutex = Rc::try_unwrap(dyn_widget)
-                .expect("window_builder:WindowBuilder:ret_borrows Arc::try_unwrap");
-            let widget = mutex.into_inner();
+            let mutex = Arc::try_unwrap(dyn_widget)
+                .expect("window_builder:WindowBuilder:return_borrowed_widgets Arc::try_unwrap");
+            let widget = mutex.into_inner().expect("Extract from mutex");
             debug!("{}", widget.class());
             let rid = self
                 .wid_and_rid
                 .get(&wid)
-                .expect("window_builder:WindowBuilder:ret_borrows wid to rid");
+                .expect("window_builder:WindowBuilder:return_borrowed_widgets wid to rid");
             self.widgets.insert(*rid, widget);
         }
     }
@@ -180,5 +223,9 @@ impl WindowBuilder {
 impl Root for WindowBuilder {
     fn get_down_widget_by_id(&mut self, wid: WidgetId) -> Option<DowncastableBorrowedWidget> {
         self.wid_down_borrow(wid)
+    }
+
+    fn children(&self) -> &BTreeMap<WidgetId, OwnedDynWidget> {
+        todo!()
     }
 }
