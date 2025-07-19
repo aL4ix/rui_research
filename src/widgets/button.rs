@@ -8,7 +8,7 @@ use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Primitive;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, ThemeForButton, ThemeStyleForButton};
+use crate::widgets::{CommonWidget, ThemeForButton, ThemeStyleForButton, WidgetEnum};
 
 use super::events::HasEvents;
 use super::{PrimitivesManagerForThemes, Widget};
@@ -19,8 +19,8 @@ pub struct Button {
 }
 
 impl Button {
-    pub fn new(
-        nid: usize,
+    pub fn new<WENUM: WidgetEnum>(
+        wid: WENUM,
         text: &str,
         style_master: Arc<StyleMaster>,
     ) -> Result<Button, Box<dyn Error>> {
@@ -31,7 +31,7 @@ impl Button {
         let mut prim_man = PrimitivesManagerForThemes::new();
         let size = theme.new_button(text, None, style, &mut prim_man);
         Ok(Button {
-            common: CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man),
+            common: CommonWidget::new(wid, Self::class_name(), size, style_master, prim_man),
         })
     }
     pub fn set_text(&mut self, text: &str) {
@@ -40,7 +40,7 @@ impl Button {
         let style: Box<ThemeStyleForButton> = binding.expect_style_for_widget_t(Self::class_name());
         let size = theme.set_text(text, None, style, self.common.prim_man());
         self.common.set_size(size);
-        self.set_needs_update(true);
+        // self.set_needs_update(true);
     }
 }
 
@@ -52,11 +52,11 @@ impl Primitive for Button {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn nid(&self) -> usize {
-        self.common.nid()
+    fn wid(&self) -> usize {
+        self.common.wid()
     }
-    fn set_nid(&mut self, nid: usize) {
-        self.common.set_nid(nid)
+    fn set_wid(&mut self, nid: usize) {
+        self.common.set_wid(nid)
     }
     fn x(&self) -> f32 {
         self.common.x()

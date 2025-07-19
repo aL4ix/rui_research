@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::{Event, MouseButtonDown, MouseButtonDownCallback};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::Primitive;
+use crate::widgets::{Primitive, WidgetEnum, WidgetId};
 
 use super::events::{HasEvents, KeyDown, KeyDownCallback};
 use super::themes::StyleMaster;
@@ -11,7 +11,7 @@ use super::{PrimitivesManagerForThemes, Widget};
 
 #[derive(Debug)]
 pub struct CommonWidget {
-    nid: usize,
+    wid: WidgetId,
     position: Vector2D<f32>,
     size: Vector2D<f32>,
     geometry: Geometry,
@@ -26,8 +26,8 @@ pub struct CommonWidget {
 }
 
 impl CommonWidget {
-    pub fn new(
-        nid: usize,
+    pub fn new<WENUM: WidgetEnum>(
+        wid: WENUM,
         class: &str,
         size: Vector2D<f32>,
         style_master: Arc<StyleMaster>,
@@ -35,7 +35,7 @@ impl CommonWidget {
     ) -> CommonWidget {
         let geometry = Geometry::new_from_prim_man(class, &mut prim_man);
         CommonWidget {
-            nid,
+            wid: wid.to_wid(),
             position: Default::default(),
             size,
             geometry,
@@ -57,6 +57,7 @@ impl CommonWidget {
     }
     pub fn set_size(&mut self, size: Vector2D<f32>) {
         self.size = size;
+        self.set_needs_update(true);
     }
 }
 
@@ -68,11 +69,11 @@ impl Primitive for CommonWidget {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn nid(&self) -> usize {
-        self.nid
+    fn wid(&self) -> usize {
+        self.wid
     }
-    fn set_nid(&mut self, nid: usize) {
-        self.nid = nid
+    fn set_wid(&mut self, wid: usize) {
+        self.wid = wid
     }
     fn x(&self) -> f32 {
         self.position.x()
@@ -84,7 +85,8 @@ impl Primitive for CommonWidget {
         &self.position
     }
     fn set_position(&mut self, position: Vector2D<f32>) {
-        self.position = position
+        self.position = position;
+        self.set_needs_translation(true);
     }
     fn width(&self) -> f32 {
         self.size.x()

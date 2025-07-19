@@ -7,7 +7,7 @@ use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive, ThemeStyleForTextBox};
+use crate::widgets::{CommonWidget, Primitive, ThemeStyleForTextBox, WidgetEnum};
 
 use super::events::HasEvents;
 use super::{PrimitivesManagerForThemes, ThemeForTextBox, Widget};
@@ -18,8 +18,8 @@ pub struct TextBox {
 }
 
 impl TextBox {
-    pub fn new(
-        nid: usize,
+    pub fn new<WENUM: WidgetEnum>(
+        wid: WENUM,
         text: &str,
         style_master: Arc<StyleMaster>,
     ) -> Result<TextBox, Box<dyn Error>> {
@@ -30,7 +30,7 @@ impl TextBox {
         let mut prim_man = PrimitivesManagerForThemes::new();
         let size = theme.new_text_box(text, None, style, &mut prim_man);
         let common_widget =
-            CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man);
+            CommonWidget::new(wid, Self::class_name(), size, style_master, prim_man);
         Ok(TextBox {
             common: common_widget,
         })
@@ -42,7 +42,7 @@ impl TextBox {
             binding.expect_style_for_widget_t(Self::class_name());
         let size = theme.set_text(text, None, style, self.common.prim_man());
         self.common.set_size(size);
-        self.set_needs_update(true);
+        // self.set_needs_update(true);
     }
 }
 
@@ -54,11 +54,11 @@ impl Primitive for TextBox {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn nid(&self) -> usize {
-        self.common.nid()
+    fn wid(&self) -> usize {
+        self.common.wid()
     }
-    fn set_nid(&mut self, nid: usize) {
-        self.common.set_nid(nid)
+    fn set_wid(&mut self, nid: usize) {
+        self.common.set_wid(nid)
     }
     fn x(&self) -> f32 {
         self.common.x()

@@ -7,9 +7,13 @@ pub(in crate::widgets) mod private {
     use crate::general::Geometry;
 
     pub trait PrivatePrimitiveMethods {
+        /// Updating the geometry implies re-generating the Primitive and
         fn update_geometry(&mut self);
+        /// If the Primitive needs all updates, from re-generating the geometry of the Primitive itself and translation too.
         fn needs_update(&self) -> bool;
+        /// Set if the Primitive needs all updates, from re-generating the geometry fot the Primitive itself and translation too.
         fn set_needs_update(&mut self, needs_update: bool);
+        /// Returns if the Primitive needs a translation.
         fn needs_translation(&self) -> bool;
         fn set_needs_translation(&mut self, needs_translation: bool);
         fn clone_geometry(&self) -> Geometry;
@@ -23,8 +27,8 @@ pub trait Primitive: Debug + Send + private::PrivatePrimitiveMethods + Any {
     where
         Self: Sized;
     fn class(&self) -> &'static str;
-    fn nid(&self) -> usize;
-    fn set_nid(&mut self, nid: usize);
+    fn wid(&self) -> usize;
+    fn set_wid(&mut self, nid: usize);
     fn x(&self) -> f32;
     fn y(&self) -> f32;
     fn position(&self) -> &Vector2D<f32>;

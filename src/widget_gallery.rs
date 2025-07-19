@@ -9,7 +9,7 @@ use crate::utils::SDLLoggerPipe;
 use crate::widgets::events::HasEvents;
 use crate::widgets::themes::StyleMaster;
 use crate::widgets::{
-    Button, CustomWidget, DarkSimpleTheme, Image, TextBox, Widget, WidgetEnum, WidgetId,
+    Button, Compound, DarkSimpleTheme, Image, TextBox, Widget, WidgetEnum, WidgetId,
 };
 use crate::window::WindowBuilder;
 
@@ -77,39 +77,44 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     // Can we have a global theme instead of sending it to each widget?
     let mut window_builder = WindowBuilder::new()?;
     let mut image = Image::from_bmp(
-        0,
+        WidgetGalleryEnum::IMAGE,
         Box::from(Path::new("assets/image.bmp")),
         style_master.clone(),
     )?;
     image.set_event_key_down(|root, keycode| {
         TextBox::get_by_id(root, WidgetGalleryEnum::TEXTBOX)
             .expect("widget_gallery:main:image.set_event_key_down")
-            .lock().expect("set_event_key_down")
+            .lock()
+            .expect("set_event_key_down")
             .set_text(&keycode.to_string());
     });
     // TODO what to do with errors in widget constructors, first organize all errors in all the traits
-    window_builder.add_widget(0, image, WidgetGalleryEnum::IMAGE);
+    window_builder.add_widget(0, image);
 
-    let text_box = TextBox::new(WidgetGalleryEnum::TEXTBOX.to_wid(), "RUI", style_master.clone())?;
+    let text_box = TextBox::new(WidgetGalleryEnum::TEXTBOX, "RUI", style_master.clone())?;
 
-    let mut button = Button::new(WidgetGalleryEnum::BUTTON.to_wid(), "button", style_master.clone())?;
+    let mut button = Button::new(WidgetGalleryEnum::BUTTON, "button", style_master.clone())?;
     button.set_event_mouse_button_down(|root, x, y| {
         info!("Button.set_event Clicked! {} {}", x, y);
 
         let btn = Button::get_by_id(root, WidgetGalleryEnum::BUTTON)
             .expect("widget_gallery:main:button.set_event_key_down");
-        btn.lock().expect("set_event_mouse_button_down").set_text(&format!("Clicked {} {}", x, y));
+        btn.lock()
+            .expect("set_event_mouse_button_down")
+            .set_text(&format!("Clicked {} {}", x, y));
 
         let tx = TextBox::get_by_id(root, WidgetGalleryEnum::TEXTBOX)
             .expect("widget_gallery:main:button.set_event_key_down");
-        tx.lock().expect("set_event_mouse_button_down").set_text("Mickey es gason");
+        tx.lock()
+            .expect("set_event_mouse_button_down")
+            .set_text("Mickey es gason");
     });
 
-    let mut custom = CustomWidget::new(WidgetGalleryEnum::CUSTOM.to_wid(), style_master)?;
-    custom.add_widget(button);
-    custom.add_widget(text_box);
-    window_builder.add_widget(5, custom, WidgetGalleryEnum::CUSTOM);
-    
+    let mut compound = Compound::new(WidgetGalleryEnum::CUSTOM, style_master)?;
+    compound.add_widget(button);
+    compound.add_widget(text_box);
+    window_builder.add_widget(5, compound);
+
     sdl_engine.add_window_builder(window_builder)?;
 
     // let mut w2 = WindowBuilder::new()?;

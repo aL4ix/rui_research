@@ -16,8 +16,7 @@ pub trait ThemeEngine: Debug + Sync + Send {
         if TypeId::of::<Image>() == type_id {
             return Some(self.get_image_theme());
         }
-        println!("ThemeEngine found nothing for type {:?}", type_id);
-        None
+        panic!("ThemeEngine found nothing for type {:?}", type_id);
     }
     fn default_style(&self) -> Vec<Box<dyn Style>>;
     fn get_button_theme(&self) -> &dyn ThemeForButton;

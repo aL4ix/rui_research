@@ -57,7 +57,7 @@ impl SDLEngine {
     ) -> Result<(), Box<dyn Error>> {
         let sdl_window = self
             .sdl_video
-            .window("Title1", window_specs.width(), window_specs.height())
+            .window("Rusty-UI", window_specs.width(), window_specs.height())
             .build()?;
         let id = sdl_window.id();
         debug!("Created window {}", id);

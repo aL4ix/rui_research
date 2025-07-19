@@ -8,7 +8,7 @@ use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive, ThemeStyleForImage};
+use crate::widgets::{CommonWidget, Primitive, ThemeStyleForImage, WidgetEnum};
 
 use super::events::HasEvents;
 use super::{PrimitivesManagerForThemes, ThemeForImage, Widget};
@@ -19,8 +19,8 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn from_bmp(
-        nid: usize,
+    pub fn from_bmp<WENUM: WidgetEnum>(
+        wid: WENUM,
         path: Box<Path>,
         style_master: Arc<StyleMaster>,
     ) -> Result<Image, Box<dyn Error>> {
@@ -31,7 +31,7 @@ impl Image {
         let mut prim_man = PrimitivesManagerForThemes::new();
         let size = theme.new_image(path, None, style, &mut prim_man);
         Ok(Image {
-            common: CommonWidget::new(nid, Self::class_name(), size, style_master, prim_man),
+            common: CommonWidget::new(wid, Self::class_name(), size, style_master, prim_man),
         })
     }
 }
@@ -44,11 +44,11 @@ impl Primitive for Image {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn nid(&self) -> usize {
-        self.common.nid()
+    fn wid(&self) -> usize {
+        self.common.wid()
     }
-    fn set_nid(&mut self, nid: usize) {
-        self.common.set_nid(nid)
+    fn set_wid(&mut self, nid: usize) {
+        self.common.set_wid(nid)
     }
     fn x(&self) -> f32 {
         self.common.x()

@@ -23,10 +23,10 @@ fn main() -> Result<(), Box<(dyn std::error::Error)>> {
 Phrase 2
 Phrase 3";
     for (i, line) in string.lines().enumerate() {
-        let mut text2 = TextBox::new(0, line, style.clone())?;
-        text2.set_position(Vector2D::new(0., 50. * i as f32));
         let wenum = BlackboardEnums { id: i as WidgetId };
-        window_builder.add_widget(i.try_into().unwrap(), text2, wenum);
+        let mut text = TextBox::new(wenum, line, style.clone())?;
+        text.set_position(Vector2D::new(0., 50. * i as f32));
+        window_builder.add_widget(i.try_into().unwrap(), text);
     }
 
     sdl_engine.add_window_builder(window_builder)?;

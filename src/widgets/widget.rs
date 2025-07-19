@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, info};
 
 use crate::general::{Rect, Vector2D};
 use crate::widgets::Primitive;
@@ -17,6 +17,13 @@ pub trait Widget: Primitive + HasEvents {
         Rect::new(x, y, w, h)
     }
     fn will_accept_mouse_click_event(&mut self, x: i32, y: i32) -> bool {
+        info!(
+            "will_accept_mouse_click_event wid:{} rect:{:?} xy: {},{}",
+            self.class(),
+            self.get_rect(),
+            x,
+            y
+        );
         self.get_rect()
             .contains_point(Vector2D::<f32>::new(x as f32, y as f32))
     }
@@ -37,7 +44,13 @@ pub trait Widget: Primitive + HasEvents {
                     debug!("Could convert widget wid={} to {}", wid, Self::class_name());
                     return Ok(wt);
                 }
-                None => return Err(format!("get_by_id(): Not a {}. Got a {}", Self::class_name(), dw.class())),
+                None => {
+                    return Err(format!(
+                        "get_by_id(): Not a {}. Got a {}",
+                        Self::class_name(),
+                        dw.class()
+                    ))
+                }
             }
         }
         Err(format!("Not found: widget:Widget:get_by_id({})", wid))

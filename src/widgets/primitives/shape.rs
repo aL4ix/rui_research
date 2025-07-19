@@ -85,10 +85,10 @@ impl Primitive for Shape {
     fn class(&self) -> &'static str {
         Self::class_name()
     }
-    fn nid(&self) -> usize {
+    fn wid(&self) -> usize {
         self.nid
     }
-    fn set_nid(&mut self, nid: usize) {
+    fn set_wid(&mut self, nid: usize) {
         self.nid = nid;
     }
     fn x(&self) -> f32 {

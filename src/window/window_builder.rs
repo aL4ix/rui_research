@@ -43,29 +43,34 @@ impl WindowBuilder {
             wid_and_cwid: Default::default(),
         })
     }
-    pub fn add_widget<W: Widget, WENUM: WidgetEnum>(
-        &mut self,
-        render_id: isize,
-        widget: W,
-        wenum: WENUM,
-    ) {
-        let opt_custom_widget = widget.downcast_ref::<CustomWidget>();
+    pub fn add_widget<W: Widget>(&mut self, render_id: isize, widget: W) {
+        // Compound
+        let opt_custom_widget = widget.downcast_ref::<Compound>();
         if let Some(custom_widget) = opt_custom_widget {
-            for (_, child) in custom_widget.children() {
-                self.wid_and_cwid.insert(child.nid(), wenum.to_wid());
+            for child in custom_widget.children().values() {
+                self.wid_and_cwid.insert(child.wid(), custom_widget.wid());
             }
         }
+        // End Compound
+        self.wid_and_rid.insert(widget.wid(), render_id);
         self.widgets.insert(render_id, Box::new(widget));
-        self.wid_and_rid.insert(wenum.to_wid(), render_id);
     }
     pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
         // Check if new widgets are needed based on DSL
         // TODO, make in parallel
         self.return_borrowed_widgets();
-        for (_, cwid) in &self.wid_and_cwid {
-            let crid = self.wid_and_rid.get(&cwid).ok_or("build_geometry cwid not in wid_and_rid")?;
-            let widget = self.widgets.get_mut(crid).ok_or("build_geometry expected crid in widgets")?;
-            let cwidget = (**widget).downcast_mut::<CustomWidget>().ok_or("Could not downcast CustomWidget")?;
+        for cwid in self.wid_and_cwid.values() {
+            let crid = self
+                .wid_and_rid
+                .get(cwid)
+                .ok_or("build_geometry cwid not in wid_and_rid")?;
+            let widget = self
+                .widgets
+                .get_mut(crid)
+                .ok_or("build_geometry expected crid in widgets")?;
+            let cwidget = (**widget)
+                .downcast_mut::<Compound>()
+                .ok_or("Could not downcast Compound")?;
             cwidget.return_borrowed_widgets();
         }
 
@@ -111,12 +116,14 @@ impl WindowBuilder {
         }
     }
     pub fn event_mouse_button_down(&mut self, _mouse_btn: MouseButton, x: i32, y: i32) {
+        debug!("event_mouse_button_down Clicked");
         let it = self.widgets.iter_mut().rev();
         // TODO: Cannot use find(), why?
         let mut found = None;
         for (rid, widget) in it {
             if widget.will_accept_mouse_click_event(x, y) {
                 found = Some((rid, widget));
+                debug!("Found rid:{}", rid);
                 break;
             }
         }
@@ -127,20 +134,22 @@ impl WindowBuilder {
                 .iter()
                 .find(|(_, internal_rid)| *internal_rid == rid)
                 .map(|(wid, _)| *wid);
-            debug!("event_mouse_button_down Focused_wid: {:?}", self.focused_wid);
-            let option_custom = (widget.as_mut() as &mut dyn Widget).downcast_mut::<CustomWidget>();
-            if let Some(custom) = option_custom {
-                println!("Click to Custom {}", custom.class());
-                let wcid = custom.widget_that_accepts_click(x, y);
-                for (tcwid, child) in custom.children() {
+            debug!(
+                "event_mouse_button_down Focused_wid: {:?}",
+                self.focused_wid
+            );
+            let option_compound = (widget.as_mut() as &mut dyn Widget).downcast_mut::<Compound>();
+            if let Some(compound) = option_compound {
+                let wcid = compound.widget_that_accepts_click(x, y);
+                for (tcwid, child) in compound.children() {
                     if *tcwid == wcid {
                         let event_callback = child.event_mouse_button_down();
+                        info!("Clicked component wid:{}", wcid);
                         (event_callback.deref())(self, x, y);
                         break;
                     }
                 }
             } else {
-                println!("Click to Normal {}", widget.class());
                 let event_callback = widget.event_mouse_button_down();
                 (event_callback.deref())(self, x, y);
             }
@@ -168,11 +177,11 @@ impl WindowBuilder {
             let widget = opt_widget?;
             let _class = widget.class();
             let type_id = widget.type_id();
-            println!("WindowsBuilder type_id: {:?}", type_id);
+            info!("wid_down_borrow type_id: {:?}", type_id);
             let dyn_widget = Arc::new(Mutex::new(widget));
             let downcastable = DowncastableBorrowedWidget::new(type_id, dyn_widget, _class);
             self.borrowed.insert(wid, downcastable.clone());
-            return Some(downcastable)
+            return Some(downcastable);
         }
 
         info!("down_borrow widget.keys {:?}", self.widgets.keys());
@@ -181,8 +190,10 @@ impl WindowBuilder {
             let crid = self.wid_and_rid.get(cwid)?;
             let cwidget = self.widgets.get_mut(crid)?;
             let class = cwidget.class();
-            let container = (**cwidget).downcast_mut::<CustomWidget>().expect(&format!("Wanted CustomWidget found {}", class));
-            return container.get_down_widget_by_id(wid)
+            let container = (**cwidget)
+                .downcast_mut::<Compound>()
+                .unwrap_or_else(|| panic!("Wanted Compound found {}", class));
+            return container.get_down_widget_by_id(wid);
         }
 
         None
