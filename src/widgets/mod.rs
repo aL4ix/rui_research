@@ -19,5 +19,5 @@ pub mod themes;
 mod widget;
 mod widget_enum;
 
-mod custom_widget;
-pub use custom_widget::*;
+mod compound;
+pub use compound::*;
