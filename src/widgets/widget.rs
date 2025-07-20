@@ -1,7 +1,7 @@
 use log::{debug, info};
 
 use crate::general::{Rect, Vector2D};
-use crate::widgets::Primitive;
+use crate::widgets::primitives::Primitive;
 use crate::window::Root;
 
 use super::events::HasEvents;

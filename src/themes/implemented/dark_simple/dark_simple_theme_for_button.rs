@@ -2,14 +2,14 @@ use std::fmt::Debug;
 
 use log::info;
 
+use crate::themes::{
+    PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForButton, ThemeForWidget,
+    ThemeStyleForButton,
+};
 use crate::{
     general::Vector2D,
     utils::Downcast,
-    widgets::{
-        primitives::{Shape, Text},
-        themes::{PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForButton, ThemeForWidget},
-        Primitive, ThemeStyleForButton,
-    },
+    widgets::primitives::{Primitive, Shape, Text},
 };
 
 #[repr(usize)]

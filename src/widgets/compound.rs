@@ -7,12 +7,12 @@ use std::sync::{Arc, Mutex};
 use log::{debug, info};
 
 use crate::general::{Geometry, Vector2D};
+use crate::themes::StyleMaster;
 use crate::widgets::events::{
     Event, KeyDown, KeyDownCallback, MouseButtonDown, MouseButtonDownCallback,
 };
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Primitive;
-use crate::widgets::themes::StyleMaster;
 use crate::widgets::{DowncastableBorrowedWidget, OwnedDynWidget, WidgetEnum, WidgetId};
 use crate::window::Root;
 

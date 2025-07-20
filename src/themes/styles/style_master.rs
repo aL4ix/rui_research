@@ -9,12 +9,12 @@ use glyph_brush::ab_glyph::FontArc;
 use log::debug;
 
 use crate::{
-    utils::Assets,
-    widgets::{
-        themes::property::ApplyTo, PropertiesMap, Property, StyleEnum, StyleForWidget, ThemeEngine,
+    themes::{
+        property::ApplyTo, PropertiesMap, Property, StyleEnum, StyleForWidget, ThemeEngine,
         ThemeForWidget, ThemeStyleForButton, ThemeStyleForImage, ThemeStyleForTextBox,
         THEME_WIDGET_CAST_REGISTRY,
     },
+    utils::Assets,
 };
 
 #[derive(Debug)]

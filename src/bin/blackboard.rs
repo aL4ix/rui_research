@@ -1,7 +1,8 @@
 use rui_research::engines::sdl::SDLEngine;
 use rui_research::general::Vector2D;
-use rui_research::widgets::themes::StyleMaster;
-use rui_research::widgets::{DarkSimpleTheme, Primitive, TextBox, WidgetEnum, WidgetId};
+use rui_research::themes::{DarkSimpleTheme, StyleMaster};
+use rui_research::widgets::primitives::Primitive;
+use rui_research::widgets::{TextBox, WidgetEnum, WidgetId};
 use rui_research::window::WindowBuilder;
 
 #[derive(Clone, Copy, Debug)]

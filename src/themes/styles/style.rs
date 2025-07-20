@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-use crate::widgets::{ExtraStyleEnum, Property, StyleEnum};
+use crate::themes::{ExtraStyleEnum, Property, StyleEnum};
 
 pub type PropertiesMap = HashMap<StyleEnum, Property>;
 pub type ExtraStyle = Vec<(ExtraStyleEnum, Property)>;

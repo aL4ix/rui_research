@@ -3,7 +3,7 @@ use std::fmt::Debug;
 
 use std::collections::btree_map::IterMut;
 
-use crate::widgets::Primitive;
+use crate::widgets::primitives::Primitive;
 
 pub type PrimId = usize;
 

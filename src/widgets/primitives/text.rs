@@ -7,7 +7,7 @@ use log::debug;
 use crate::general::{Color, Geometry, Size2D, Vector2D};
 use crate::texture::{AlphaSoftTexture, SoftTexture};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::Primitive;
+use crate::widgets::primitives::Primitive;
 
 #[derive(Debug)]
 pub struct Text {

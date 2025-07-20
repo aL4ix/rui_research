@@ -1,6 +1,6 @@
 use std::{any::Any, error::Error};
 
-use crate::widgets::{PropertiesMap, Property, StyleEnum};
+use crate::themes::{PropertiesMap, Property, StyleEnum};
 
 pub trait StyleForWidget: Any + std::fmt::Debug {
     fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>>

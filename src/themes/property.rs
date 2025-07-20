@@ -1,5 +1,6 @@
 use crate::general::{Color, Vector2D};
-use crate::widgets::{ExtraStyle, ExtraStyleMap};
+use crate::themes::ExtraStyle;
+use crate::themes::ExtraStyleMap;
 use glyph_brush::ab_glyph::FontArc;
 
 #[derive(Debug, Clone)]

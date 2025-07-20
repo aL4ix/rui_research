@@ -1,6 +1,7 @@
 use std::{any::TypeId, fmt::Debug};
 
-use crate::widgets::{Button, Image, Style, TextBox};
+use crate::themes::Style;
+use crate::widgets::{Button, Image, TextBox};
 
 use super::{ThemeForButton, ThemeForImage, ThemeForTextBox, ThemeForWidget};
 

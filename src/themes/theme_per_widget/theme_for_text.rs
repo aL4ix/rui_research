@@ -1,23 +1,23 @@
 use crate::{
     general::Vector2D,
-    widgets::{themes::PrimitivesManagerForThemes, ThemeStyleForButton},
+    themes::{PrimitivesManagerForThemes, ThemeStyleForTextBox},
 };
 
 use super::ThemeForWidget;
 
-pub trait ThemeForButton: ThemeForWidget {
-    fn new_button(
+pub trait ThemeForTextBox: ThemeForWidget {
+    fn new_text_box(
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
-        style: Box<ThemeStyleForButton>,
+        style: Box<ThemeStyleForTextBox>,
         prim_man: &mut PrimitivesManagerForThemes,
     ) -> Vector2D<f32>;
     fn set_text(
         &self,
         text: &str,
         size_for_clipping: Option<Vector2D<f32>>,
-        style: Box<ThemeStyleForButton>,
+        style: Box<ThemeStyleForTextBox>,
         prim_man: &mut PrimitivesManagerForThemes,
     ) -> Vector2D<f32>;
 }

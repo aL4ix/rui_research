@@ -4,12 +4,12 @@ use glyph_brush::ab_glyph::FontArc;
 
 use crate::{
     general::{Color, Vector2D},
-    widgets::{ExtraStyleMap, PropertiesMap, StyleEnum, StyleExtractor, StyleForWidget},
+    themes::{ExtraStyleMap, PropertiesMap, StyleEnum, StyleExtractor, StyleForWidget},
 };
 
 use crate::{
     general,
-    widgets::{themes::property::ApplyTo, ExtraStyle, GeneralStyleVec, Style},
+    themes::{property::ApplyTo, ExtraStyle, GeneralStyleVec, Style},
 };
 
 #[derive(Debug, Default)]

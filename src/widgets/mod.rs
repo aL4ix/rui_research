@@ -1,23 +1,27 @@
+mod button;
 pub use button::Button;
+
+mod common_widget;
 pub use common_widget::CommonWidget;
+
+mod downcastable_borrowed_widget;
 pub use downcastable_borrowed_widget::*;
+
+mod image;
 pub use image::Image;
-pub use primitives::Primitive;
+
+pub mod primitives;
+
+mod text_box;
 pub use text_box::TextBox;
-pub use themes::*;
+
+mod widget;
 pub use widget::*;
+
+mod widget_enum;
 pub use widget_enum::*;
 
-mod button;
-mod common_widget;
-mod downcastable_borrowed_widget;
 pub mod events;
-mod image;
-mod primitives;
-mod text_box;
-pub mod themes;
-mod widget;
-mod widget_enum;
 
 mod compound;
 pub use compound::*;

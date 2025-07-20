@@ -3,11 +3,12 @@ use std::sync::Arc;
 use crate::general::{Geometry, Vector2D};
 use crate::widgets::events::{Event, MouseButtonDown, MouseButtonDownCallback};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::{Primitive, WidgetEnum, WidgetId};
+use crate::widgets::primitives::Primitive;
+use crate::widgets::{WidgetEnum, WidgetId};
 
 use super::events::{HasEvents, KeyDown, KeyDownCallback};
-use super::themes::StyleMaster;
-use super::{PrimitivesManagerForThemes, Widget};
+use super::Widget;
+use crate::themes::{PrimitivesManagerForThemes, StyleMaster};
 
 #[derive(Debug)]
 pub struct CommonWidget {

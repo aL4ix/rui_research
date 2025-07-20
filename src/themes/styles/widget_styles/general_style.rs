@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
-use crate::widgets::{
-    themes::property::ApplyTo, ExtraStyle, GeneralStyleVec, PropertiesMap, Property, Style,
-    StyleEnum,
+use crate::themes::{
+    property::ApplyTo, ExtraStyle, GeneralStyleVec, PropertiesMap, Property, Style, StyleEnum,
 };
 
 #[derive(Debug, Default)]

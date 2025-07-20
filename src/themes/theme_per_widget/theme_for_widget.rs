@@ -3,9 +3,7 @@ use std::any::Any;
 use crosstrait::{entry, Registry};
 use once_cell::sync::Lazy;
 
-use crate::widgets::{
-    DarkSimpleThemeForButton, DarkSimpleThemeForImage, DarkSimpleThemeForTextBox,
-};
+use crate::themes::{DarkSimpleThemeForButton, DarkSimpleThemeForImage, DarkSimpleThemeForTextBox};
 
 use super::{ThemeForButton, ThemeForImage, ThemeForTextBox};
 

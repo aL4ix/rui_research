@@ -4,14 +4,14 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
+use crate::themes::{PrimitivesManagerForThemes, StyleMaster, ThemeForButton, ThemeStyleForButton};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Primitive;
-use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, ThemeForButton, ThemeStyleForButton, WidgetEnum};
+use crate::widgets::{CommonWidget, WidgetEnum};
 
 use super::events::HasEvents;
-use super::{PrimitivesManagerForThemes, Widget};
+use super::Widget;
 
 #[derive(Debug)]
 pub struct Button {

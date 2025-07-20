@@ -8,7 +8,7 @@ use crate::engines::sdl::render_geometry;
 use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::texture::SoftTexture;
 use crate::texture::TextureManager;
-use crate::widgets::PrimitivesManagerForThemes;
+use crate::themes::PrimitivesManagerForThemes;
 
 /// It's a group of multiple polygons
 #[derive(Debug, Clone)]

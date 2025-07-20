@@ -7,6 +7,7 @@ use sdl2::libc;
 pub mod engines;
 pub mod general;
 pub mod texture;
+pub mod themes;
 pub mod utils;
 pub mod widget_gallery;
 pub mod widgets;

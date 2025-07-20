@@ -1,6 +1,6 @@
 use crate::{
     general::Vector2D,
-    widgets::{themes::PrimitivesManagerForThemes, ThemeStyleForImage},
+    themes::{PrimitivesManagerForThemes, ThemeStyleForImage},
 };
 use std::path::Path;
 

@@ -4,9 +4,9 @@ use glyph_brush::ab_glyph::FontArc;
 
 use crate::{
     general::{self, Color, Vector2D},
-    widgets::{
-        themes::property::ApplyTo, ExtraStyle, ExtraStyleMap, GeneralStyleVec, PropertiesMap,
-        Style, StyleEnum, StyleExtractor, StyleForWidget,
+    themes::{
+        property::ApplyTo, ExtraStyle, ExtraStyleMap, GeneralStyleVec, PropertiesMap, Style,
+        StyleEnum, StyleExtractor, StyleForWidget,
     },
 };
 

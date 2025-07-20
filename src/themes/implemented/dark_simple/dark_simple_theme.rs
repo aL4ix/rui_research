@@ -1,8 +1,7 @@
 use std::fmt::Debug;
 
-use crate::widgets::{
-    themes::{ThemeEngine, ThemeForImage, ThemeForTextBox},
-    Style, ThemeForButton, ThemeStyle,
+use crate::themes::{
+    Style, ThemeEngine, ThemeForButton, ThemeForImage, ThemeForTextBox, ThemeStyle,
 };
 
 use super::{

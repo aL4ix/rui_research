@@ -1,10 +1,9 @@
 use crate::general::Color;
-use crate::widgets::themes::property::ApplyTo::Class;
-use crate::widgets::ExtraStyleEnum::BackgroundColorGradient;
-use crate::widgets::{
-    Button, ButtonCompleteStyle, GeneralStyle, Image, Primitive, Style, TextBox,
-    TextBoxCompleteStyle, ThemeStyle,
-};
+use crate::themes::property::ApplyTo::Class;
+use crate::themes::ExtraStyleEnum::BackgroundColorGradient;
+use crate::themes::{ButtonCompleteStyle, GeneralStyle, Style, TextBoxCompleteStyle, ThemeStyle};
+use crate::widgets::primitives::Primitive;
+use crate::widgets::{Button, Image, TextBox};
 
 pub struct DarkSimpleStyle;
 

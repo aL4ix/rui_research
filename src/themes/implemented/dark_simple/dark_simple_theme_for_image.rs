@@ -2,11 +2,11 @@ use std::{fmt::Debug, path::Path};
 
 use crate::{
     general::Vector2D,
-    widgets::{
-        primitives::Bitmap,
-        themes::{PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForImage, ThemeForWidget},
-        Primitive, ThemeStyleForImage,
+    themes::{
+        PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForImage, ThemeForWidget,
+        ThemeStyleForImage,
     },
+    widgets::primitives::{Bitmap, Primitive},
 };
 
 #[repr(usize)]

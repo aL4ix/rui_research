@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use crate::widgets::{ExtraStyleMap, PropertiesMap, StyleEnum, StyleExtractor, StyleForWidget};
+use crate::themes::{ExtraStyleMap, PropertiesMap, StyleEnum, StyleExtractor, StyleForWidget};
 
 #[derive(Debug)]
 pub struct ThemeStyleForImage {

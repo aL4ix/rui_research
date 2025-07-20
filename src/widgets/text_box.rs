@@ -4,13 +4,16 @@ use std::fmt::Debug;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
+use crate::themes::{
+    PrimitivesManagerForThemes, StyleMaster, ThemeForTextBox, ThemeStyleForTextBox,
+};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive, ThemeStyleForTextBox, WidgetEnum};
+use crate::widgets::primitives::Primitive;
+use crate::widgets::{CommonWidget, WidgetEnum};
 
 use super::events::HasEvents;
-use super::{PrimitivesManagerForThemes, ThemeForTextBox, Widget};
+use super::Widget;
 
 #[derive(Debug)]
 pub struct TextBox {

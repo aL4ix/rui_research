@@ -4,12 +4,12 @@ use log::info;
 
 use crate::{
     general::Vector2D,
-    utils::Downcast,
-    widgets::{
-        primitives::Text,
-        themes::{PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForTextBox, ThemeForWidget},
-        Primitive, ThemeStyleForTextBox,
+    themes::{
+        PrimEnum, PrimId, PrimitivesManagerForThemes, ThemeForTextBox, ThemeForWidget,
+        ThemeStyleForTextBox,
     },
+    utils::Downcast,
+    widgets::primitives::{Primitive, Text},
 };
 
 #[repr(usize)]

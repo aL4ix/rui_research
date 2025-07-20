@@ -5,13 +5,14 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::general::{Geometry, Vector2D};
+use crate::themes::{PrimitivesManagerForThemes, StyleMaster, ThemeForImage, ThemeStyleForImage};
 use crate::widgets::events::MouseButtonDownCallback;
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::themes::StyleMaster;
-use crate::widgets::{CommonWidget, Primitive, ThemeStyleForImage, WidgetEnum};
+use crate::widgets::primitives::Primitive;
+use crate::widgets::{CommonWidget, WidgetEnum};
 
 use super::events::HasEvents;
-use super::{PrimitivesManagerForThemes, ThemeForImage, Widget};
+use super::Widget;
 
 #[derive(Debug)]
 pub struct Image {

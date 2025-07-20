@@ -5,12 +5,10 @@ use env_logger::Target;
 use log::info;
 
 use crate::engines::sdl::SDLEngine;
+use crate::themes::{DarkSimpleTheme, StyleMaster};
 use crate::utils::SDLLoggerPipe;
 use crate::widgets::events::HasEvents;
-use crate::widgets::themes::StyleMaster;
-use crate::widgets::{
-    Button, Compound, DarkSimpleTheme, Image, TextBox, Widget, WidgetEnum, WidgetId,
-};
+use crate::widgets::{Button, Compound, Image, TextBox, Widget, WidgetEnum, WidgetId};
 use crate::window::WindowBuilder;
 
 /*

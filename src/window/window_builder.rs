@@ -14,6 +14,7 @@ use sdl2::render::WindowCanvas;
 use crate::general::Geometry;
 use crate::texture::TextureManager;
 use crate::utils::Downcast;
+use crate::widgets::primitives::Primitive;
 use crate::widgets::*;
 use crate::window::Root;
 

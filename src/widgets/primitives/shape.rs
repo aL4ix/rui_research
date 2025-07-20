@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use crate::general::{Color, Geometry, Polygon, TexturedPolygon, Vector2D};
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
-use crate::widgets::Primitive;
+use crate::widgets::primitives::Primitive;
 
 #[derive(Debug)]
 pub struct Shape {
