@@ -1,7 +1,7 @@
 pub use sdl_window::SDLWindow;
 mod sdl_window;
 
-pub use sdl_engine::SDLEngine;
+pub use sdl_engine::*;
 mod sdl_engine;
 
 pub use render_geometry::render_geometry;

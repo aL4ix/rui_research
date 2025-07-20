@@ -108,7 +108,7 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
             .set_text("Mickey es gason");
     });
 
-    let mut compound = Compound::new(WidgetGalleryEnum::CUSTOM, style_master)?;
+    let mut compound = Compound::new(WidgetGalleryEnum::CUSTOM, style_master.clone())?;
     compound.add_widget(button);
     compound.add_widget(text_box);
     window_builder.add_widget(5, compound);
@@ -116,8 +116,8 @@ pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
     sdl_engine.add_window_builder(window_builder)?;
 
     // let mut w2 = WindowBuilder::new()?;
-    // let t2 = TextBox::new(0, "w2", style_master)?;
-    // w2.add_widget(1, t2, WidgetGalleryEnum::TEXTBOX2);
+    // let t2 = TextBox::new(WidgetGalleryEnum::TEXTBOX2, "w2", style_master)?;
+    // w2.add_widget(1, t2);
     // sdl_engine.add_window_builder(w2)?;
     // sdl_engine.set_user_event_handler(Some(|event| {
     //     log::info!("{:?}", event);
