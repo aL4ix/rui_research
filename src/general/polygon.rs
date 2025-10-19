@@ -1,12 +1,12 @@
 use std::fmt::{Debug, Formatter};
 
-use sdl2::sys;
+use sdl2::{rect::FPoint, render::Vertex};
 
 use crate::general::{Color, Rect, Vector2D};
 
 #[derive(Clone)]
 pub struct Polygon {
-    pub(crate) vers: Vec<sys::SDL_Vertex>,
+    pub(crate) vers: Vec<Vertex>,
     pub(crate) inds: Vec<i32>,
 }
 
@@ -132,22 +132,11 @@ impl Polygon {
         position: Vector2D<f32>,
         color: Color,
         tex_coord: Vector2D<f32>,
-    ) -> sys::SDL_Vertex {
-        sys::SDL_Vertex {
-            position: sys::SDL_FPoint {
-                x: position.x(),
-                y: position.y(),
-            },
-            color: sys::SDL_Color {
-                r: color.r(),
-                g: color.g(),
-                b: color.b(),
-                a: color.a(),
-            },
-            tex_coord: sys::SDL_FPoint {
-                x: tex_coord.x(),
-                y: tex_coord.y(),
-            },
+    ) -> Vertex {
+        Vertex {
+            position: FPoint::new(position.x(), position.y()),
+            color: sdl2::pixels::Color::RGBA(color.r(), color.g(), color.b(), color.a()),
+            tex_coord: FPoint::new(tex_coord.x(), tex_coord.y()),
         }
     }
 }

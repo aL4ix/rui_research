@@ -10,7 +10,7 @@ default-run = "widget_gallery"
 #crate-type = ["cdylib"]
 
 [dependencies]
-sdl2 = { path = "../rust-sdl2-2.0.18", features = ["unsafe_textures"] }
+sdl2 = { version = "0.38", features = ["unsafe_textures"] }
 glyph_brush = "0.7.7"
 emscripten_main_loop = "0.1.1"
 env_logger = "0.10.0"

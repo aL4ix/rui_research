@@ -4,7 +4,6 @@ use std::sync::{Arc, Mutex};
 use sdl2::render::{TextureCreator, WindowCanvas};
 use sdl2::video::WindowContext;
 
-use crate::engines::sdl::render_geometry;
 use crate::general::{Polygon, TexturedPolygon, Vector2D};
 use crate::texture::SoftTexture;
 use crate::texture::TextureManager;
@@ -68,10 +67,10 @@ impl Geometry {
                 let rendered_tex = guard.render(tex_creator, tex_man)?;
                 let guard = rendered_tex.borrow();
                 let tex = Some(guard.deref());
-                render_geometry(canvas, tex, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
+                canvas.render_geometry(&tex_poly.poly.vers, tex, &tex_poly.poly.inds)?;
             } else {
                 // Is there a way to avoid duplicating render_geometry? the tex mutex guard is blocking it
-                render_geometry(canvas, None, &tex_poly.poly.vers, &tex_poly.poly.inds)?;
+                canvas.render_geometry(&tex_poly.poly.vers, None, &tex_poly.poly.inds)?;
             }
         }
         Ok(())
