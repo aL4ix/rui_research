@@ -20,5 +20,3 @@ impl Write for SDLLoggerPipe {
         Ok(())
     }
 }
-
-unsafe impl Send for SDLLoggerPipe {}
