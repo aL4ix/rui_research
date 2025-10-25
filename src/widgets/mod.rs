@@ -25,3 +25,9 @@ pub mod events;
 
 mod compound;
 pub use compound::*;
+
+mod direction;
+pub use direction::Direction;
+
+mod next_position_calculator;
+pub use next_position_calculator::*;

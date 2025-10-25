@@ -13,7 +13,7 @@ use crate::widgets::events::{
 };
 use crate::widgets::primitives::private::PrivatePrimitiveMethods;
 use crate::widgets::primitives::Primitive;
-use crate::widgets::{DowncastableBorrowedWidget, OwnedDynWidget, WidgetEnum, WidgetId};
+use crate::widgets::{Direction, DowncastableBorrowedWidget, NextPositionCalculator, OwnedDynWidget, WidgetEnum, WidgetId};
 use crate::window::Root;
 
 use super::events::HasEvents;
@@ -29,14 +29,14 @@ pub struct Compound {
     event_mouse_button_down: MouseButtonDown,
     event_key_down: KeyDown,
     translated_geometry: Geometry,
-    next_x: f32,
-    y_size: f32,
     borrowed: HashMap<WidgetId, DowncastableBorrowedWidget>,
+    next_pos_calc: NextPositionCalculator,
 }
 
 impl Compound {
     pub fn new<WENUM: WidgetEnum>(
         wid: WENUM,
+        direction: Direction,
         _style_master: Arc<StyleMaster>,
     ) -> Result<Self, Box<dyn Error>> {
         Ok(Self {
@@ -48,22 +48,16 @@ impl Compound {
             event_mouse_button_down: Default::default(),
             event_key_down: Default::default(),
             translated_geometry: Default::default(),
-            next_x: Default::default(),
-            y_size: Default::default(),
             borrowed: Default::default(),
+            next_pos_calc: NextPositionCalculator::new(direction),
         })
     }
     pub fn add_widget<T: Widget>(&mut self, widget: T) {
-        let mut box_widget = Box::new(widget);
-        // TODO: Factorize
-        let position = self.get_next_position(&mut box_widget);
+        let mut box_widget: Box<dyn Widget> = Box::new(widget);
+        let position = self.next_pos_calc.next(&mut box_widget);
+        info!("add_widget: pos: {:?}", position);
         box_widget.set_position(position);
-
-        if box_widget.size().y() > self.y_size {
-            self.y_size = box_widget.size().y();
-        }
-        info!("add_widget: next_x: {}", self.next_x);
-        self.size = Vector2D::new(self.next_x, self.y_size);
+        self.size = self.next_pos_calc.size();
         info!("add_widget: size: {:?}", self.size);
         self.widgets.insert(box_widget.wid(), box_widget);
     }
@@ -106,12 +100,6 @@ impl Compound {
             self.widgets.insert(wid, widget); // TODO Convert to Map
         }
     }
-    fn get_next_position<T: Widget + ?Sized>(&mut self, widget: &mut Box<T>) -> Vector2D<f32> {
-        // Factorize
-        let position = (self.next_x, 0.0).into();
-        self.next_x += widget.size().x();
-        position
-    }
 }
 
 impl Primitive for Compound {
@@ -138,6 +126,7 @@ impl Primitive for Compound {
         &self.position
     }
     fn set_position(&mut self, position: Vector2D<f32>) {
+        self.next_pos_calc.set_root_position(&position);
         self.position = position;
         /*
         Set position for each widget.
@@ -163,10 +152,10 @@ impl Primitive for Compound {
         Component: Card, Table, List group, Modal, Popover, Toast, Tooltip.
         Or maybe special things like Menubar.
         Maybe the distinction comes from the functionality, like Calendar could be implemented as a group of buttons but
-        it needs funcionality like get_date().
+        it needs functionality like get_date().
 
         Window sizer?
-        It is definetely a special kind of spacer, because some components wont be affected, like bars, but the rest is
+        It is definitely a special kind of spacer, because some components wont be affected, like bars, but the rest is
         affected, so i guess it would make sense to have a Component and force the user to have one and only one.
         Then from there the user can decide their own setting.
 
@@ -181,7 +170,7 @@ impl Primitive for Compound {
         and the screen reader can interpret those in a special way. Same for calendar, it can announce there is a calendar
         open.
 
-         */
+        */
         self.set_needs_translation(true);
     }
     fn width(&self) -> f32 {
@@ -194,31 +183,16 @@ impl Primitive for Compound {
         &self.size
     }
     fn translate_geometry(&mut self) -> Geometry {
-        // if self.needs_translation() == false {
-        //     return self.translated_geometry.clone();
-        // }
-        self.next_x = 0.0;
+        self.next_pos_calc.reset();
         let mut geometries = Vec::with_capacity(self.widgets.len());
         for dyn_widget in self.widgets.values_mut() {
             info!("translate_geometry: {}", dyn_widget.class());
-            // let geometry = if dyn_widget.needs_translation() {
-            // Refactorize
-            let position = (self.next_x, 0.0).into();
-            let dyn_widget_size = dyn_widget.size();
-            self.next_x += dyn_widget_size.x();
-            if dyn_widget_size.y() > self.y_size {
-                self.y_size = dyn_widget_size.y();
-            }
-            self.y_size = dyn_widget_size.y();
+            let position = self.next_pos_calc.next(dyn_widget);
             dyn_widget.set_position(position);
-
             let geometry = dyn_widget.translate_geometry();
-            // } else {
-            //     dyn_widget.clone_translated_geometry()
-            // };
             geometries.push(geometry);
         }
-        self.size = Vector2D::new(self.next_x, self.y_size);
+        self.size = self.next_pos_calc.size();
         self.translated_geometry = Geometry::new_from_geometries(Self::class_name(), geometries);
         self.translated_geometry.clone()
     }
@@ -268,9 +242,6 @@ impl PrivatePrimitiveMethods for Compound {
         false
     }
     fn set_needs_translation(&mut self, needs_translation: bool) {
-        // if needs_translation {
-        //     panic!("set_needs_translation This should not have been called");
-        // }
         for dyn_widget in self.widgets.values_mut() {
             dyn_widget.set_needs_translation(needs_translation);
         }
