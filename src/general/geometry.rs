@@ -58,7 +58,7 @@ impl Geometry {
         canvas: &mut WindowCanvas,
         tex_creator: &TextureCreator<WindowContext>,
         tex_man: &mut TextureManager,
-    ) -> Result<(), Box<(dyn std::error::Error)>> {
+    ) -> Result<(), Box<dyn std::error::Error>> {
         for tex_poly in &mut self.polygons {
             // info!("{:?}", tex_poly);
             if let Some(arc_tex) = &mut tex_poly.tex {

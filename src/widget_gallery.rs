@@ -52,7 +52,7 @@ impl WidgetEnum for WidgetGalleryEnum {
     }
 }
 
-pub fn main() -> Result<(), Box<(dyn std::error::Error)>> {
+pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::env::set_var("RUST_BACKTRACE", "full");
     // std::env::set_var("RUST_LOG", "info");
     env_logger::builder()

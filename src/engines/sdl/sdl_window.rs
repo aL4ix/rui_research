@@ -35,10 +35,10 @@ impl Window for SDLWindow {
     fn event_mouse_button_down(&mut self, mouse_btn: MouseButton, x: i32, y: i32) {
         self.window_builder.event_mouse_button_down(mouse_btn, x, y)
     }
-    fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
+    fn build_geometry(&mut self) -> Result<(), Box<dyn Error>> {
         self.window_builder.build_geometry()
     }
-    fn render(&mut self) -> Result<(), Box<(dyn Error)>> {
+    fn render(&mut self) -> Result<(), Box<dyn Error>> {
         self.window_builder.render(&mut self.canvas)
     }
     fn clear_canvas(&mut self) {

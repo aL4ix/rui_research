@@ -29,7 +29,7 @@ pub struct SDLEngine {
 }
 
 impl SDLEngine {
-    pub fn init() -> Result<SDLEngine, Box<(dyn Error)>> {
+    pub fn init() -> Result<SDLEngine, Box<dyn Error>> {
         // sdl2::hint::set("SDL_TOUCH_MOUSE_EVENTS", "1"); // Maybe useful for android
         let sdl_context: sdl2::Sdl = init()?;
         debug!("Rusty-UI Started SDL");

@@ -31,7 +31,7 @@ pub struct WindowBuilder {
 }
 
 impl WindowBuilder {
-    pub fn new() -> Result<WindowBuilder, Box<(dyn Error)>> {
+    pub fn new() -> Result<WindowBuilder, Box<dyn Error>> {
         Ok(WindowBuilder {
             wid_and_rid: Default::default(),
             widgets: Default::default(),
@@ -56,7 +56,7 @@ impl WindowBuilder {
         self.wid_and_rid.insert(widget.wid(), render_id);
         self.widgets.insert(render_id, Box::new(widget));
     }
-    pub fn build_geometry(&mut self) -> Result<(), Box<(dyn Error)>> {
+    pub fn build_geometry(&mut self) -> Result<(), Box<dyn Error>> {
         // Check if new widgets are needed based on DSL
         // TODO, make in parallel
         self.return_borrowed_widgets();
@@ -90,7 +90,7 @@ impl WindowBuilder {
         // Delete not needed widgets
         Ok(())
     }
-    pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), Box<(dyn Error)>> {
+    pub fn render(&mut self, canvas: &mut WindowCanvas) -> Result<(), Box<dyn Error>> {
         let tex_creator = canvas.texture_creator();
         for geometry in &mut self.geometries.values_mut() {
             geometry.render(canvas, &tex_creator, &mut self.tex_man)?;
