@@ -75,7 +75,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Single-threaded
     let style_master = StyleMaster::new(Box::new(DarkSimpleTheme))?;
     // Can we have a global theme instead of sending it to each widget?
-    let mut window_builder = WindowBuilder::new()?;
+    let mut window_builder = WindowBuilder::new(1024, 768)?;
     let mut image = Image::from_bmp(
         WidgetGalleryEnum::Image,
         Box::from(Path::new("assets/image.bmp")),

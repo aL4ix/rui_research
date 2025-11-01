@@ -21,6 +21,7 @@ impl PrimEnum for ImagePrimEnum {
     }
 }
 
+#[derive(Debug)]
 pub struct DarkSimpleThemeForImage;
 
 impl ThemeForImage for DarkSimpleThemeForImage {

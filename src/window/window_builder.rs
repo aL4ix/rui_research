@@ -31,14 +31,14 @@ pub struct WindowBuilder {
 }
 
 impl WindowBuilder {
-    pub fn new() -> Result<WindowBuilder, Box<dyn Error>> {
+    pub fn new(width: u32, height: u32) -> Result<WindowBuilder, Box<dyn Error>> {
         Ok(WindowBuilder {
             wid_and_rid: Default::default(),
             widgets: Default::default(),
             geometries: Default::default(),
             tex_man: TextureManager::new(),
-            width: 1024,
-            height: 768,
+            width,
+            height,
             borrowed: Default::default(),
             focused_wid: None,
             wid_and_cwid: Default::default(),

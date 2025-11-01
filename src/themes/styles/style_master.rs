@@ -21,7 +21,7 @@ use crate::{
 pub struct StyleMaster {
     _fonts: HashMap<String, FontArc>,
     styles: Vec<PropertiesMap>,
-    theme_engine: Box<dyn ThemeEngine>,
+    themes: HashMap<TypeId, &'static dyn ThemeForWidget>,
 }
 
 impl StyleMaster {
@@ -32,6 +32,7 @@ impl StyleMaster {
         let dyn_styles = theme_engine.default_style();
         let mut _fonts = HashMap::new();
         let mut styles = Vec::with_capacity(dyn_styles.len());
+        let themes = theme_engine.get_themes();
 
         for dyn_style in dyn_styles {
             debug!("{:?}", dyn_style);
@@ -62,11 +63,11 @@ impl StyleMaster {
         Ok(Arc::new(StyleMaster {
             _fonts,
             styles,
-            theme_engine,
+            themes,
         }))
     }
     pub fn theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> Option<&T> {
-        let opt_theme_widget = self.theme_engine.get_widget_theme_by_type(type_id);
+        let opt_theme_widget = self.themes.get(&type_id).map(|t| *t);
         if let Some(theme_widget) = opt_theme_widget {
             let opt_theme_t: Option<&T> = THEME_WIDGET_CAST_REGISTRY.cast_ref(theme_widget);
             if let Some(theme_t) = opt_theme_t {

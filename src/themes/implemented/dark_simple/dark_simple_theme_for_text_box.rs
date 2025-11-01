@@ -24,6 +24,7 @@ impl PrimEnum for TextBoxPrimEnum {
     }
 }
 
+#[derive(Debug)]
 pub struct DarkSimpleThemeForTextBox;
 
 impl ThemeForTextBox for DarkSimpleThemeForTextBox {

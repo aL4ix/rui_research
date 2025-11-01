@@ -1,12 +1,15 @@
-use std::fmt::Debug;
+use std::{any::TypeId, collections::HashMap, fmt::Debug};
 
-use crate::themes::{
-    Style, ThemeEngine, ThemeForButton, ThemeForImage, ThemeForTextBox, ThemeStyle,
+use crate::{
+    themes::{Style, ThemeEngine, ThemeForWidget, ThemeStyle},
+    widgets::{Image, TextBox},
 };
 
 use super::{
     DarkSimpleStyle, DarkSimpleThemeForButton, DarkSimpleThemeForImage, DarkSimpleThemeForTextBox,
 };
+
+use crate::widgets::Button;
 
 #[derive(Debug)]
 pub struct DarkSimpleTheme;
@@ -17,13 +20,14 @@ impl ThemeEngine for DarkSimpleTheme {
     fn default_style(&self) -> Vec<Box<dyn Style>> {
         DarkSimpleStyle::default_style()
     }
-    fn get_button_theme(&self) -> &dyn ThemeForButton {
-        &DarkSimpleThemeForButton
-    }
-    fn get_text_box_theme(&self) -> &dyn ThemeForTextBox {
-        &DarkSimpleThemeForTextBox
-    }
-    fn get_image_theme(&self) -> &dyn ThemeForImage {
-        &DarkSimpleThemeForImage
+    fn get_themes(&self) -> HashMap<TypeId, &'static dyn ThemeForWidget> {
+        HashMap::from([
+            (
+                TypeId::of::<Button>(),
+                &DarkSimpleThemeForButton as &dyn ThemeForWidget,
+            ),
+            (TypeId::of::<TextBox>(), &DarkSimpleThemeForTextBox),
+            (TypeId::of::<Image>(), &DarkSimpleThemeForImage),
+        ])
     }
 }

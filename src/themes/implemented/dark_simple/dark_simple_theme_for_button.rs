@@ -25,6 +25,7 @@ impl PrimEnum for ButtonPrimEnum {
     }
 }
 
+#[derive(Debug)]
 pub struct DarkSimpleThemeForButton;
 
 impl ThemeForButton for DarkSimpleThemeForButton {

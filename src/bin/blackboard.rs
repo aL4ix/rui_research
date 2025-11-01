@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use rui_research::engines::sdl::SDLEngine;
 use rui_research::general::Vector2D;
 use rui_research::themes::{DarkSimpleTheme, StyleMaster};
@@ -16,10 +18,10 @@ impl WidgetEnum for BlackboardEnums {
     }
 }
 
-fn main() -> Result<(), Box<(dyn std::error::Error)>> {
+fn main() -> Result<(), Box<dyn Error>> {
     let mut sdl_engine = SDLEngine::init()?;
     let style = StyleMaster::new(Box::new(DarkSimpleTheme))?;
-    let mut window_builder = WindowBuilder::new()?;
+    let mut window_builder = WindowBuilder::new(1024, 768)?;
     let string = "Phrase 1
 Phrase 2
 Phrase 3";
