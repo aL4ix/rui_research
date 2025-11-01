@@ -1,5 +1,6 @@
 use std::io::Write;
 use std::path::Path;
+use std::sync::Arc;
 
 use env_logger::Target;
 use log::info;
@@ -73,7 +74,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let image = rx.iter().next().unwrap();
 
     // Single-threaded
-    let style_master = StyleMaster::new(Box::new(DarkSimpleTheme))?;
+    let style_master = Arc::new(StyleMaster::new(Box::new(DarkSimpleTheme))?);
     // Can we have a global theme instead of sending it to each widget?
     let mut window_builder = WindowBuilder::new(1024, 768)?;
     let mut image = Image::from_bmp(

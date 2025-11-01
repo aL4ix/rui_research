@@ -25,7 +25,7 @@ impl Button {
         style_master: Arc<StyleMaster>,
     ) -> Result<Button, Box<dyn Error>> {
         let theme: &dyn ThemeForButton =
-            style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
+            style_master.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
         let style: Box<ThemeStyleForButton> =
             style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitivesManagerForThemes::new();
@@ -36,7 +36,7 @@ impl Button {
     }
     pub fn set_text(&mut self, text: &str) {
         let binding = self.common.style_master();
-        let theme: &dyn ThemeForButton = binding.expect_theme_for_widget_t(TypeId::of::<Self>());
+        let theme: &dyn ThemeForButton = binding.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
         let style: Box<ThemeStyleForButton> = binding.expect_style_for_widget_t(Self::class_name());
         let size = theme.set_text(text, None, style, self.common.prim_man());
         self.common.set_size(size);

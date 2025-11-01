@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::Arc;
 
 use rui_research::engines::sdl::SDLEngine;
 use rui_research::general::Vector2D;
@@ -20,7 +21,7 @@ impl WidgetEnum for BlackboardEnums {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut sdl_engine = SDLEngine::init()?;
-    let style = StyleMaster::new(Box::new(DarkSimpleTheme))?;
+    let style = Arc::new(StyleMaster::new(Box::new(DarkSimpleTheme))?);
     let mut window_builder = WindowBuilder::new(1024, 768)?;
     let string = "Phrase 1
 Phrase 2

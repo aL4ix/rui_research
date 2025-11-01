@@ -2,87 +2,77 @@ use std::{
     any::{Any, TypeId},
     collections::HashMap,
     error::Error,
-    sync::Arc,
 };
 
+use crosstrait::Registry;
 use glyph_brush::ab_glyph::FontArc;
 use log::debug;
 
 use crate::{
     themes::{
-        property::ApplyTo, PropertiesMap, Property, StyleEnum, StyleForWidget, ThemeEngine,
+        property::ApplyTo, PropertiesMap, Property, Style, StyleEnum, StyleForWidget, ThemeEngine,
         ThemeForWidget, ThemeStyleForButton, ThemeStyleForImage, ThemeStyleForTextBox,
-        THEME_WIDGET_CAST_REGISTRY,
     },
     utils::Assets,
 };
+
+// crosstrait specific
+pub type CrossTraitEntry = (fn() -> [TypeId; 2], &'static (dyn Any + Send + Sync));
 
 #[derive(Debug)]
 pub struct StyleMaster {
     _fonts: HashMap<String, FontArc>,
     styles: Vec<PropertiesMap>,
     themes: HashMap<TypeId, &'static dyn ThemeForWidget>,
+    // crosstrait specific
+    registry_entries: Vec<&'static CrossTraitEntry>,
+    registry: Registry<'static>,
 }
 
 impl StyleMaster {
     const COULD_NOT_FIND_THEME: &'static str = "Couldn't find theme for";
     const COULD_NOT_FIND_STYLE: &'static str = "Couldn't find style for";
 
-    pub fn new(theme_engine: Box<dyn ThemeEngine>) -> Result<Arc<StyleMaster>, Box<dyn Error>> {
+    pub fn new(theme_engine: Box<dyn ThemeEngine>) -> Result<StyleMaster, Box<dyn Error>> {
         let dyn_styles = theme_engine.default_style();
         let mut _fonts = HashMap::new();
         let mut styles = Vec::with_capacity(dyn_styles.len());
         let themes = theme_engine.get_themes();
+        let registry_entries: Vec<&'static CrossTraitEntry> =
+            theme_engine.get_crosstrait_registry().iter().collect();
+        let registry: Registry<'_> = Registry::new(registry_entries.clone());
 
-        for dyn_style in dyn_styles {
-            debug!("{:?}", dyn_style);
-            let mut prop_map = dyn_style.to_properties_map();
+        process_styles(dyn_styles, &mut _fonts, &mut styles)?;
 
-            // Convert fonts from string to Font
-            if let Some(font_property) = prop_map.get(&StyleEnum::Font) {
-                if let Property::Str(font_name) = font_property {
-                    let maybe_font = _fonts.get(font_name);
-                    let font_arc = match maybe_font {
-                        None => {
-                            let font_path = format!("assets/{}.ttf", font_name);
-                            let font_vec = Assets::read(font_path)?;
-                            let font_arc = FontArc::try_from_vec(font_vec)?;
-                            _fonts.insert(font_name.to_string(), font_arc.clone());
-                            font_arc
-                        }
-                        Some(font_arc) => font_arc.clone(),
-                    };
-                    prop_map.insert(StyleEnum::Font, Property::Font(font_arc));
-                } else {
-                    panic!("Font properties should only be Str: {:?}", prop_map);
-                }
-            }
-            styles.push(prop_map);
-        }
-
-        Ok(Arc::new(StyleMaster {
+        Ok(StyleMaster {
             _fonts,
             styles,
             themes,
-        }))
+            registry_entries,
+            registry,
+        })
     }
     pub fn theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> Option<&T> {
         let opt_theme_widget = self.themes.get(&type_id).map(|t| *t);
         if let Some(theme_widget) = opt_theme_widget {
-            let opt_theme_t: Option<&T> = THEME_WIDGET_CAST_REGISTRY.cast_ref(theme_widget);
+            let opt_theme_t: Option<&T> = self.registry.cast_ref(theme_widget);
             if let Some(theme_t) = opt_theme_t {
                 return Some(theme_t);
             }
         }
         None
     }
-    pub fn expect_theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> &T {
+    pub fn expect_theme_for_widget_t<T: ThemeForWidget + ?Sized>(
+        &self,
+        type_id: TypeId,
+        class: &str,
+    ) -> &T {
         self.theme_for_widget_t(type_id)
-            .unwrap_or_else(|| panic!("{} {:?}!", Self::COULD_NOT_FIND_THEME, type_id))
+            .unwrap_or_else(|| panic!("{} '{}' {:?}!", Self::COULD_NOT_FIND_THEME, class, type_id))
     }
     pub fn dyn_get_style(&self, type_id: &str) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
         let mut properties: PropertiesMap = Default::default();
-        debug!("{:?}", self.styles);
+        debug!("dyn_get_style {:?}", self.styles);
         for style in &self.styles {
             let property = style
                 .get(&StyleEnum::ApplyTo)
@@ -138,4 +128,48 @@ impl StyleMaster {
         self.style_for_widget_t(type_id)
             .unwrap_or_else(|| panic!("{} {}!", Self::COULD_NOT_FIND_STYLE, type_id))
     }
+    pub fn add_widget_theme(&mut self, theme_engine: Box<dyn ThemeEngine>) {
+        self.themes.extend(theme_engine.get_themes());
+        self.registry_entries
+            .extend(theme_engine.get_crosstrait_registry());
+        self.registry = Registry::new(self.registry_entries.clone());
+        process_styles(
+            theme_engine.default_style(),
+            &mut self._fonts,
+            &mut self.styles,
+        )
+        .expect("Failed to process styles");
+    }
+}
+
+fn process_styles(
+    dyn_styles: Vec<Box<dyn Style>>,
+    fonts: &mut HashMap<String, FontArc>,
+    styles: &mut Vec<HashMap<StyleEnum, Property>>,
+) -> Result<(), Box<dyn Error + 'static>> {
+    Ok(for dyn_style in dyn_styles {
+        debug!("{:?}", dyn_style);
+        let mut prop_map = dyn_style.to_properties_map();
+
+        // Convert fonts from string to Font
+        if let Some(font_property) = prop_map.get(&StyleEnum::Font) {
+            if let Property::Str(font_name) = font_property {
+                let maybe_font = fonts.get(font_name);
+                let font_arc = match maybe_font {
+                    None => {
+                        let font_path = format!("assets/{}.ttf", font_name);
+                        let font_vec = Assets::read(font_path)?;
+                        let font_arc = FontArc::try_from_vec(font_vec)?;
+                        fonts.insert(font_name.to_string(), font_arc.clone());
+                        font_arc
+                    }
+                    Some(font_arc) => font_arc.clone(),
+                };
+                prop_map.insert(StyleEnum::Font, Property::Font(font_arc));
+            } else {
+                panic!("Font properties should only be Str: {:?}", prop_map);
+            }
+        }
+        styles.push(prop_map);
+    })
 }

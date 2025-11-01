@@ -27,7 +27,7 @@ impl TextBox {
         style_master: Arc<StyleMaster>,
     ) -> Result<TextBox, Box<dyn Error>> {
         let theme: &dyn ThemeForTextBox =
-            style_master.expect_theme_for_widget_t(TypeId::of::<Self>());
+            style_master.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
         let style: Box<ThemeStyleForTextBox> =
             style_master.expect_style_for_widget_t(Self::class_name());
         let mut prim_man = PrimitivesManagerForThemes::new();
@@ -40,7 +40,7 @@ impl TextBox {
     }
     pub fn set_text(&mut self, text: &str) {
         let binding = self.common.style_master();
-        let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(TypeId::of::<Self>());
+        let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
         let style: Box<ThemeStyleForTextBox> =
             binding.expect_style_for_widget_t(Self::class_name());
         let size = theme.set_text(text, None, style, self.common.prim_man());
