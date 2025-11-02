@@ -1,9 +1,9 @@
-use std::{any::Any, error::Error};
+use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::themes::{PropertiesMap, Property, StyleEnum};
 
-pub trait StyleForWidget: Any + std::fmt::Debug {
-    fn new(properties: PropertiesMap) -> Result<Self, Box<dyn Error>>
+pub trait StyleForWidget: Any + Debug {
+    fn new(properties: PropertiesMap) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>>
     where
         Self: Sized;
 }

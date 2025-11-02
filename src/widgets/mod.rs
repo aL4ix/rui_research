@@ -31,3 +31,6 @@ pub use direction::Direction;
 
 mod next_position_calculator;
 pub use next_position_calculator::*;
+
+mod base_widget;
+pub use base_widget::*;

@@ -1,11 +1,12 @@
-use std::{any::TypeId, collections::HashMap, fmt::Debug};
+use std::{any::TypeId, collections::HashMap, fmt::Debug, sync::Arc};
 
 use crosstrait::entry;
 
 use crate::{
     themes::{
-        CrossTraitEntry, Style, ThemeEngine, ThemeForButton, ThemeForImage, ThemeForTextBox,
-        ThemeForWidget, ThemeStyle,
+        ArcFnNewStyleForWidgetWrap, CrossTraitEntry, Style, StyleForWidget, ThemeEngine,
+        ThemeForButton, ThemeForImage, ThemeForTextBox, ThemeForWidget, ThemeStyle,
+        ThemeStyleForButton, ThemeStyleForImage, ThemeStyleForTextBox,
     },
     widgets::{Image, TextBox},
 };
@@ -39,5 +40,21 @@ impl ThemeEngine for DarkSimpleTheme {
             entry!(DarkSimpleThemeForImage => dyn ThemeForImage),
             entry!(DarkSimpleThemeForTextBox => dyn ThemeForTextBox),
         ]
+    }
+    fn get_style_for_widget_mapping(&self) -> HashMap<TypeId, ArcFnNewStyleForWidgetWrap> {
+        HashMap::from([
+            (
+                TypeId::of::<Button>(),
+                ArcFnNewStyleForWidgetWrap(Arc::new(ThemeStyleForButton::new)),
+            ),
+            (
+                TypeId::of::<Image>(),
+                ArcFnNewStyleForWidgetWrap(Arc::new(ThemeStyleForImage::new)),
+            ),
+            (
+                TypeId::of::<TextBox>(),
+                ArcFnNewStyleForWidgetWrap(Arc::new(ThemeStyleForTextBox::new)),
+            ),
+        ]) as HashMap<TypeId, ArcFnNewStyleForWidgetWrap>
     }
 }

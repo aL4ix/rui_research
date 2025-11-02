@@ -15,3 +15,6 @@ pub use style_for_widget::*;
 
 mod extra_style_enum;
 pub use extra_style_enum::*;
+
+mod arc_fn_new_style_for_widget;
+pub use arc_fn_new_style_for_widget::*;

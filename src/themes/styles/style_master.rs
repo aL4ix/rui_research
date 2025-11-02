@@ -10,8 +10,8 @@ use log::debug;
 
 use crate::{
     themes::{
-        property::ApplyTo, PropertiesMap, Property, Style, StyleEnum, StyleForWidget, ThemeEngine,
-        ThemeForWidget, ThemeStyleForButton, ThemeStyleForImage, ThemeStyleForTextBox,
+        property::ApplyTo, ArcFnNewStyleForWidgetWrap, PropertiesMap, Property, Style, StyleEnum,
+        StyleForWidget, ThemeEngine, ThemeForWidget,
     },
     utils::Assets,
 };
@@ -27,6 +27,7 @@ pub struct StyleMaster {
     // crosstrait specific
     registry_entries: Vec<&'static CrossTraitEntry>,
     registry: Registry<'static>,
+    style_for_widget_mapping: HashMap<TypeId, ArcFnNewStyleForWidgetWrap>,
 }
 
 impl StyleMaster {
@@ -41,6 +42,7 @@ impl StyleMaster {
         let registry_entries: Vec<&'static CrossTraitEntry> =
             theme_engine.get_crosstrait_registry().iter().collect();
         let registry: Registry<'_> = Registry::new(registry_entries.clone());
+        let style_for_widget_mapping = theme_engine.get_style_for_widget_mapping();
 
         process_styles(dyn_styles, &mut _fonts, &mut styles)?;
 
@@ -50,6 +52,7 @@ impl StyleMaster {
             themes,
             registry_entries,
             registry,
+            style_for_widget_mapping,
         })
     }
     pub fn theme_for_widget_t<T: ThemeForWidget + ?Sized>(&self, type_id: TypeId) -> Option<&T> {
@@ -70,7 +73,10 @@ impl StyleMaster {
         self.theme_for_widget_t(type_id)
             .unwrap_or_else(|| panic!("{} '{}' {:?}!", Self::COULD_NOT_FIND_THEME, class, type_id))
     }
-    pub fn dyn_get_style(&self, type_id: &str) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
+    pub fn dyn_get_style(
+        &self,
+        type_id: TypeId,
+    ) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
         let mut properties: PropertiesMap = Default::default();
         debug!("dyn_get_style {:?}", self.styles);
         for style in &self.styles {
@@ -82,9 +88,9 @@ impl StyleMaster {
                     ApplyTo::Id(_id) => {
                         panic!("Styles don't support ApplyTo::Id yet: {:?}", apply_to)
                     }
-                    ApplyTo::Class(class) => {
-                        debug!("One retrieved style for class: {}", class);
-                        if class == type_id {
+                    ApplyTo::Type(retrieved_type) => {
+                        debug!("One retrieved style for class: {:?}", retrieved_type);
+                        if *retrieved_type == type_id {
                             debug!("Found style");
                             properties.extend(style.iter().map(|(k, v)| (k.clone(), v.clone())));
                         }
@@ -99,34 +105,40 @@ impl StyleMaster {
         }
         debug!("Properties: {:?}", properties);
         debug!("type_id: {:?}", type_id);
-        // TODO: Un-hardcode this
-        let style_for_widget: Box<dyn StyleForWidget> = match type_id {
-            "Button" => Box::new(ThemeStyleForButton::new(properties)?),
-            "Image" => {
-                debug!("Entered Image");
-                Box::new(ThemeStyleForImage::new(properties)?)
-            }
-            "TextBox" => Box::new(ThemeStyleForTextBox::new(properties)?),
-            _ => {
-                debug!("Not found!");
-                Err::<Box<dyn StyleForWidget>, Box<dyn Error>>(Box::from(format!(
-                    "Unsupported type {:?}",
+        return self
+            .style_for_widget_mapping
+            .get(&type_id)
+            .map(|s| s.0(properties))
+            .unwrap_or_else(|| {
+                Err(Box::from(format!(
+                    "Unsupported type, no mapping for {:?}",
                     type_id
-                )))?
-            }
-        };
-        debug!("style_for_widget: {:?}", style_for_widget);
-        Ok(style_for_widget)
+                )))
+            });
     }
-    pub fn style_for_widget_t<T: StyleForWidget>(&self, type_id: &str) -> Option<Box<T>> {
-        let dyn_style_for_widget = self
-            .dyn_get_style(type_id)
-            .unwrap_or_else(|_| panic!("Failed to retrieve a style for {:?}", type_id));
+    pub fn style_for_widget_t<T: StyleForWidget>(
+        &self,
+        type_id: TypeId,
+        class: &str,
+    ) -> Option<Box<T>> {
+        let dyn_style_for_widget = self.dyn_get_style(type_id).unwrap_or_else(|e| {
+            panic!(
+                "{} '{}' {:?}: {}",
+                Self::COULD_NOT_FIND_STYLE,
+                class,
+                type_id,
+                e
+            )
+        });
         (dyn_style_for_widget as Box<dyn Any>).downcast().ok()
     }
-    pub fn expect_style_for_widget_t<T: StyleForWidget>(&self, type_id: &str) -> Box<T> {
-        self.style_for_widget_t(type_id)
-            .unwrap_or_else(|| panic!("{} {}!", Self::COULD_NOT_FIND_STYLE, type_id))
+    pub fn expect_style_for_widget_t<T: StyleForWidget>(
+        &self,
+        type_id: TypeId,
+        class: &str,
+    ) -> Box<T> {
+        self.style_for_widget_t(type_id, class)
+            .unwrap_or_else(|| panic!("{} '{}' {:?}", Self::COULD_NOT_FIND_STYLE, class, type_id))
     }
     pub fn add_widget_theme(&mut self, theme_engine: Box<dyn ThemeEngine>) {
         self.themes.extend(theme_engine.get_themes());
@@ -139,6 +151,8 @@ impl StyleMaster {
             &mut self.styles,
         )
         .expect("Failed to process styles");
+        self.style_for_widget_mapping
+            .extend(theme_engine.get_style_for_widget_mapping());
     }
 }
 

@@ -1,3 +1,5 @@
+use std::any::TypeId;
+
 use crate::general::{Color, Vector2D};
 use crate::themes::ExtraStyle;
 use crate::themes::ExtraStyleMap;
@@ -19,7 +21,7 @@ pub enum Property {
 #[derive(Debug, Clone)]
 pub enum ApplyTo {
     Id(usize),
-    Class(String),
+    Type(TypeId),
     Groups(Vec<String>),
 }
 

@@ -25,10 +25,11 @@ impl Image {
         path: Box<Path>,
         style_master: Arc<StyleMaster>,
     ) -> Result<Image, Box<dyn Error>> {
+        let type_id = TypeId::of::<Self>();
         let theme: &dyn ThemeForImage =
-            style_master.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
+            style_master.expect_theme_for_widget_t(type_id, Self::class_name());
         let style: Box<ThemeStyleForImage> =
-            style_master.expect_style_for_widget_t(Self::class_name());
+            style_master.expect_style_for_widget_t(type_id, Self::class_name());
         let mut prim_man = PrimitivesManagerForThemes::new();
         let size = theme.new_image(path, None, style, &mut prim_man);
         Ok(Image {

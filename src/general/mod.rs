@@ -1,15 +1,20 @@
-pub use color::Color;
-pub use geometry::Geometry;
-pub use polygon::Polygon;
-pub use rect::Rect;
-pub use size2d::Size2D;
-pub use textured_polygon::TexturedPolygon;
-pub use vector2d::Vector2D;
-
 mod color;
+pub use color::Color;
+
 mod geometry;
+pub use geometry::Geometry;
+
 mod polygon;
+pub use polygon::Polygon;
+
 mod rect;
+pub use rect::Rect;
+
 mod size2d;
+pub use size2d::Size2D;
+
 mod textured_polygon;
+pub use textured_polygon::TexturedPolygon;
+
 mod vector2d;
+pub use vector2d::Vector2D;

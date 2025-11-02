@@ -8,10 +8,10 @@ pub struct ThemeStyleForImage {
 }
 
 impl StyleForWidget for ThemeStyleForImage {
-    fn new(mut properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
+    fn new(mut properties: PropertiesMap) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
         use StyleEnum::*;
-        Ok(ThemeStyleForImage {
+        Ok(Box::new(ThemeStyleForImage {
             extra: StyleExtractor.extract(&mut properties, &Extra)?.try_into()?,
-        })
+        }))
     }
 }

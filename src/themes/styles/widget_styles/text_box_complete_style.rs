@@ -51,17 +51,17 @@ pub struct ThemeStyleForTextBox {
 }
 
 impl StyleForWidget for ThemeStyleForTextBox {
-    fn new(mut properties: PropertiesMap) -> Result<Self, Box<dyn Error>> {
+    fn new(mut properties: PropertiesMap) -> Result<Box<dyn StyleForWidget>, Box<dyn Error>> {
         let p = &mut properties;
         let e = StyleExtractor;
         use StyleEnum::*;
-        Ok(ThemeStyleForTextBox {
+        Ok(Box::new(ThemeStyleForTextBox {
             color: e.extract(p, &Color)?.try_into()?,
             background_color: e.extract(p, &BackgroundColor)?.try_into()?,
             size: e.extract(p, &Size)?.try_into()?,
             font: e.extract(p, &Font)?.try_into()?,
             font_size: e.extract(p, &FontSize)?.try_into()?,
             extra: e.extract(p, &Extra)?.try_into()?,
-        })
+        }))
     }
 }

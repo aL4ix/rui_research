@@ -26,10 +26,11 @@ impl TextBox {
         text: &str,
         style_master: Arc<StyleMaster>,
     ) -> Result<TextBox, Box<dyn Error>> {
+        let type_id = TypeId::of::<Self>();
         let theme: &dyn ThemeForTextBox =
-            style_master.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
+            style_master.expect_theme_for_widget_t(type_id, Self::class_name());
         let style: Box<ThemeStyleForTextBox> =
-            style_master.expect_style_for_widget_t(Self::class_name());
+            style_master.expect_style_for_widget_t(type_id, Self::class_name());
         let mut prim_man = PrimitivesManagerForThemes::new();
         let size = theme.new_text_box(text, None, style, &mut prim_man);
         let common_widget =
@@ -40,9 +41,10 @@ impl TextBox {
     }
     pub fn set_text(&mut self, text: &str) {
         let binding = self.common.style_master();
-        let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(TypeId::of::<Self>(), Self::class_name());
+        let type_id = TypeId::of::<Self>();
+        let theme: &dyn ThemeForTextBox = binding.expect_theme_for_widget_t(type_id, Self::class_name());
         let style: Box<ThemeStyleForTextBox> =
-            binding.expect_style_for_widget_t(Self::class_name());
+            binding.expect_style_for_widget_t(type_id, Self::class_name());
         let size = theme.set_text(text, None, style, self.common.prim_man());
         self.common.set_size(size);
         // self.set_needs_update(true);
